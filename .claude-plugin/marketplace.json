@@ -1,0 +1,27 @@
+{
+  "name": "architect",
+  "owner": {
+    "name": "Navraj Singh",
+    "email": "hello@architectai.app"
+  },
+  "metadata": {
+    "description": "Architecture blueprints, cost estimates, and complexity scoring for founders building apps and AI agents"
+  },
+  "plugins": [
+    {
+      "name": "architect",
+      "source": "./",
+      "description": "Turn product ideas into structured architecture blueprints with C4 diagrams, cost estimates, complexity scores, and next-steps guides.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Navraj Singh",
+        "url": "https://github.com/navraj007in"
+      },
+      "homepage": "https://github.com/navraj007in/architecture-cowork-plugin",
+      "repository": "https://github.com/navraj007in/architecture-cowork-plugin",
+      "license": "Apache-2.0",
+      "keywords": ["architecture", "blueprint", "startup", "ai-agent", "cost-estimate", "diagrams", "scaffolding"],
+      "category": "engineering"
+    }
+  ]
+}
