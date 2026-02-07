@@ -124,7 +124,7 @@ Turns shared type stubs from the blueprint into real ORM schemas. Generates Pris
 
 ## Skills
 
-The plugin includes 12 domain knowledge skills that Claude draws on automatically:
+The plugin includes 22 domain knowledge skills that Claude draws on automatically:
 
 | Skill | What It Contains |
 |-------|-----------------|
@@ -140,59 +140,79 @@ The plugin includes 12 domain knowledge skills that Claude draws on automaticall
 | **Operational Patterns** | Security architecture, observability, CI/CD pipelines, database migrations, and environment strategy patterns |
 | **Well-Architected** | Six-pillar framework for evaluating architecture quality with scoring methodology, stage-appropriate expectations, and improvement roadmaps |
 | **Project Templates** | Starter file templates and boilerplate for scaffolding projects across frontend, backend, mobile, and AI agent frameworks |
+| **Product Type Detector** | Auto-detection of product archetypes with templates for AI agents, e-commerce, SaaS, content platforms, real-time collaboration, and file storage |
+| **Export Diagrams** | Diagram rendering knowledge for Mermaid CLI, mermaid.ink, and Kroki API fallbacks |
+| **Export DOCX** | Word document export patterns and formatting |
+| **Export OpenAPI** | OpenAPI specification generation and export |
+| **Generate Data Model** | ORM schema generation patterns for Prisma, SQLAlchemy, Mongoose, and Drizzle |
+| **Security Audit** | Security audit checklist and validation patterns |
+| **Setup Env** | Environment setup, API key validation, and .env file generation patterns |
+| **Stakeholder Doc** | Stakeholder-facing documentation generation for non-technical audiences |
+| **Sync Backlog** | Backlog synchronization patterns for Azure DevOps and Jira |
+| **Validate** | Architecture validation and consistency checking rules |
 
 ## Plugin Structure
 
 ```
 architect-ai/
-├── .claude-plugin/
-│   └── plugin.json              # Plugin manifest
-├── .mcp.json                    # MCP connectors (web search)
 ├── README.md
-├── agents/                     # 8 subagents with tool access
-│   ├── scaffolder.md
-│   ├── backlog-sync.md
+├── agents/                      # 8 subagents with tool access
 │   ├── api-docs-publisher.md
-│   ├── env-setup.md
-│   ├── diagram-exporter.md
-│   ├── security-scanner.md
+│   ├── backlog-sync.md
 │   ├── cicd-deployer.md
-│   └── data-model-generator.md
+│   ├── data-model-generator.md
+│   ├── diagram-exporter.md
+│   ├── env-setup.md
+│   ├── scaffolder.md
+│   └── security-scanner.md
 ├── commands/                    # 16 slash commands
-│   ├── blueprint.md
-│   ├── quick-spec.md
-│   ├── cost-estimate.md
-│   ├── complexity-check.md
 │   ├── agent-spec.md
+│   ├── blueprint.md
 │   ├── compare-stack.md
-│   ├── hiring-brief.md
-│   ├── well-architected.md
-│   ├── scaffold.md
-│   ├── sync-backlog.md
-│   ├── publish-api-docs.md
-│   ├── setup-env.md
+│   ├── complexity-check.md
+│   ├── cost-estimate.md
 │   ├── export-diagrams.md
+│   ├── generate-data-model.md
+│   ├── hiring-brief.md
+│   ├── publish-api-docs.md
+│   ├── quick-spec.md
+│   ├── scaffold.md
 │   ├── security-scan.md
 │   ├── setup-cicd.md
-│   └── generate-data-model.md
-├── skills/                      # 12 domain knowledge skills
-│   ├── architecture-methodology/SKILL.md
-│   ├── manifest-structure/SKILL.md
-│   ├── cost-knowledge/SKILL.md
-│   ├── known-services/SKILL.md
-│   ├── diagram-patterns/SKILL.md
+│   ├── setup-env.md
+│   ├── sync-backlog.md
+│   └── well-architected.md
+├── skills/                      # 22 domain knowledge skills
 │   ├── agent-architecture/SKILL.md
-│   ├── complexity-factors/SKILL.md
-│   ├── founder-communication/SKILL.md
 │   ├── api-artifacts/SKILL.md
+│   ├── architecture-methodology/SKILL.md
+│   ├── complexity-factors/SKILL.md
+│   ├── cost-knowledge/SKILL.md
+│   ├── diagram-patterns/SKILL.md
+│   ├── export-diagrams/SKILL.md
+│   ├── export-docx/SKILL.md
+│   ├── export-openapi/SKILL.md
+│   ├── founder-communication/SKILL.md
+│   ├── generate-data-model/SKILL.md
+│   ├── known-services/SKILL.md
+│   ├── manifest-structure/SKILL.md
 │   ├── operational-patterns/SKILL.md
-│   ├── well-architected/SKILL.md
-│   └── project-templates/SKILL.md
+│   ├── product-type-detector/
+│   │   ├── SKILL.md
+│   │   └── templates/           # 6 product type templates
+│   ├── project-templates/SKILL.md
+│   ├── security-audit/SKILL.md
+│   ├── setup-env/SKILL.md
+│   ├── stakeholder-doc/SKILL.md
+│   ├── sync-backlog/SKILL.md
+│   ├── validate/SKILL.md
+│   └── well-architected/SKILL.md
 └── references/                  # Supporting reference data
+    ├── example-blueprints.md
     ├── manifest-schema.md
+    ├── prescriptive-decision-framework.md
     ├── pricing-tables.md
-    ├── service-profiles.md
-    └── example-blueprints.md
+    └── service-profiles.md
 ```
 
 ## Examples
