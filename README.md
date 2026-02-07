@@ -6,18 +6,26 @@ Built for founders. Useful for engineers.
 
 ## Installation
 
-1. Open Claude Code
-2. Go to **Settings > Plugins**
-3. Search for **architect** or install from the plugin marketplace
-4. The plugin's skills and commands are available immediately
+### Claude Code
 
-**Manual install from GitHub:**
+```
+/plugin marketplace add navraj007in/architecture-cowork-plugin
+/plugin install architect@architect
+```
+
+### Cowork (Claude Desktop)
+
+1. Open Claude Desktop → Cowork tab
+2. Click "Plugins" in the left sidebar
+3. Click "Upload plugin" and select the plugin folder
+
+### Manual install from GitHub
 
 ```bash
 git clone https://github.com/navraj007in/architecture-cowork-plugin.git
 ```
 
-Then add the plugin directory in Claude Code's plugin settings.
+Then add the plugin directory in Claude Code's plugin settings or upload it in Cowork.
 
 ## Commands
 
