@@ -1,4 +1,4 @@
-# Architect AI — Cowork Plugin
+# Architect — Cowork Plugin
 
 Turn product ideas into structured, buildable architecture blueprints. Whether you're building an app, an AI agent, or both — get C4 diagrams, cost estimates, complexity scores, and a clear next-steps guide.
 
@@ -21,23 +21,23 @@ Then add the plugin directory in Claude Code's plugin settings.
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `/architect:blueprint` | Full architecture blueprint — diagrams, costs, complexity, specs, and next steps |
-| `/architect:quick-spec` | 5-minute lightweight architecture overview for idea validation |
-| `/architect:cost-estimate` | Infrastructure + third-party + LLM token cost breakdown |
-| `/architect:complexity-check` | Build difficulty assessment with 10-factor scoring |
-| `/architect:agent-spec` | AI agent architecture — orchestration, tools, guardrails, token costs |
-| `/architect:compare-stack` | Side-by-side technology comparison with recommendation |
-| `/architect:hiring-brief` | Developer hiring package with role descriptions and interview questions |
-| `/architect:well-architected` | Six-pillar well-architected review with scores and improvement roadmap |
-| `/architect:scaffold` | Create repos and bootstrap projects from a blueprint architecture |
-| `/architect:sync-backlog` | Push sprint backlog into Azure DevOps or Jira as sprints and work items |
-| `/architect:publish-api-docs` | Generate interactive API documentation (Swagger UI, Redoc, AsyncAPI) |
-| `/architect:setup-env` | Walk through account setup, validate API keys, write verified .env files |
-| `/architect:export-diagrams` | Render Mermaid diagrams to PNG/SVG with light and dark themes |
-| `/architect:security-scan` | Validate scaffolded code against the blueprint's security checklist |
-| `/architect:setup-cicd` | Configure real CI/CD pipelines in GitHub Actions, Azure Pipelines, or GitLab CI |
+| Command                          | Description                                                                       |
+| -------------------------------- | --------------------------------------------------------------------------------- |
+| `/architect:blueprint`           | Full architecture blueprint — diagrams, costs, complexity, specs, and next steps  |
+| `/architect:quick-spec`          | 5-minute lightweight architecture overview for idea validation                    |
+| `/architect:cost-estimate`       | Infrastructure + third-party + LLM token cost breakdown                           |
+| `/architect:complexity-check`    | Build difficulty assessment with 10-factor scoring                                |
+| `/architect:agent-spec`          | AI agent architecture — orchestration, tools, guardrails, token costs             |
+| `/architect:compare-stack`       | Side-by-side technology comparison with recommendation                            |
+| `/architect:hiring-brief`        | Developer hiring package with role descriptions and interview questions           |
+| `/architect:well-architected`    | Six-pillar well-architected review with scores and improvement roadmap            |
+| `/architect:scaffold`            | Create repos and bootstrap projects from a blueprint architecture                 |
+| `/architect:sync-backlog`        | Push sprint backlog into Azure DevOps or Jira as sprints and work items           |
+| `/architect:publish-api-docs`    | Generate interactive API documentation (Swagger UI, Redoc, AsyncAPI)              |
+| `/architect:setup-env`           | Walk through account setup, validate API keys, write verified .env files          |
+| `/architect:export-diagrams`     | Render Mermaid diagrams to PNG/SVG with light and dark themes                     |
+| `/architect:security-scan`       | Validate scaffolded code against the blueprint's security checklist               |
+| `/architect:setup-cicd`          | Configure real CI/CD pipelines in GitHub Actions, Azure Pipelines, or GitLab CI   |
 | `/architect:generate-data-model` | Generate ORM schemas (Prisma, SQLAlchemy, Mongoose, Drizzle) from blueprint types |
 
 ## What You Get
@@ -126,36 +126,37 @@ Turns shared type stubs from the blueprint into real ORM schemas. Generates Pris
 
 The plugin includes 22 domain knowledge skills that Claude draws on automatically:
 
-| Skill | What It Contains |
-|-------|-----------------|
-| **Architecture Methodology** | Structured requirements gathering framework, manifest building process, output quality rules |
-| **Manifest Structure** | Canonical system manifest format with all enumerated types (project, frontend, service, database, integration, LLM, agent, communication) |
-| **Cost Knowledge** | Real pricing data for cloud compute, databases, LLM tokens, auth, payments, email, hosting, and monitoring services |
-| **Known Services** | Setup steps, credentials, and free tier details for 70+ services across 12 categories |
-| **Diagram Patterns** | C4 Context/Container, data flow, agent flow, deployment, and sequence diagram templates in Mermaid |
-| **Agent Architecture** | AI agent orchestration patterns (ReAct, chain-of-thought, multi-agent), tool design, memory strategies, guardrails, token cost modeling |
-| **Complexity Factors** | 10-factor weighted scoring methodology with factor definitions, scoring guides, and agent/hybrid adjustments |
-| **Founder Communication** | Plain English defaults, acronym expansion, analogy-first explanations, progressive disclosure, risk severity levels |
-| **API Artifacts** | Templates for generating OpenAPI specs, Postman collections, AsyncAPI specs, and GraphQL schemas from architecture manifests |
-| **Operational Patterns** | Security architecture, observability, CI/CD pipelines, database migrations, and environment strategy patterns |
-| **Well-Architected** | Six-pillar framework for evaluating architecture quality with scoring methodology, stage-appropriate expectations, and improvement roadmaps |
-| **Project Templates** | Starter file templates and boilerplate for scaffolding projects across frontend, backend, mobile, and AI agent frameworks |
-| **Product Type Detector** | Auto-detection of product archetypes with templates for AI agents, e-commerce, SaaS, content platforms, real-time collaboration, and file storage |
-| **Export Diagrams** | Diagram rendering knowledge for Mermaid CLI, mermaid.ink, and Kroki API fallbacks |
-| **Export DOCX** | Word document export patterns and formatting |
-| **Export OpenAPI** | OpenAPI specification generation and export |
-| **Generate Data Model** | ORM schema generation patterns for Prisma, SQLAlchemy, Mongoose, and Drizzle |
-| **Security Audit** | Security audit checklist and validation patterns |
-| **Setup Env** | Environment setup, API key validation, and .env file generation patterns |
-| **Stakeholder Doc** | Stakeholder-facing documentation generation for non-technical audiences |
-| **Sync Backlog** | Backlog synchronization patterns for Azure DevOps and Jira |
-| **Validate** | Architecture validation and consistency checking rules |
+| Skill                        | What It Contains                                                                                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Architecture Methodology** | Structured requirements gathering framework, manifest building process, output quality rules                                                      |
+| **Manifest Structure**       | Canonical system manifest format with all enumerated types (project, frontend, service, database, integration, LLM, agent, communication)         |
+| **Cost Knowledge**           | Real pricing data for cloud compute, databases, LLM tokens, auth, payments, email, hosting, and monitoring services                               |
+| **Known Services**           | Setup steps, credentials, and free tier details for 70+ services across 12 categories                                                             |
+| **Diagram Patterns**         | C4 Context/Container, data flow, agent flow, deployment, and sequence diagram templates in Mermaid                                                |
+| **Agent Architecture**       | AI agent orchestration patterns (ReAct, chain-of-thought, multi-agent), tool design, memory strategies, guardrails, token cost modeling           |
+| **Complexity Factors**       | 10-factor weighted scoring methodology with factor definitions, scoring guides, and agent/hybrid adjustments                                      |
+| **Founder Communication**    | Plain English defaults, acronym expansion, analogy-first explanations, progressive disclosure, risk severity levels                               |
+| **API Artifacts**            | Templates for generating OpenAPI specs, Postman collections, AsyncAPI specs, and GraphQL schemas from architecture manifests                      |
+| **Operational Patterns**     | Security architecture, observability, CI/CD pipelines, database migrations, and environment strategy patterns                                     |
+| **Well-Architected**         | Six-pillar framework for evaluating architecture quality with scoring methodology, stage-appropriate expectations, and improvement roadmaps       |
+| **Project Templates**        | Starter file templates and boilerplate for scaffolding projects across frontend, backend, mobile, and AI agent frameworks                         |
+| **Product Type Detector**    | Auto-detection of product archetypes with templates for AI agents, e-commerce, SaaS, content platforms, real-time collaboration, and file storage |
+| **Export Diagrams**          | Diagram rendering knowledge for Mermaid CLI, mermaid.ink, and Kroki API fallbacks                                                                 |
+| **Export DOCX**              | Word document export patterns and formatting                                                                                                      |
+| **Export OpenAPI**           | OpenAPI specification generation and export                                                                                                       |
+| **Generate Data Model**      | ORM schema generation patterns for Prisma, SQLAlchemy, Mongoose, and Drizzle                                                                      |
+| **Security Audit**           | Security audit checklist and validation patterns                                                                                                  |
+| **Setup Env**                | Environment setup, API key validation, and .env file generation patterns                                                                          |
+| **Stakeholder Doc**          | Stakeholder-facing documentation generation for non-technical audiences                                                                           |
+| **Sync Backlog**             | Backlog synchronization patterns for Azure DevOps and Jira                                                                                        |
+| **Validate**                 | Architecture validation and consistency checking rules                                                                                            |
 
 ## Plugin Structure
 
 ```
 architecture-cowork-plugin/
 ├── .claude-plugin/
+│   ├── marketplace.json
 │   └── plugin.json
 ├── README.md
 ├── agents/                      # 8 subagents with tool access
@@ -242,4 +243,4 @@ Apache-2.0
 
 ---
 
-*Architect AI | v1.0.0 | February 2026*
+_Architect AI | v1.0.0 | February 2026_

@@ -1159,7 +1159,7 @@ Other components:
 
 ---
 
-*Scaffolded by [Architect AI](https://github.com/navraj007in/arch-ai-cowork-plugin)*
+*Scaffolded by [Architect AI](https://github.com/navraj007in/architecture-cowork-plugin)*
 ```
 
 ### Dockerfile (optional, include if the manifest specifies containerized deployment)
