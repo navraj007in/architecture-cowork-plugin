@@ -8,7 +8,7 @@ Built for founders. Useful for engineers.
 
 1. Open Claude Code
 2. Go to **Settings > Plugins**
-3. Search for **architect-ai** or install from the plugin marketplace
+3. Search for **architect** or install from the plugin marketplace
 4. The plugin's skills and commands are available immediately
 
 **Manual install from GitHub:**
@@ -96,7 +96,7 @@ Turns your architecture blueprint into real projects. After running `/architect:
 
 ### From `/architect:sync-backlog`
 
-Pushes the sprint backlog (deliverable 4o) from a blueprint directly into Azure DevOps or Jira. Creates epics per architecture component, sprints with goals and dates, and user stories assigned to each sprint. All items tagged `architect-ai` for easy filtering. Supports Azure CLI (`az boards`) and Jira REST API / `jira-cli`.
+Pushes the sprint backlog (deliverable 4o) from a blueprint directly into Azure DevOps or Jira. Creates epics per architecture component, sprints with goals and dates, and user stories assigned to each sprint. All items tagged `architect` for easy filtering. Supports Azure CLI (`az boards`) and Jira REST API / `jira-cli`.
 
 ### From `/architect:publish-api-docs`
 
