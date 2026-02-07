@@ -2,7 +2,7 @@
   "name": "architect",
   "owner": {
     "name": "Navraj Singh",
-    "email": "hello@architectai.app"
+    "email": "navraj@nexper.app"
   },
   "metadata": {
     "description": "Architecture blueprints, cost estimates, and complexity scoring for founders building apps and AI agents"
@@ -20,7 +20,15 @@
       "homepage": "https://github.com/navraj007in/architecture-cowork-plugin",
       "repository": "https://github.com/navraj007in/architecture-cowork-plugin",
       "license": "Apache-2.0",
-      "keywords": ["architecture", "blueprint", "startup", "ai-agent", "cost-estimate", "diagrams", "scaffolding"],
+      "keywords": [
+        "architecture",
+        "blueprint",
+        "startup",
+        "ai-agent",
+        "cost-estimate",
+        "diagrams",
+        "scaffolding"
+      ],
       "category": "engineering"
     }
   ]
