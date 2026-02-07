@@ -6,7 +6,7 @@ Built for founders. Useful for engineers.
 
 ## Installation
 
-1. Open Claude Cowork
+1. Open Claude Code
 2. Go to **Settings > Plugins**
 3. Search for **architect-ai** or install from the plugin marketplace
 4. The plugin's skills and commands are available immediately
@@ -14,10 +14,10 @@ Built for founders. Useful for engineers.
 **Manual install from GitHub:**
 
 ```bash
-git clone https://github.com/navraj007in/arch-ai-cowork-plugin.git
+git clone https://github.com/navraj007in/architecture-cowork-plugin.git
 ```
 
-Then add the plugin directory in Cowork's plugin settings.
+Then add the plugin directory in Claude Code's plugin settings.
 
 ## Commands
 
@@ -154,7 +154,9 @@ The plugin includes 22 domain knowledge skills that Claude draws on automaticall
 ## Plugin Structure
 
 ```
-architect-ai/
+architecture-cowork-plugin/
+├── .claude-plugin/
+│   └── plugin.json
 ├── README.md
 ├── agents/                      # 8 subagents with tool access
 │   ├── api-docs-publisher.md
