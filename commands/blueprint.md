@@ -12,6 +12,19 @@ description: Full architecture blueprint — diagrams, costs, complexity, specs,
 
 Follow these steps in order. Do not skip steps. Do not generate deliverables before understanding requirements.
 
+### Step 0: Check for Pre-loaded Context (Headless Mode)
+
+Before starting, check if a file named `.arch0-context.json` exists in the current working directory. Read it using the file system.
+
+If it exists and contains an `intent` object with project requirements:
+- **This is headless mode** — the user has already answered all questions via the arch0 Studio wizard.
+- Load the project name, description, and all intent fields (personas, features, stack, constraints, preferences, budget, timeline).
+- Print a brief confirmation: "Loading project context from .arch0-context.json — skipping interactive questions."
+- **Skip Steps 1 and 2 entirely** — go directly to Step 3 (Build the System Manifest) using the pre-loaded data.
+- For any fields not provided in the context file, make reasonable assumptions and state them in the executive summary.
+
+If the file does not exist or has no `intent` field, proceed with the interactive workflow below (Steps 1 and 2).
+
 ### Step 1: Understand the Idea
 
 If the user provided a description, confirm your understanding in one sentence. If no description was provided, ask:
@@ -53,6 +66,73 @@ Using the **manifest-structure** skill, build a structured manifest covering:
 - Deployment targets
 
 Do not show the raw manifest to the user unless they ask. Use it internally to generate deliverables.
+
+### Step 3.5: Generate SDL Document
+
+After building the system manifest, convert it to a validated SDL (Solution Design Language) document using the **sdl-knowledge** skill.
+
+**Process:**
+
+1. **Map the manifest to SDL** using the manifest-to-SDL mapping:
+   - Map project metadata → `solution` (name, description, stage)
+   - Map user roles → `product.personas` (each with name and goals)
+   - Map frontends/services → `architecture.projects` (frontend, backend, mobile)
+   - Infer `architecture.style`: single backend → `modular-monolith`, 2+ → `microservices`, functions → `serverless`
+   - Map databases → `data` (primary + secondary)
+   - Map integrations → `integrations` and `auth` sections
+   - Map deployment targets → `deployment.cloud`
+   - Map constraints (budget, team, timeline) → `constraints`
+   - Set `artifacts.generate` for a full blueprint:
+     ```
+     architecture-diagram, sequence-diagrams, openapi, data-model,
+     repo-scaffold, adr, backlog, deployment-guide, cost-estimate
+     ```
+
+2. **Validate mentally** against the 5 conditional rules:
+   - Microservices → needs 2+ services
+   - OIDC → needs provider
+   - PII → needs encryptionAtRest
+   - CloudFormation → only with AWS
+   - MongoDB → no EF Core
+
+3. **Apply normalization mentally** — note what the normalizer would infer (runtime from cloud, ORM from framework+DB, etc.) but do not manually set those fields
+
+4. **Check for warnings:**
+   - Microservices with small team
+   - Aggressive timeline vs scope
+   - Multi-persona without auth
+   - Budget vs infrastructure mismatch
+
+5. **If warnings exist**, briefly report them to the user before proceeding:
+   - "Before generating deliverables, a few things to note: [warning messages]"
+   - Ask if they want to adjust, or proceed with the current architecture
+
+6. **If a conditional rule would fail**, fix it:
+   - Adjust the interpretation of the manifest
+   - If ambiguous, ask ONE clarifying question
+
+7. **Save the SDL file to the project root directory** as `sdl.yaml`. Do not place it inside `architecture/`, `artifacts/`, or any subfolder.
+
+**Do not show raw SDL to the user unless they ask.** Use it internally to drive consistent deliverable generation. Confirm: "Architecture spec saved to `./sdl.yaml`"
+
+**SDL drives these deliverables deterministically:**
+- 4b: Architecture Diagram (from `architecture` + `data` + `auth`)
+- 4e: API Artifacts (from `architecture.projects.backend` + `auth`)
+- 4i: Cost Estimate (from `deployment` + `data` + `integrations`)
+- 4o: Sprint Backlog (from `product.personas` + `coreFlows` + `architecture`)
+
+**SDL provides structured input for LLM-enhanced deliverables:**
+- 4a: Executive Summary (SDL summary as foundation)
+- 4c: Application Architecture (from `architecture.style` + `projects`)
+- 4d: Shared Types (from `architecture.sharedLibraries`)
+- 4f: Security Architecture (from `auth` + `nonFunctional.security`)
+- 4g: Observability (from `observability` section)
+- 4h: DevOps Blueprint (from `deployment.ciCd` + `infrastructure`)
+- 4j: Complexity Assessment (from `constraints` + architecture complexity)
+- 4k: Well-Architected Review (from `nonFunctional` + `deployment`)
+- 4l: Plain English Specs (from `product.personas` + `coreFlows`)
+- 4m: Required Accounts (from `integrations` + `auth.provider` + `deployment.cloud`)
+- 4n: Next Steps Guide (from `constraints.team` + `budget` + `timeline`)
 
 ### Step 4: Generate Deliverables
 

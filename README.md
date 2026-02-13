@@ -47,6 +47,7 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 | `/architect:security-scan`       | Validate scaffolded code against the blueprint's security checklist               |
 | `/architect:setup-cicd`          | Configure real CI/CD pipelines in GitHub Actions, Azure Pipelines, or GitLab CI   |
 | `/architect:generate-data-model` | Generate ORM schemas (Prisma, SQLAlchemy, Mongoose, Drizzle) from blueprint types |
+| `/architect:sdl`               | Generate, validate, diff, or browse SDL architecture specifications               |
 
 ## What You Get
 
@@ -130,6 +131,15 @@ Configures real CI/CD pipelines from the blueprint's DevOps section. Creates Git
 
 Turns shared type stubs from the blueprint into real ORM schemas. Generates Prisma schemas, SQLAlchemy models, Mongoose schemas, or Drizzle tables — with relationships, indexes, enums, and seed data. Optionally runs the initial migration.
 
+### From `/architect:sdl`
+
+Work directly with Solution Design Language (SDL) — the structured YAML specification that captures architecture decisions. Four modes:
+
+- **Generate** — Convert a conversation or project description into a validated SDL document
+- **Validate** — Parse, validate against the v0.1 schema, check conditional rules, and report errors with fix suggestions
+- **Diff** — Structurally compare two SDL versions with named array matching and change summaries
+- **Template** — Browse 10 starter templates (SaaS, e-commerce, mobile, internal tool, API platform, AI product, marketplace, admin dashboard, subscription SaaS, real-time collaboration) and customize them
+
 ## Skills
 
 The plugin includes 22 domain knowledge skills that Claude draws on automatically:
@@ -156,6 +166,7 @@ The plugin includes 22 domain knowledge skills that Claude draws on automaticall
 | **Security Audit**           | Security audit checklist and validation patterns                                                                                                  |
 | **Setup Env**                | Environment setup, API key validation, and .env file generation patterns                                                                          |
 | **Stakeholder Doc**          | Stakeholder-facing documentation generation for non-technical audiences                                                                           |
+| **SDL Knowledge**            | Solution Design Language (SDL) specification — schema, validation, normalization, mappings, and templates                                         |
 | **Sync Backlog**             | Backlog synchronization patterns for Azure DevOps and Jira                                                                                        |
 | **Validate**                 | Architecture validation and consistency checking rules                                                                                            |
 
@@ -176,7 +187,7 @@ architecture-cowork-plugin/
 │   ├── env-setup.md
 │   ├── scaffolder.md
 │   └── security-scanner.md
-├── commands/                    # 16 slash commands
+├── commands/                    # 17 slash commands
 │   ├── agent-spec.md
 │   ├── blueprint.md
 │   ├── compare-stack.md
@@ -188,12 +199,13 @@ architecture-cowork-plugin/
 │   ├── publish-api-docs.md
 │   ├── quick-spec.md
 │   ├── scaffold.md
+│   ├── sdl.md
 │   ├── security-scan.md
 │   ├── setup-cicd.md
 │   ├── setup-env.md
 │   ├── sync-backlog.md
 │   └── well-architected.md
-├── skills/                      # 22 domain knowledge skills
+├── skills/                      # 23 domain knowledge skills
 │   ├── agent-architecture/SKILL.md
 │   ├── api-artifacts/SKILL.md
 │   ├── architecture-methodology/SKILL.md
@@ -212,6 +224,7 @@ architecture-cowork-plugin/
 │   │   ├── SKILL.md
 │   │   └── templates/           # 6 product type templates
 │   ├── project-templates/SKILL.md
+│   ├── sdl-knowledge/SKILL.md
 │   ├── security-audit/SKILL.md
 │   ├── setup-env/SKILL.md
 │   ├── stakeholder-doc/SKILL.md
@@ -223,6 +236,8 @@ architecture-cowork-plugin/
     ├── manifest-schema.md
     ├── prescriptive-decision-framework.md
     ├── pricing-tables.md
+    ├── sdl-schema.md
+    ├── sdl-templates.md
     └── service-profiles.md
 ```
 
@@ -251,4 +266,4 @@ Apache-2.0
 
 ---
 
-_Architect AI | v1.0.0 | February 2026_
+_Architect AI | v1.1.0 | February 2026_
