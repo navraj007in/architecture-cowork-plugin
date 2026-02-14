@@ -1220,22 +1220,25 @@ jobs:
         run: pytest
 ```
 
-### docker-compose.yml (for local development)
+### docker-compose.yml — MANDATORY for all backend services
+
+Every backend service MUST include a `docker-compose.yml` for local development. Web frontends SHOULD also include one if they have backend dependencies.
+
+**IMPORTANT — Port collision prevention:** Each service in the architecture MUST use a unique host port. Assign ports sequentially starting from the manifest's `dev_port` for each component. Never use the same host port for two different services. Use the `${PORT:-{{dev-port}}}` pattern so ports can be overridden via `.env`.
 
 ```yaml
-version: "3.8"
-
 services:
   {{component-name}}:
     build: .
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-{{dev-port}}}:{{dev-port}}"
     env_file: .env
     depends_on:
       - db
       - redis
 
-  # TODO: Add/remove services based on manifest databases
+  # Add/remove services based on manifest databases.
+  # Use unique host ports per component to avoid collisions across services.
   db:
     image: postgres:16-alpine
     environment:
@@ -1243,18 +1246,27 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "{{db-host-port}}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "{{redis-host-port}}:6379"
 
 volumes:
   pgdata:
 ```
+
+**Port assignment strategy for multi-service architectures:**
+When scaffolding multiple services, assign non-overlapping host ports for infrastructure containers:
+- Service 1 DB: 5432, Redis: 6379
+- Service 2 DB: 5433, Redis: 6380
+- Service 3 DB: 5434, Redis: 6381
+- And so on...
+
+This prevents port collisions when running multiple services locally at the same time.
 
 ---
 
@@ -1478,9 +1490,11 @@ Other components:
 *Scaffolded by [Architect AI](https://github.com/navraj007in/architecture-cowork-plugin)*
 ```
 
-### Dockerfile (optional, include if the manifest specifies containerized deployment)
+### Dockerfile — MANDATORY for all backends and agents
 
-**Node.js:**
+Every backend service, worker, and agent MUST include a Dockerfile. This is not optional.
+
+**Node.js (Express / BullMQ / Agent):**
 ```dockerfile
 FROM node:22-alpine AS builder
 WORKDIR /app
@@ -1494,19 +1508,70 @@ WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
-EXPOSE 3000
+EXPOSE {{dev-port}}
 CMD ["node", "dist/index.js"]
 ```
 
-**Python:**
+**Python (FastAPI / Agent):**
 ```dockerfile
 FROM python:3.13-slim
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE {{dev-port}}
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "{{dev-port}}"]
+```
+
+### Dockerfile — for web frontends (include where applicable)
+
+Web frontends that produce a build artifact SHOULD include a Dockerfile. Skip only for mobile-only targets (Expo, Flutter).
+
+**Next.js (SSR):**
+```dockerfile
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:22-alpine
+WORKDIR /app
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+EXPOSE {{dev-port}}
+ENV PORT={{dev-port}}
+CMD ["node", "server.js"]
+```
+
+**React / Vue / Svelte (static build + nginx):**
+```dockerfile
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE {{dev-port}}
+```
+
+When generating a static-frontend Dockerfile, also create a `nginx.conf`:
+```nginx
+server {
+    listen {{dev-port}};
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
 ```
 
 ## Template Variables

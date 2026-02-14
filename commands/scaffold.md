@@ -128,6 +128,8 @@ Each project has:
 - Security middleware stubs (CORS, auth, rate limiting)
 - Health check endpoints with dependency check TODOs
 - Structured logging setup
+- Dockerfile (all backends and agents; web frontends where applicable)
+- docker-compose.yml (all backends with data dependencies; web frontends where applicable)
 - CI/CD workflow (.github/workflows/ci.yml)
 - .env.example with per-environment URL placeholders
 - .gitignore

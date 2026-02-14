@@ -261,11 +261,22 @@ Based on the manifest's `devops` section:
 **GitHub Actions workflow** (`.github/workflows/ci.yml`):
 Create a CI pipeline matching the manifest's `devops.cicd.pipeline_stages`. Use the project-templates skill for the workflow template.
 
-**Dockerfile** (if manifest's deployment target suggests containers):
-Use the project-templates skill for language-appropriate Dockerfile.
+**Dockerfile — MANDATORY for all backend services and agents:**
+Every backend service, worker, and agent MUST have a production-ready Dockerfile. Use the project-templates skill for language-appropriate multi-stage Dockerfiles. This is not optional — Docker is a baseline requirement for all backend components regardless of the manifest's deployment target.
 
-**docker-compose.yml** (for services with database/Redis dependencies):
-Create a compose file that starts the service + its data dependencies for local development.
+**Dockerfile — for frontends (when applicable):**
+Web frontends that produce a static build (Next.js, React/Vite, Vue/Nuxt, SvelteKit) SHOULD also get a Dockerfile. Use a multi-stage build: stage 1 builds the app, stage 2 serves with nginx (for static sites) or runs the Node.js server (for SSR like Next.js). Skip Dockerfiles only for frontends that are deployed exclusively via a managed platform with no container option (e.g. Expo mobile apps).
+
+**docker-compose.yml — MANDATORY for all backend services:**
+Every backend service MUST have a `docker-compose.yml` for local development. Include:
+- The service itself (built from the Dockerfile)
+- Database containers matching the manifest's data dependencies (PostgreSQL, MySQL, MongoDB, etc.)
+- Redis if the service uses caching or queues
+- Any other infrastructure dependencies (e.g. RabbitMQ, Elasticsearch)
+If no specific database is configured, include PostgreSQL as the sensible default.
+
+**docker-compose.yml — for frontends (when applicable):**
+Web frontends MAY include a `docker-compose.yml` if they have backend dependencies for local development (e.g. a Next.js app that talks to a local API). At minimum, include the frontend service itself for consistent container-based development.
 
 ### 9. Add Common Files
 
@@ -344,7 +355,7 @@ After completing each component, report:
   Framework: <framework>
   Folder convention: <convention>
   Files created: <count>
-  Includes: security middleware, health checks, structured logging, CI workflow
+  Includes: Dockerfile, docker-compose.yml, security middleware, health checks, structured logging, CI workflow
   Dependencies installed: yes/no
 ```
 
@@ -372,6 +383,9 @@ After completing each component, report:
 - Apply folder structure from the manifest's application_patterns
 - Add security stubs, not full implementations (TODOs are fine)
 - Add health checks with dependency check TODOs
+- Always include a Dockerfile for every backend service and agent; include for web frontends where applicable
+- Always include a docker-compose.yml for every backend service; include for web frontends where applicable
+- **Port collision prevention:** Every component MUST use a unique `dev_port`. When scaffolding multiple services/frontends, assign non-overlapping ports for the services themselves AND for their infrastructure containers (databases, Redis, etc.). If the manifest assigns ports, use those. If not, assign sequentially (e.g. backends: 3001, 3002, 3003; frontends: 3100, 3101; DBs: 5432, 5433, 5434; Redis: 6379, 6380, 6381). Document all port assignments in each project's `.env.example` and README.
 - Create CI workflow if devops section exists in manifest
 - Report progress after each component
 - If something fails, explain why and continue with the next component
