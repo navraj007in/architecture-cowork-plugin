@@ -145,7 +145,7 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
 **Do not show raw SDL to the user unless they ask.** Use it internally to drive consistent deliverable generation. Confirm: "Architecture spec saved to `./sdl.yaml`"
 
 **SDL drives these deliverables deterministically:**
-- 4b: Architecture Diagram (from `architecture` + `data` + `auth`)
+- 4b: Architecture Diagrams — solution architecture + service communication + agent flow (from `architecture` + `data` + `auth` + `integrations`)
 - 4e: API Artifacts (from `architecture.projects.backend` + `auth`)
 - 4i: Cost Estimate (from `deployment` + `data` + `integrations`)
 - 4o: Sprint Backlog (from `product.personas` + `coreFlows` + `architecture`)
@@ -178,13 +178,20 @@ One-page overview containing:
 - Architecture pattern and key design principles
 - Recommended build approach
 
-#### 4b. Architecture Diagram
+#### 4b. Architecture Diagrams
 
-Using the **diagram-patterns** skill:
-- Generate a C4 Container diagram in Mermaid showing all frontends, services, databases, and external integrations
-- If AI agents exist, generate an additional Agent Flow diagram
-- Use the standard color conventions (blue=frontend, green=service, orange=database, purple=external, red=AI/LLM)
-- Label every connection with the communication pattern
+Using the **diagram-patterns** skill, generate the following diagrams:
+
+1. **Solution Architecture Diagram** (always) — Full system topology showing all layers: clients (web, mobile, admin), ingress (CDN, API gateway), application services, messaging (queues, event bus), data stores (databases, cache, search), object storage, and external integrations. This is the primary "big picture" diagram.
+
+2. **Service Communication Diagram** (when 2+ backend services or modular-monolith with 3+ modules) — Shows how backend services communicate with each other: sync calls (REST/gRPC with endpoints), async events (pub/sub with event names), and queue-based processing. Label arrows with protocols and specific endpoints/events.
+
+3. **Agent Flow Diagram** (when AI agents exist) — Shows agent orchestration, tool usage, and guardrails.
+
+For all diagrams:
+- Use the standard color conventions (blue=frontend, green=service, orange=database, purple=external, red=AI/LLM, teal=queue, light-blue=gateway)
+- Label every connection with the communication pattern or protocol
+- Include technology names on every component
 
 #### 4c. Application Architecture & Patterns
 

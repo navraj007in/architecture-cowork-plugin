@@ -27,16 +27,17 @@ You will receive:
 ### 1. Extract Diagrams
 
 Parse the blueprint to find all Mermaid code blocks. Each diagram gets:
-- A filename derived from its title (e.g., `architecture-diagram.png`, `agent-flow.png`)
+- A filename derived from its title (e.g., `solution-architecture.png`, `service-communication.png`, `agent-flow.png`)
 - The raw Mermaid source saved as `.mmd` file
 
 ### 2. Save Mermaid Source Files
 
 ```
 <output-dir>/diagrams/
-├── architecture-diagram.mmd
-├── agent-flow.mmd          (if agents exist)
-├── data-flow.mmd           (if complex data pipelines)
+├── solution-architecture.mmd     (always — full system topology)
+├── service-communication.mmd     (if 2+ backend services)
+├── agent-flow.mmd                (if agents exist)
+├── data-flow.mmd                 (if complex data pipelines)
 └── ...
 ```
 
@@ -118,7 +119,8 @@ Diagrams exported!
 
 | Diagram | Source | PNG (light) | PNG (dark) | SVG |
 |---------|--------|-------------|------------|-----|
-| Architecture Diagram | diagrams/source/architecture-diagram.mmd | diagrams/light/architecture-diagram.png | diagrams/dark/architecture-diagram.png | diagrams/light/architecture-diagram.svg |
+| Solution Architecture | diagrams/source/solution-architecture.mmd | diagrams/light/solution-architecture.png | diagrams/dark/solution-architecture.png | diagrams/light/solution-architecture.svg |
+| Service Communication | diagrams/source/service-communication.mmd | diagrams/light/service-communication.png | diagrams/dark/service-communication.png | diagrams/light/service-communication.svg |
 | Agent Flow | diagrams/source/agent-flow.mmd | diagrams/light/agent-flow.png | diagrams/dark/agent-flow.png | diagrams/light/agent-flow.svg |
 
 Files saved to: <output-dir>/diagrams/

@@ -16,15 +16,23 @@ After generating a blueprint with `/architect:blueprint`, this command renders a
 
 ### Step 1: Check for Diagrams
 
-Check if a blueprint with Mermaid diagrams exists earlier in the conversation.
+**First**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does, read the Mermaid diagram files from that local directory:
+- Look in `02-architecture-diagrams/` for `.mermaid` files
+- Read `blueprint.json` for the full deliverable data including diagrams
 
-If no diagrams exist, respond:
+**If no local directory tag**, check if a blueprint with Mermaid diagrams exists earlier in the conversation.
+
+If no diagrams exist (neither local files nor conversation), respond:
 
 > "I need architecture diagrams to export. Run `/architect:blueprint` first to generate your architecture diagrams, then come back here to render them."
 
 ### Step 2: Ask Configuration
 
-Ask the user:
+**If `[non_interactive:true]` is in the command argument**, skip all questions and use these defaults:
+- **Output directory**: `./docs/diagrams/`
+- **Formats**: PNG + SVG (both formats, light and dark themes)
+
+**Otherwise**, ask the user:
 
 > "Where should I save the rendered diagrams?"
 > - Default: `./docs/diagrams/` in the project directory
@@ -50,7 +58,8 @@ Diagrams exported!
 
 | Diagram | Light PNG | Dark PNG | SVG | Source |
 |---------|-----------|----------|-----|--------|
-| Architecture | docs/diagrams/light/architecture.png | docs/diagrams/dark/architecture.png | docs/diagrams/light/architecture.svg | docs/diagrams/source/architecture.mmd |
+| Solution Architecture | docs/diagrams/light/solution-architecture.png | docs/diagrams/dark/solution-architecture.png | docs/diagrams/light/solution-architecture.svg | docs/diagrams/source/solution-architecture.mmd |
+| Service Communication | docs/diagrams/light/service-communication.png | docs/diagrams/dark/service-communication.png | docs/diagrams/light/service-communication.svg | docs/diagrams/source/service-communication.mmd |
 | Agent Flow | docs/diagrams/light/agent-flow.png | docs/diagrams/dark/agent-flow.png | docs/diagrams/light/agent-flow.svg | docs/diagrams/source/agent-flow.mmd |
 
 Total: X diagrams, Y files

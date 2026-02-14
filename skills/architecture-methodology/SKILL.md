@@ -427,7 +427,7 @@ Once the manifest is complete and product types are detected, generate outputs i
 
 1. **Executive Summary** — One-page overview: what it is, who it's for, what it costs, how hard it is to build, architecture pattern, detected product types, key assumptions made (with reference to Assumptions appendix)
 
-2. **Architecture Diagram** — C4 Container diagram in Mermaid with technology annotations, performance notes, and failure modes (always). Agent flow diagram (if agents exist). Data flow diagram (if complex data pipelines). Include technology choices on every component, data flow direction labels, retry/circuit breaker annotations.
+2. **Architecture Diagrams** — Solution Architecture diagram showing full system topology: clients, API gateway, services, queues, databases, storage, external APIs (always). Service Communication diagram showing inter-service connections with protocols and event names (when 2+ services). Agent flow diagram (if agents exist). Include technology choices on every component, data flow direction labels, retry/circuit breaker annotations.
 
 3. **Application Architecture & Patterns** — Architecture pattern, folder structure, design principles, error handling, testing strategy
 

@@ -1,6 +1,6 @@
 ---
 name: diagram-patterns
-description: Mermaid diagram templates for C4 Context, C4 Container, data flow, agent flow, deployment, and sequence diagrams. Use when generating architecture diagrams.
+description: Mermaid diagram templates for solution architecture, service communication, C4 Context/Container, data flow, agent flow, deployment, and sequence diagrams. Use when generating architecture diagrams.
 ---
 
 # Diagram Patterns
@@ -13,6 +13,8 @@ Guidelines and templates for generating consistent, readable architecture diagra
 
 | Diagram | When to Use | Mermaid Type |
 |---------|-------------|-------------|
+| Solution Architecture | Show the full system topology: clients, API gateway, services, queues, databases, storage, external APIs | `graph TB` |
+| Service Communication | Show how microservices/backend services connect to each other with protocols and patterns | `graph LR` |
 | C4 Context | Show the system in relation to users and external systems | `graph TB` |
 | C4 Container | Show internal containers (frontends, services, databases) | `graph TB` |
 | Data Flow | Show how data moves through the system | `graph LR` |
@@ -35,6 +37,169 @@ Use consistent colors across all diagrams:
 | External Service | Purple | `style ... fill:#9b59b6,stroke:#6c3483,color:#fff` |
 | AI Agent / LLM | Red/Pink | `style ... fill:#e74c3c,stroke:#c0392b,color:#fff` |
 | Message Queue | Teal | `style ... fill:#1abc9c,stroke:#16a085,color:#fff` |
+
+---
+
+## Solution Architecture Diagram
+
+Shows the full system topology from clients to infrastructure. Always generated for every blueprint. This is the primary "big picture" diagram that non-technical stakeholders see first.
+
+Include all layers: clients (web, mobile), ingress (API gateway, CDN, load balancer), application services (APIs, workers, agents), messaging (queues, event bus), data (databases, cache, search), storage (file/object storage), and external integrations.
+
+```mermaid
+graph TB
+    subgraph "Clients"
+        WebApp["🌐 Web App<br/><i>Next.js</i>"]
+        MobileApp["📱 Mobile App<br/><i>React Native / Expo</i>"]
+        AdminApp["🔧 Admin Dashboard<br/><i>React / Vite</i>"]
+    end
+
+    subgraph "Ingress"
+        CDN["🌍 CDN<br/><i>Cloudflare</i>"]
+        Gateway["🚪 API Gateway<br/><i>Kong / AWS ALB / Nginx</i>"]
+    end
+
+    subgraph "Application Services"
+        API["⚙️ API Server<br/><i>Node.js / Express</i>"]
+        AuthService["🔐 Auth Service<br/><i>Clerk / Auth0</i>"]
+        Worker["⏰ Background Worker<br/><i>BullMQ</i>"]
+        Agent["🤖 AI Agent<br/><i>Python / FastAPI</i>"]
+    end
+
+    subgraph "Messaging"
+        Queue["📬 Job Queue<br/><i>Redis / BullMQ</i>"]
+        EventBus["📡 Event Bus<br/><i>Redis Pub/Sub</i>"]
+    end
+
+    subgraph "Data Stores"
+        DB[("🗄️ Primary Database<br/><i>PostgreSQL</i>")]
+        Cache[("⚡ Cache<br/><i>Redis</i>")]
+        Search[("🔍 Search Index<br/><i>Typesense</i>")]
+    end
+
+    subgraph "Storage"
+        ObjectStore["📦 Object Storage<br/><i>Cloudflare R2</i>"]
+    end
+
+    subgraph "External Services"
+        Stripe["💳 Stripe"]
+        Resend["📧 Resend"]
+        Claude["🤖 Claude API"]
+    end
+
+    WebApp --> CDN
+    MobileApp --> Gateway
+    AdminApp --> CDN
+    CDN --> Gateway
+    Gateway -->|"REST / GraphQL"| API
+    Gateway -->|"Auth check"| AuthService
+    API -->|"Read/write"| DB
+    API -->|"Cache"| Cache
+    API -->|"Enqueue jobs"| Queue
+    API -->|"Publish events"| EventBus
+    API -->|"Search"| Search
+    API -->|"Upload/download"| ObjectStore
+    API -->|"Payments"| Stripe
+    Queue --> Worker
+    Worker -->|"Read/write"| DB
+    Worker -->|"Send emails"| Resend
+    EventBus --> Agent
+    Agent -->|"LLM calls"| Claude
+    Agent -->|"Read/write"| DB
+
+    style WebApp fill:#4a90d9,stroke:#2c5ea0,color:#fff
+    style MobileApp fill:#4a90d9,stroke:#2c5ea0,color:#fff
+    style AdminApp fill:#4a90d9,stroke:#2c5ea0,color:#fff
+    style CDN fill:#d4e6f1,stroke:#2c5ea0
+    style Gateway fill:#d4e6f1,stroke:#2c5ea0
+    style API fill:#5cb85c,stroke:#3d8b3d,color:#fff
+    style AuthService fill:#5cb85c,stroke:#3d8b3d,color:#fff
+    style Worker fill:#5cb85c,stroke:#3d8b3d,color:#fff
+    style Agent fill:#e74c3c,stroke:#c0392b,color:#fff
+    style Queue fill:#1abc9c,stroke:#16a085,color:#fff
+    style EventBus fill:#1abc9c,stroke:#16a085,color:#fff
+    style DB fill:#f0ad4e,stroke:#c77c00,color:#fff
+    style Cache fill:#f0ad4e,stroke:#c77c00,color:#fff
+    style Search fill:#f0ad4e,stroke:#c77c00,color:#fff
+    style ObjectStore fill:#f39c12,stroke:#d68910,color:#fff
+    style Stripe fill:#9b59b6,stroke:#6c3483,color:#fff
+    style Resend fill:#9b59b6,stroke:#6c3483,color:#fff
+    style Claude fill:#e74c3c,stroke:#c0392b,color:#fff
+```
+
+**Adaptation rules:**
+- Remove layers that don't exist (e.g., no CDN for internal tools, no Agent layer if no AI)
+- Add layers as needed (e.g., add "Real-time" subgraph with WebSocket server if the system has real-time features)
+- If no API gateway, connect clients directly to services
+- If monolith, show a single service box instead of multiple
+- Always label arrows with the protocol or purpose
+- For simple systems (1 frontend, 1 API, 1 database), collapse into fewer subgraphs but keep the same topology style
+
+**Additional color conventions for Solution Architecture:**
+
+| Component Type | Color | Mermaid Style |
+|---------------|-------|---------------|
+| Ingress / Gateway / CDN | Light blue | `style ... fill:#d4e6f1,stroke:#2c5ea0` |
+| Object / File Storage | Dark orange | `style ... fill:#f39c12,stroke:#d68910,color:#fff` |
+
+---
+
+## Service Communication Diagram
+
+Shows how backend services, workers, and agents communicate with each other. Generated when the system has 2+ backend services. Focuses on inter-service protocols, sync vs async patterns, and data ownership boundaries.
+
+```mermaid
+graph LR
+    subgraph "Sync (REST/gRPC)"
+        API["⚙️ API Server"]
+        UserSvc["👤 User Service"]
+        OrderSvc["📦 Order Service"]
+        PaymentSvc["💳 Payment Service"]
+        NotifSvc["🔔 Notification Service"]
+    end
+
+    subgraph "Async (Events/Queues)"
+        Queue["📬 Job Queue<br/><i>Redis / BullMQ</i>"]
+        EventBus["📡 Event Bus<br/><i>Redis Pub/Sub</i>"]
+    end
+
+    subgraph "AI Services"
+        Agent["🤖 AI Agent"]
+    end
+
+    API -->|"REST: GET /users/:id"| UserSvc
+    API -->|"REST: POST /orders"| OrderSvc
+    OrderSvc -->|"REST: POST /payments/charge"| PaymentSvc
+    OrderSvc -->|"Publish: order.created"| EventBus
+    EventBus -->|"Subscribe: order.created"| NotifSvc
+    EventBus -->|"Subscribe: order.created"| Agent
+    PaymentSvc -->|"Publish: payment.completed"| EventBus
+    EventBus -->|"Subscribe: payment.completed"| OrderSvc
+    NotifSvc -->|"Enqueue: send-email"| Queue
+    Queue -->|"Process"| NotifSvc
+
+    style API fill:#5cb85c,stroke:#3d8b3d,color:#fff
+    style UserSvc fill:#5cb85c,stroke:#3d8b3d,color:#fff
+    style OrderSvc fill:#5cb85c,stroke:#3d8b3d,color:#fff
+    style PaymentSvc fill:#5cb85c,stroke:#3d8b3d,color:#fff
+    style NotifSvc fill:#5cb85c,stroke:#3d8b3d,color:#fff
+    style Queue fill:#1abc9c,stroke:#16a085,color:#fff
+    style EventBus fill:#1abc9c,stroke:#16a085,color:#fff
+    style Agent fill:#e74c3c,stroke:#c0392b,color:#fff
+```
+
+**Adaptation rules:**
+- Show ALL backend services from the manifest, not just core ones
+- Label every arrow with the protocol AND the specific endpoint or event name
+- Separate sync calls (solid arrows) from async events (dotted arrows where Mermaid supports it, or use different subgraph grouping)
+- Group services by domain/bounded context if using modular-monolith or microservices
+- Show which service owns which database (use dashed lines to data stores if helpful, but keep the focus on inter-service communication)
+- For monolith with internal modules, show module-to-module function calls instead of HTTP/event patterns
+- Include retry/circuit-breaker annotations on critical paths: `-->|"REST (retry: 3x, timeout: 5s)"| ServiceB`
+
+**When to generate this diagram:**
+- Always: when the system has 2+ backend services or a modular-monolith with 3+ modules
+- Skip: for single-service systems (the Solution Architecture diagram is sufficient)
 
 ---
 
