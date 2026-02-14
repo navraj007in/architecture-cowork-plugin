@@ -26,6 +26,10 @@ Solution Design Language (SDL) is a YAML-based specification for capturing compl
 | `evolution` | object | Roadmap and cost projections |
 | `testing` | object | Test framework config |
 | `observability` | object | Logging, tracing, metrics |
+| `environments` | array | Runtime environment definitions |
+| `interServiceCommunication` | array | Service-to-service communication patterns |
+| `configuration` | object | Configuration management strategy |
+| `errorHandling` | object | Error handling patterns |
 
 ---
 
@@ -271,6 +275,53 @@ observability:
     samplingRate: number     # Default: 0.1
   metrics:
     provider: enum           # prometheus | datadog | cloudwatch | grafana | none
+```
+
+## environments (optional)
+
+```yaml
+environments:
+  - name: string               # Required. e.g. "development", "staging", "production"
+    url: string                # Optional. Environment URL
+    cloud: string              # Optional. Override deployment cloud for this env
+    services: string[]         # Optional. Which services run in this env
+    variables:                 # Optional. Non-secret env config
+      - key: string
+        value: string
+    x-features: string[]      # Optional. Feature flags or capabilities enabled
+```
+
+## interServiceCommunication (optional)
+
+```yaml
+interServiceCommunication:
+  - pattern: enum              # Required. http | grpc | event-driven | websocket | message-queue
+    description: string        # Required. How services communicate
+    from: string               # Optional. Source service name
+    to: string                 # Optional. Target service name
+    protocol: string           # Optional. Specific protocol details (e.g. "REST over HTTPS", "protobuf")
+    async: boolean             # Optional. Whether communication is async. Default: false
+```
+
+## configuration (optional)
+
+```yaml
+configuration:
+  strategy: enum               # Required. env-vars | config-service | feature-flags | vault | mixed
+  provider: string             # Optional. e.g. "AWS SSM", "HashiCorp Vault", "LaunchDarkly"
+  secretsManagement: string    # Optional. How secrets are stored/rotated
+  perEnvironment: boolean      # Optional. Whether config varies per environment. Default: true
+```
+
+## errorHandling (optional)
+
+```yaml
+errorHandling:
+  strategy: enum               # Required. centralized | per-service | middleware | boundary
+  errorFormat: string          # Optional. e.g. "RFC 7807 Problem Details", "custom JSON"
+  globalHandler: boolean       # Optional. Whether a global error handler exists
+  retryPolicy: string          # Optional. e.g. "exponential backoff with 3 retries"
+  circuitBreaker: boolean      # Optional. Whether circuit breaker pattern is used
 ```
 
 ## technicalDebt (optional)

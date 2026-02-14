@@ -111,6 +111,9 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
    - Map integrations → `integrations` and `auth` sections
    - Map deployment targets → `deployment.cloud`
    - Map constraints (budget, team, timeline) → `constraints`
+   - Map communication patterns between services → `interServiceCommunication[]` (pattern, from, to, async)
+   - Map error handling strategy from application patterns → `errorHandling` (strategy, errorFormat, retryPolicy)
+   - Map config management from devops/application patterns → `configuration` (strategy, secretsManagement)
    - Set `artifacts.generate` for a full blueprint:
      ```
      architecture-diagram, sequence-diagrams, openapi, data-model,

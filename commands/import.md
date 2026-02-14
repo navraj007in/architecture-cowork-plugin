@@ -59,40 +59,245 @@ do not attempt to read every file. Focus on architecturally significant code:
 
 ### Step 3: Generate SDL
 
-Using the **sdl-knowledge** skill, build a complete SDL document:
+Using the **sdl-knowledge** skill, build a **v0.1-compliant** SDL document.
 
-1. **Map discovered architecture to SDL sections:**
-   - Project metadata from README/package.json → `solution` (name, description, stage)
-   - Detected services/modules → `architecture.projects` and `architecture.services`
-   - Infer `architecture.style`: single backend → `modular-monolith`, 2+ services → `microservices`, Lambda/Cloud Functions → `serverless`
-   - Detected database → `data.primaryDatabase` with correct `type` enum
-   - Auth mechanism → `auth.strategy` and `auth.provider`
-   - Deployment config → `deployment.cloud` and `deployment.runtime`
-   - User roles from auth/RBAC code → `product.personas`
-   - Routes/pages → `product.coreFlows`
-   - Set `solution.stage` based on maturity signals:
-     - Has CI/CD + monitoring + tests → `Growth` or `Enterprise`
-     - Has CI/CD + some tests → `MVP` to `Growth`
-     - Minimal infra → `MVP`
+**CRITICAL: The output MUST use the SDL v0.1 schema structure. Do NOT invent custom
+top-level sections.** The only allowed root keys are:
 
-2. **Validate** against the 5 SDL conditional rules:
+**Required:** `sdlVersion`, `solution`, `product`, `architecture`, `data`, `nonFunctional`, `deployment`, `artifacts`
+**Optional:** `auth`, `integrations`, `constraints`, `technicalDebt`, `evolution`, `testing`, `observability`, `environments`, `interServiceCommunication`, `configuration`, `errorHandling`
+**Extension:** Any key prefixed with `x-` (e.g., `x-confidence`, `x-evidence`)
+
+**DO NOT** use these non-standard keys: `tech_stack`, `cross_cutting`, `infrastructure`,
+`services` (top-level), `shared_libraries`, `metadata`, `project`.
+
+#### 3.1 — Mapping Rules (codebase analysis → SDL v0.1)
+
+| Discovered | SDL Location |
+|---|---|
+| Project name (README, package.json) | `solution.name` |
+| Project description | `solution.description` |
+| Maturity signals (CI/CD, monitoring, tests) | `solution.stage` (MVP/Growth/Enterprise) |
+| Frontend apps (React, Vue, Angular, etc.) | `architecture.projects.frontend[]` |
+| Backend services/APIs | `architecture.projects.backend[]` |
+| Mobile apps | `architecture.projects.mobile[]` |
+| Microservice boundaries | `architecture.services[]` (with kind + responsibilities) |
+| Shared libraries / common packages | `architecture.sharedLibraries[]` |
+| Architecture pattern | `architecture.style` (modular-monolith/microservices/serverless) |
+| Primary database (first/main) | `data.primaryDatabase` (type + hosting) |
+| Additional databases | `data.secondaryDatabases[]` |
+| Redis/Memcached | `data.cache` (type + useCase) |
+| Blob/file storage (S3, Azure Blob) | `data.storage` (blobs/files + provider) |
+| Message queues (RabbitMQ, SQS, Kafka) | `data.queues` (provider + useCase) |
+| Search engines (Elasticsearch, Algolia) | `data.search` (provider) |
+| Auth strategy (JWT, OAuth, session) | `auth.strategy` + `auth.provider` |
+| User roles from RBAC code | `auth.roles[]` and `product.personas[]` |
+| Routes/pages/flows | `product.coreFlows[]` |
+| Payment provider (Stripe, etc.) | `integrations.payments` |
+| Email provider (SendGrid, SES, etc.) | `integrations.email` |
+| SMS provider (Twilio, etc.) | `integrations.sms` |
+| Analytics (PostHog, Mixpanel) | `integrations.analytics` |
+| Monitoring (Datadog, Sentry, AppInsights) | `integrations.monitoring` |
+| CDN (Cloudflare, CloudFront) | `integrations.cdn` |
+| Other external APIs (Dyte, Twilio, etc.) | `integrations.custom[]` |
+| Cloud provider (Azure, AWS, GCP) | `deployment.cloud` |
+| CI/CD pipeline (GitHub Actions, etc.) | `deployment.ciCd.provider` |
+| Docker/container setup | `deployment.runtime` |
+| IaC (Terraform, Bicep) | `deployment.infrastructure.iac` |
+| Dev/staging/prod environments | `environments[]` (name, services, variables) |
+| Test frameworks (Jest, Pytest, etc.) | `testing` (unit + e2e) |
+| Logging library (Winston, Pino, etc.) | `observability.logging` |
+| Tracing (OpenTelemetry, Jaeger) | `observability.tracing` |
+| Metrics (Prometheus, CloudWatch) | `observability.metrics` |
+| Inter-service communication patterns | `interServiceCommunication[]` |
+| Configuration management patterns | `configuration` |
+| Error handling patterns | `errorHandling` |
+
+#### 3.2 — SDL Output Template
+
+Use this exact structure. Omit optional sections that have no data.
+
+```yaml
+sdlVersion: "0.1"
+
+solution:
+  name: "{from README or package.json}"
+  description: "{one-line description}"
+  stage: MVP | Growth | Enterprise
+  x-confidence: high | medium | low
+  x-evidence: "{why this stage}"
+
+product:
+  personas:
+    - name: "{inferred from auth roles or UI}"
+      goals:
+        - "{inferred from features}"
+      accessLevel: public | authenticated | admin
+  coreFlows:
+    - name: "{inferred from routes/pages}"
+      priority: critical | high | medium | low
+
+architecture:
+  style: modular-monolith | microservices | serverless
+  x-confidence: high | medium | low
+  x-evidence: "{structural signals}"
+  projects:
+    frontend:                           # Include if frontend exists
+      - name: "{app name}"
+        framework: nextjs | react | vue | angular | svelte | solid
+        # Add rendering, styling, stateManagement if detected
+    backend:                            # Include if backend exists
+      - name: "{service name}"
+        framework: nodejs | python-fastapi | dotnet-8 | go | java-spring | ruby-rails | php-laravel
+        apiStyle: rest | graphql | grpc | mixed
+        orm: prisma | typeorm | mongoose | sqlalchemy | ef-core | gorm | sequelize
+  services:                             # Required if style=microservices (min 2)
+    - name: "{service name}"
+      kind: backend | worker | function | api-gateway
+      responsibilities:
+        - "{what this service does}"
+  sharedLibraries:                      # If shared packages exist
+    - name: "{package name}"
+      language: typescript | javascript | python | go
+
+auth:                                   # If auth detected
+  strategy: oidc | passwordless | api-key | none
+  provider: cognito | auth0 | entra-id | firebase | supabase | clerk | custom
+  roles: ["{role1}", "{role2}"]
+  sessions:
+    accessToken: jwt | opaque
+    refreshToken: true | false
+  x-confidence: high | medium | low
+  x-evidence: "{auth implementation details}"
+
+data:
+  primaryDatabase:
+    type: postgres | mysql | mongodb | sqlserver | dynamodb | cockroachdb | planetscale
+    hosting: managed | self-hosted | serverless
+    x-confidence: high | medium | low
+    x-evidence: "{how detected}"
+  secondaryDatabases:                   # If additional DBs found
+    - type: "{type}"
+      hosting: "{hosting}"
+      role: primary | read-replica | analytics
+  cache:                                # If Redis/Memcached found
+    type: redis | memcached
+    useCase: [session, api, query]
+  storage:                              # If blob/file storage found
+    blobs:
+      provider: s3 | azure-blob | gcs | cloudflare-r2
+  queues:                               # If message queue found
+    provider: rabbitmq | azure-service-bus | sqs | kafka | redis
+    useCase: [async-jobs, event-streaming, notifications]
+  search:                               # If search engine found
+    provider: elasticsearch | algolia | typesense | azure-search
+
+integrations:                           # If third-party services found
+  payments:
+    provider: stripe | paypal
+    mode: subscriptions | one-time | marketplace
+  email:
+    provider: sendgrid | ses | resend | mailgun
+    useCase: [transactional, marketing]
+  sms:
+    provider: twilio | vonage
+  monitoring:
+    provider: datadog | sentry | azure-monitor | newrelic
+  custom:                               # For non-standard external services
+    - name: "{service name}"
+      apiType: rest | graphql | grpc
+      authMethod: api-key | oauth2 | basic
+      x-purpose: "{what it does}"
+      x-scope: "{which services use it}"
+
+nonFunctional:
+  availability:
+    target: "99.9"                      # Infer from stage
+  scaling:
+    expectedUsersMonth1: 100            # Infer from maturity
+    expectedUsersYear1: 5000
+  security:
+    pii: true | false
+    encryptionAtRest: true
+    encryptionInTransit: true
+    auditLogging: none | basic | detailed | compliance
+
+deployment:
+  cloud: azure | aws | gcp | vercel | railway | fly-io | render
+  x-confidence: high | medium | low
+  x-evidence: "{deployment signals}"
+  runtime:
+    frontend: "{inferred from cloud}"
+    backend: "{inferred from cloud}"
+  ciCd:
+    provider: github-actions | gitlab-ci | azure-devops | circleci | jenkins
+  infrastructure:
+    iac: terraform | bicep | pulumi | cdk | cloudformation
+
+environments:                           # If dev/staging/prod detected
+  - name: development
+    x-features: ["{feature1}", "{feature2}"]
+  - name: production
+    x-features: ["{feature1}", "{feature2}"]
+
+testing:                                # If test frameworks detected
+  unit:
+    framework: jest | vitest | pytest | xunit | go-test | junit
+  e2e:
+    framework: playwright | cypress | selenium | none
+
+observability:                          # If logging/tracing/metrics detected
+  logging:
+    provider: winston | pino | serilog | zerolog | structured
+    structured: true
+  tracing:
+    provider: opentelemetry | jaeger | xray | none
+  metrics:
+    provider: prometheus | datadog | cloudwatch | none
+
+interServiceCommunication:              # If service-to-service patterns found
+  - pattern: http | grpc | event-driven | websocket | message-queue
+    description: "{how services communicate}"
+    from: "{source service}"
+    to: "{target service}"
+    async: true | false
+
+configuration:                          # If config management patterns found
+  strategy: env-vars | config-service | feature-flags | vault | mixed
+  provider: "{e.g. AWS SSM, HashiCorp Vault}"
+  secretsManagement: "{how secrets are stored}"
+  perEnvironment: true | false
+
+errorHandling:                          # If error patterns found
+  strategy: centralized | per-service | middleware | boundary
+  errorFormat: "{e.g. RFC 7807, custom JSON}"
+  globalHandler: true | false
+  retryPolicy: "{e.g. exponential backoff}"
+  circuitBreaker: true | false
+
+artifacts:
+  generate:
+    - architecture-diagram
+    - data-model
+    - adr
+    - deployment-guide
+```
+
+#### 3.3 — Validation
+
+1. **Check conditional rules** before saving:
    - `microservices` requires 2+ services
    - `oidc` requires provider
-   - `pii = true` requires encryption at rest
+   - `pii = true` requires encryptionAtRest
    - CloudFormation requires AWS
    - MongoDB incompatible with ef-core ORM
 
-3. **Apply normalization** — let smart defaults fill gaps
+2. **Apply normalization** — let smart defaults fill gaps
 
-4. **Add confidence markers** using SDL extension fields:
-   ```yaml
-   architecture:
-     style: modular-monolith
-     x-confidence: high
-     x-evidence: "Single Express server with modular route files"
-   ```
+3. **Add confidence markers** using `x-confidence` and `x-evidence` extension fields
+   on key decisions (architecture style, database choice, auth, deployment)
 
-5. **Save to project root** as `solution.sdl.yaml` (NOT inside architecture-output/)
+4. **Save to project root** as `solution.sdl.yaml` (NOT inside architecture-output/)
 
 ### Step 4: Generate Import Analysis
 

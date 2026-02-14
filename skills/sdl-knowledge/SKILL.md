@@ -28,6 +28,7 @@ SDL is a machine-readable YAML specification (version 0.1) that captures:
 - Non-functional requirements (availability, scaling, security, compliance)
 - Deployment configuration (cloud, runtime, networking, CI/CD, IaC)
 - Constraints (budget, team, timeline, compliance, existing infrastructure)
+- Inter-service communication patterns, configuration strategy, and error handling
 - Testing, observability, technical debt, and evolution roadmap
 - Artifact generation preferences
 
@@ -250,6 +251,9 @@ When converting a system manifest to SDL:
 | `security.api_security` | `nonFunctional.security` |
 | `devops.ci_cd.provider` | `deployment.ciCd.provider` |
 | `deployment.targets[0]` | `deployment.cloud` |
+| `communication_patterns[]` | `interServiceCommunication[]` |
+| `application_patterns.error_handling` | `errorHandling` |
+| `devops.config_management` | `configuration` |
 
 ### Integration Provider Mapping
 
