@@ -25,6 +25,27 @@ You will receive:
 - Whether to configure environment secrets
 - Deployment targets (Vercel, Railway, AWS, Azure, GCP)
 
+## Credential Awareness
+
+The following environment variables may be pre-set by Archon from the user's configured credentials. Use them for `gh secret set` commands and CLI operations, but **never** hardcode credential values in workflow files.
+
+**Git providers (for repo operations & secret management):**
+- `GH_TOKEN` / `GITHUB_TOKEN` — GitHub PAT. If set, `gh` CLI authenticates automatically.
+- `GITLAB_TOKEN` — GitLab PAT for API calls.
+- `AZURE_DEVOPS_EXT_PAT` — Azure DevOps PAT.
+
+**Deploy providers (for setting up secrets & verifying access):**
+- `VERCEL_TOKEN` — Can be used with `gh secret set VERCEL_TOKEN` to configure the deployment secret.
+- `NETLIFY_AUTH_TOKEN` — Netlify deployment token.
+- `RAILWAY_TOKEN` — Railway deployment token.
+- `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + `AWS_DEFAULT_REGION` — AWS credentials.
+- `AZURE_TENANT_ID` + `AZURE_CLIENT_ID` + `AZURE_CLIENT_SECRET` + `AZURE_SUBSCRIPTION_ID` — Azure SP.
+- `GOOGLE_APPLICATION_CREDENTIALS` — Path to GCP service account JSON.
+- `FLY_API_TOKEN` — Fly.io token.
+- `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` — Cloudflare credentials.
+
+**Important:** In workflow YAML files, always use `${{ secrets.* }}` syntax — never inline credential values. If Archon-injected env vars are available, use them to automatically set GitHub secrets via `gh secret set`.
+
 ## Process
 
 ### 1. Read Existing CI Config

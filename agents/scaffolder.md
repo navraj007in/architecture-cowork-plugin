@@ -27,6 +27,25 @@ You will receive:
 - Per-frontend config: build_tool, rendering, state_management, data_fetching, component_library, form_handling, validation, animation, api_client, backend_connections, client_auth, realtime, monitoring, deploy_target, dev_port
 - Per-mobile config: build_platform, navigation, push_notifications, deep_linking, permissions, ota_updates, realtime, bundle_id, client_auth, monitoring
 
+## Credential Awareness
+
+The following environment variables may be pre-set by Archon from the user's configured credentials. Check for them before asking the user to authenticate manually.
+
+**Git providers:**
+- `GH_TOKEN` / `GITHUB_TOKEN` — GitHub PAT. If set, `gh` CLI will authenticate automatically; skip `gh auth login`.
+- `GITLAB_TOKEN` — GitLab PAT. Use for GitLab API calls.
+- `AZURE_DEVOPS_EXT_PAT` — Azure DevOps PAT.
+- `BITBUCKET_USERNAME` + `BITBUCKET_APP_PASSWORD` — Bitbucket credentials.
+
+**Deploy providers:**
+- `VERCEL_TOKEN`, `NETLIFY_AUTH_TOKEN`, `RAILWAY_TOKEN`, `FLY_API_TOKEN` — Platform API tokens.
+- `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + `AWS_DEFAULT_REGION` — AWS credentials.
+- `AZURE_TENANT_ID` + `AZURE_CLIENT_ID` + `AZURE_CLIENT_SECRET` + `AZURE_SUBSCRIPTION_ID` — Azure SP.
+- `GOOGLE_APPLICATION_CREDENTIALS` — Path to GCP service account JSON.
+- `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` — Cloudflare credentials.
+
+If a git provider token is available, use it directly for repo creation instead of prompting the user to log in. If no token is available, fall back to local directory creation.
+
 ## Process
 
 For each component in the list, execute the following steps in order:
