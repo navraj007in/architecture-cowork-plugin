@@ -27,6 +27,42 @@ frontends:
     type: <frontend_type>
     framework: string
     pages: [string]
+    build_tool: string (optional, e.g. "Vite", "Webpack", "Expo")
+    rendering: ssr | ssg | spa (optional, web only)
+    state_management: string (optional, e.g. "Zustand", "Redux")
+    data_fetching: string (optional, e.g. "React Query", "SWR")
+    component_library: string (optional, e.g. "Radix UI", "React Native Paper")
+    form_handling: string (optional, e.g. "React Hook Form")
+    validation: string (optional, e.g. "Zod", "Yup")
+    api_client: string (optional, e.g. "Axios", "fetch")
+    styling: string (optional, e.g. "Tailwind CSS")
+    routing: string (optional, e.g. "React Router", "Expo Router")
+    animation: string (optional, e.g. "Framer Motion")
+    deploy_target: string (optional, e.g. "Vercel", "Cloudflare Pages")
+    dev_port: integer (optional, e.g. 3000)
+    backend_connections: (optional)
+      - service: string (references a defined service)
+        purpose: string
+    client_auth: (optional)
+      token_storage: string (e.g. "cookie", "async-storage", "keychain")
+      csrf_protection: boolean
+      token_refresh: boolean
+      device_binding: boolean (mobile only)
+    realtime: (optional)
+      protocol: websocket | socket-io | sse | polling | webrtc
+      provider: string (optional, e.g. "Cloudflare RTK", "Dyte")
+    monitoring: (optional)
+      error_tracking: string (e.g. "Sentry", "Crashlytics")
+      analytics: string (e.g. "PostHog", "Mixpanel")
+    mobile_config: (optional, for ios/android types)
+      bundle_id: string (e.g. "com.example.myapp")
+      build_platform: string (e.g. "Expo Managed")
+      navigation: string (e.g. "Expo Router", "React Navigation")
+      push_providers: [string] (e.g. ["FCM", "APNS"])
+      deep_link_scheme: string (e.g. "myapp")
+      associated_domains: [string]
+      permissions: [string] (e.g. ["camera", "microphone"])
+      ota_updates: string (e.g. "Expo Updates")
 
 services:
   - name: string
@@ -182,6 +218,50 @@ deployment:
 | `android` | Native Android (Kotlin) or cross-platform targeting Android |
 | `desktop` | Desktop app (Electron, Tauri, native) |
 | `cli` | Command-line interface |
+| `crm` | CRM / back-office management interface |
+| `booking` | Booking / scheduling application |
+| `ai-chat` | AI chat / conversational interface |
+
+### Frontend Rendering (Web Only)
+| Value | When to Use |
+|-------|-------------|
+| `ssr` | Server-side rendering. Best for SEO, dynamic content. |
+| `ssg` | Static site generation. Best for content-heavy, infrequently changing pages. |
+| `spa` | Single-page application. Best for app-like UX, no SEO needs. |
+
+### Client-Side Token Storage
+| Value | Platform | Description |
+|-------|----------|-------------|
+| `cookie` | Web | HTTP-only cookies. Most secure for web. |
+| `localStorage` | Web | Browser localStorage. Persistent but XSS-vulnerable. |
+| `sessionStorage` | Web | Browser sessionStorage. Cleared on tab close. |
+| `memory` | Web | In-memory only. Most secure but lost on refresh. |
+| `async-storage` | Mobile (RN) | React Native AsyncStorage. Unencrypted. |
+| `secure-store` | Mobile (RN) | Expo SecureStore. Uses Keychain/Keystore. |
+| `keychain` | Mobile (iOS) | iOS Keychain. Survives reinstalls. |
+| `encrypted-shared-prefs` | Mobile (Android) | Android EncryptedSharedPreferences. |
+
+### Real-Time Protocol
+| Value | When to Use |
+|-------|-------------|
+| `websocket` | Raw WebSocket for bidirectional communication |
+| `socket-io` | Socket.IO with auto-reconnect, rooms, namespaces |
+| `sse` | Server-Sent Events for one-way streaming (AI responses, live feeds) |
+| `polling` | HTTP polling when WebSocket not available |
+| `webrtc` | Peer-to-peer audio/video communication |
+
+### Mobile Permissions
+| Value | Description |
+|-------|-------------|
+| `camera` | Camera access for photos/video |
+| `microphone` | Microphone access for audio/calls |
+| `contacts` | Address book access |
+| `location` | GPS / location services |
+| `notifications` | Push notification permission |
+| `photos` | Photo library access |
+| `calendar` | Calendar access |
+| `bluetooth` | Bluetooth device communication |
+| `background-audio` | Background audio playback/recording |
 
 ### Service Type
 | Value | Description |
@@ -354,10 +434,48 @@ frontends:
     type: web
     framework: React
     pages: [chat-widget, ticket-history]
+    build_tool: Vite
+    rendering: spa
+    state_management: Zustand
+    data_fetching: React Query
+    api_client: fetch
+    styling: Tailwind CSS
+    deploy_target: Vercel
+    dev_port: 3001
+    backend_connections:
+      - { service: api-server, purpose: "Ticket CRUD and history" }
+      - { service: agent-service, purpose: "Real-time AI chat" }
+    client_auth:
+      token_storage: cookie
+      csrf_protection: true
+      token_refresh: true
+    realtime:
+      protocol: websocket
+    monitoring:
+      error_tracking: Sentry
   - name: agent-dashboard
     type: web
     framework: Next.js
     pages: [inbox, conversation-view, knowledge-base, analytics]
+    build_tool: Webpack
+    rendering: ssr
+    state_management: Zustand
+    data_fetching: React Query
+    component_library: Radix UI
+    form_handling: React Hook Form
+    validation: Zod
+    styling: Tailwind CSS
+    routing: Next.js App Router
+    deploy_target: Vercel
+    dev_port: 3000
+    backend_connections:
+      - { service: api-server, purpose: "All admin and agent operations" }
+    client_auth:
+      token_storage: cookie
+      token_refresh: true
+    monitoring:
+      error_tracking: Sentry
+      analytics: PostHog
 
 services:
   - name: api-server

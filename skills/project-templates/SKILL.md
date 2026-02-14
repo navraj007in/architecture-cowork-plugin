@@ -206,6 +206,165 @@ createRoot(document.getElementById("root")!).render(
 
 ---
 
+## Frontend Configuration Templates
+
+These files are generated for **all web frontend projects** based on the manifest's frontend-specific fields. Add them after the base framework scaffold.
+
+### API Client (src/lib/api.ts)
+
+Generated when `api_client` is specified. Adapt the base client to the configured library:
+
+**axios (default):**
+```ts
+import axios from "axios";
+
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:{{dev-port}}",
+  withCredentials: {{client-auth-uses-cookies}}, // true if token_storage is "cookie"
+  timeout: 15000,
+});
+
+// Auth token injection (for non-cookie auth)
+api.interceptors.request.use((config) => {
+  // TODO: Read token from configured storage (localStorage, sessionStorage, memory)
+  // const token = {{token-storage-get}};
+  // if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// CSRF token injection (if client_auth.csrf_protection is true)
+// api.interceptors.request.use((config) => {
+//   const csrfToken = document.cookie.match(/csrf_token=([^;]+)/)?.[1];
+//   if (csrfToken) config.headers["X-CSRF-Token"] = csrfToken;
+//   return config;
+// });
+```
+
+### Backend Connection Stubs (src/services/*.ts)
+
+Generate one file per `backend_connections[]` entry:
+
+**src/services/{{service-name}}.ts:**
+```ts
+import { api } from "@/lib/api";
+
+/**
+ * {{service-name}} service client
+ * Purpose: {{connection-purpose}}
+ */
+export const {{serviceCamelCase}}Service = {
+  // TODO: Add typed API methods matching the backend service's endpoints
+  // Example:
+  // getAll: () => api.get("/{{service-prefix}}/items"),
+  // getById: (id: string) => api.get(`/{{service-prefix}}/items/${id}`),
+  // create: (data: unknown) => api.post("/{{service-prefix}}/items", data),
+};
+```
+
+### Client Auth Setup (src/lib/auth.ts)
+
+Generated based on `client_auth` config:
+
+```ts
+// Token storage: {{token-storage}}
+// CSRF protection: {{csrf-protection}}
+// Token refresh: {{token-refresh}}
+
+// TODO: Implement auth helpers based on the configured strategy
+// - Cookie-based: withCredentials + CSRF token handling (already in api.ts)
+// - localStorage: token get/set/clear + interceptor
+// - sessionStorage: same as localStorage but session-scoped
+// - memory: in-memory store with refresh flow
+
+export function isAuthenticated(): boolean {
+  // TODO: Check if valid token exists
+  return false;
+}
+
+export function logout(): void {
+  // TODO: Clear tokens from configured storage and redirect
+}
+```
+
+### Monitoring Init (src/lib/monitoring.ts)
+
+Generated when `monitoring` is configured:
+
+```ts
+// Error tracking: {{error-tracking}}
+// Analytics: {{analytics}}
+
+// TODO: Initialize error tracking SDK
+// Example for Sentry:
+// import * as Sentry from "@sentry/react";
+// Sentry.init({ dsn: import.meta.env.VITE_SENTRY_DSN });
+
+// TODO: Initialize analytics SDK
+// Example for App Insights:
+// import { ApplicationInsights } from "@microsoft/applicationinsights-web";
+// const appInsights = new ApplicationInsights({
+//   config: { instrumentationKey: import.meta.env.VITE_APP_INSIGHTS_KEY },
+// });
+// appInsights.loadAppInsights();
+
+export function captureException(error: Error): void {
+  console.error("[Monitoring]", error);
+}
+
+export function trackEvent(name: string, properties?: Record<string, unknown>): void {
+  console.log("[Analytics]", name, properties);
+}
+```
+
+### Realtime Setup (src/lib/realtime.ts)
+
+Generated when `realtime` is configured:
+
+**websocket:**
+```ts
+const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:{{dev-port}}";
+
+export function createWebSocket(path: string): WebSocket {
+  const ws = new WebSocket(`${WS_URL}${path}`);
+  // TODO: Add reconnection logic, heartbeat, auth token
+  return ws;
+}
+```
+
+**socket-io:**
+```ts
+// import { io } from "socket.io-client";
+// const socket = io(import.meta.env.VITE_WS_URL, { withCredentials: true });
+// export { socket };
+```
+
+**sse:**
+```ts
+export function createEventSource(path: string): EventSource {
+  const url = `${import.meta.env.VITE_API_URL}${path}`;
+  return new EventSource(url, { withCredentials: true });
+}
+```
+
+### State Management (src/store/)
+
+Generated when `state_management` is specified:
+
+**zustand (src/store/index.ts):**
+```ts
+import { create } from "zustand";
+
+interface AppState {
+  // TODO: Add app-level state from manifest responsibilities
+}
+
+export const useAppStore = create<AppState>()((set) => ({
+  // TODO: Add initial state and actions
+}));
+```
+
+---
+
 ## Backend Templates
 
 ### Node.js / Express
@@ -414,11 +573,11 @@ export async function addExampleJob(data: Record<string, unknown>) {
 
 ## Mobile Templates
 
-### React Native (Expo)
+### React Native (Expo Managed)
 
 Use CLI when available:
 ```
-npx create-expo-app@latest .
+npx create-expo-app@latest . --template expo-template-blank-typescript
 ```
 
 Fallback files:
@@ -431,18 +590,28 @@ Fallback files:
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "lint": "expo lint"
   },
   "dependencies": {
-    "expo": "~52.0.0",
-    "expo-router": "~4.0.0",
-    "expo-status-bar": "~2.0.0",
+    "expo": "~54.0.0",
+    "expo-router": "~6.0.0",
+    "expo-status-bar": "~3.0.0",
+    "expo-secure-store": "~15.0.0",
     "react": "^19.0.0",
-    "react-native": "^0.76.0",
-    "react-native-safe-area-context": "^5.0.0",
-    "react-native-screens": "^4.0.0"
+    "react-dom": "^19.0.0",
+    "react-native": "^0.81.0",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-screens": "~4.16.0",
+    "react-native-gesture-handler": "~2.28.0",
+    "react-native-reanimated": "~4.1.0",
+    "@tanstack/react-query": "^5.0.0",
+    "axios": "^1.7.0",
+    "zustand": "^5.0.0",
+    "react-hook-form": "^7.50.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
@@ -459,10 +628,31 @@ Fallback files:
     "slug": "{{component-name}}",
     "version": "0.1.0",
     "orientation": "portrait",
-    "scheme": "{{component-name}}",
+    "scheme": "{{deep-linking-scheme}}",
     "platforms": ["ios", "android"],
-    "ios": { "bundleIdentifier": "com.example.{{component-name}}" },
-    "android": { "package": "com.example.{{component-name}}" }
+    "ios": {
+      "bundleIdentifier": "{{bundle-id-ios}}",
+      "supportsTablet": true,
+      "associatedDomains": ["{{associated-domains}}"],
+      "infoPlist": {
+        "NSCameraUsageDescription": "{{camera-usage-description}}",
+        "NSMicrophoneUsageDescription": "{{microphone-usage-description}}"
+      }
+    },
+    "android": {
+      "package": "{{bundle-id-android}}",
+      "permissions": ["{{android-permissions}}"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store"
+    ],
+    "updates": {
+      "url": "{{ota-update-url}}"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
 ```
@@ -485,6 +675,97 @@ const styles = StyleSheet.create({
   title: { fontSize: 24, fontWeight: "bold" },
   subtitle: { fontSize: 16, color: "#666", marginTop: 8 },
 });
+```
+
+**src/lib/api.ts (mobile API client):**
+```ts
+import axios from "axios";
+import { getAuthToken } from "./auth-storage";
+
+const api = axios.create({
+  baseURL: process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000",
+  timeout: 30000,
+});
+
+api.interceptors.request.use(async (config) => {
+  const token = await getAuthToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export { api };
+```
+
+**src/lib/auth-storage.ts (mobile auth):**
+```ts
+import * as SecureStore from "expo-secure-store";
+
+const TOKEN_KEY = "auth_token";
+const REFRESH_KEY = "refresh_token";
+
+export async function getAuthToken(): Promise<string | null> {
+  return SecureStore.getItemAsync(TOKEN_KEY);
+}
+
+export async function setAuthToken(token: string): Promise<void> {
+  await SecureStore.setItemAsync(TOKEN_KEY, token);
+}
+
+export async function clearAuth(): Promise<void> {
+  await SecureStore.deleteItemAsync(TOKEN_KEY);
+  await SecureStore.deleteItemAsync(REFRESH_KEY);
+}
+
+// TODO: Add biometric unlock if client_auth.biometric is true
+// TODO: Add device binding if client_auth.device_binding is true
+```
+
+**src/lib/push-notifications.ts (mobile push):**
+```ts
+import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
+export async function registerForPushNotifications(): Promise<string | null> {
+  const { status } = await Notifications.requestPermissionsAsync();
+  if (status !== "granted") return null;
+
+  const token = await Notifications.getExpoPushTokenAsync();
+  // TODO: Send token to backend for storage
+  return token.data;
+}
+
+// TODO: Add notification channels from push_notifications.channels
+// TODO: Configure provider-specific setup (FCM, APNs) from manifest
+```
+
+**src/lib/monitoring.ts (mobile monitoring):**
+```ts
+// TODO: Initialize crash reporting SDK based on manifest monitoring.crash_reporting
+// Example for Sentry:
+// import * as Sentry from "@sentry/react-native";
+// Sentry.init({ dsn: process.env.EXPO_PUBLIC_SENTRY_DSN });
+
+// TODO: Initialize analytics SDK based on manifest monitoring.analytics
+
+export function captureException(error: Error): void {
+  // TODO: Send to crash reporting service
+  console.error("[Monitoring]", error);
+}
+
+export function trackEvent(name: string, properties?: Record<string, unknown>): void {
+  // TODO: Send to analytics service
+  console.log("[Analytics]", name, properties);
+}
 ```
 
 ---
@@ -1104,19 +1385,54 @@ dist/
 
 ### .env.example
 
-Generate from the manifest's integrations. Format:
+Generate from the manifest's integrations and environments. Format:
 
+**Backend service:**
 ```bash
+# Server
+PORT={{dev-port}}
+NODE_ENV=development
+
 # {{service-name}} — {{category}}
 # Get credentials at: {{signup-url}}
 {{ENV_VAR_NAME}}=
-
-# Server
-PORT=3000
-NODE_ENV=development
 ```
 
-Include a comment with the signup URL for each service so the user knows where to get credentials.
+**Web frontend (Vite):**
+```bash
+# API URLs — update per environment
+# DEV:     http://localhost:{{backend-dev-port}}
+# STAGING: {{staging-url}}
+# PROD:    {{prod-url}}
+VITE_API_URL=http://localhost:{{backend-dev-port}}
+
+# WebSocket URL (if realtime is configured)
+# VITE_WS_URL=ws://localhost:{{backend-dev-port}}
+
+# Monitoring
+# VITE_SENTRY_DSN=
+# VITE_APP_INSIGHTS_KEY=
+```
+
+**Mobile app (Expo):**
+```bash
+# API URLs — update per environment
+# DEV:     http://localhost:{{backend-dev-port}}
+# STAGING: {{staging-url}}
+# PROD:    {{prod-url}}
+EXPO_PUBLIC_API_URL=http://localhost:{{backend-dev-port}}
+
+# Push Notifications
+# EXPO_PUBLIC_PUSH_PROJECT_ID=
+
+# Monitoring
+# EXPO_PUBLIC_SENTRY_DSN=
+
+# OTA Updates
+# EXPO_PUBLIC_UPDATE_URL=
+```
+
+Include a comment with the signup URL for each integration service so the user knows where to get credentials. Use environment URLs from the manifest's `environments` section.
 
 ### README.md
 
@@ -1211,3 +1527,16 @@ All templates use `{{variable}}` placeholders. The scaffolder agent replaces the
 | `{{ENV_VAR_NAME}}` | Derived from manifest integrations |
 | `{{service-name}}` | Integration service name |
 | `{{signup-url}}` | From known-services skill |
+| `{{dev-port}}` | From manifest frontend `dev_port` or service port |
+| `{{backend-dev-port}}` | Port of the primary backend service |
+| `{{staging-url}}` | From manifest `environments[name=staging].domain` |
+| `{{prod-url}}` | From manifest `environments[name=production].domain` |
+| `{{bundle-id-ios}}` | From manifest mobile `bundle_id.ios` |
+| `{{bundle-id-android}}` | From manifest mobile `bundle_id.android` |
+| `{{deep-linking-scheme}}` | From manifest mobile `deep_linking.scheme` |
+| `{{associated-domains}}` | From manifest mobile `deep_linking.associated_domains[]` |
+| `{{token-storage}}` | From manifest `client_auth.token_storage` |
+| `{{error-tracking}}` | From manifest `monitoring.error_tracking` |
+| `{{analytics}}` | From manifest `monitoring.analytics` |
+| `{{service-prefix}}` | API path prefix for backend connection |
+| `{{connection-purpose}}` | From manifest `backend_connections[].purpose` |

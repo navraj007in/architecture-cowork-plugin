@@ -25,9 +25,65 @@ This document defines every field in the Architect AI System Manifest. The manif
 | Field       | Type       | Required | Description                              | Valid Values                                  |
 |-------------|------------|----------|------------------------------------------|-----------------------------------------------|
 | `name`      | `string`   | yes      | Identifier for this frontend             | free text                                     |
-| `type`      | `enum`     | yes      | Platform target                          | `web`, `ios`, `android`, `desktop`, `cli`     |
+| `type`      | `enum`     | yes      | Platform target                          | `web`, `ios`, `android`, `desktop`, `cli`, `crm`, `booking`, `ai-chat` |
 | `framework` | `string`   | yes      | Primary UI framework or toolkit          | free text (e.g. `"Next.js"`, `"SwiftUI"`)     |
 | `pages`     | `string[]` | yes      | Key screens or views in this frontend    | list of free text                             |
+| `build_tool` | `string`  | no       | Build toolchain                          | free text (e.g. `"Vite"`, `"Webpack"`, `"Expo"`) |
+| `rendering` | `enum`     | no       | Rendering strategy (web only)            | `ssr`, `ssg`, `spa`                           |
+| `state_management` | `string` | no  | Client-side state library                | free text (e.g. `"Zustand"`, `"Redux"`, `"Riverpod"`) |
+| `data_fetching` | `string` | no     | Server-state / data fetching library     | free text (e.g. `"React Query"`, `"SWR"`, `"Apollo"`) |
+| `component_library` | `string` | no | UI component library                     | free text (e.g. `"Radix UI"`, `"React Native Paper"`) |
+| `form_handling` | `string` | no     | Form management library                  | free text (e.g. `"React Hook Form"`, `"Formik"`) |
+| `validation` | `string`  | no       | Schema validation library                | free text (e.g. `"Zod"`, `"Yup"`)            |
+| `api_client` | `string`  | no       | HTTP client library                      | free text (e.g. `"Axios"`, `"fetch"`)         |
+| `styling`   | `string`   | no       | Styling approach                         | free text (e.g. `"Tailwind CSS"`, `"CSS Modules"`) |
+| `routing`   | `string`   | no       | Routing library                          | free text (e.g. `"React Router"`, `"Expo Router"`) |
+| `animation` | `string`   | no       | Animation library                        | free text (e.g. `"Framer Motion"`, `"Reanimated"`) |
+| `deploy_target` | `string` | no     | Deployment platform for this frontend    | free text (e.g. `"Vercel"`, `"Cloudflare Pages"`) |
+| `dev_port`  | `integer`  | no       | Local dev server port                    | integer (e.g. `3000`, `8080`)                 |
+
+### `frontends[].backend_connections[]`
+
+| Field     | Type     | Required | Description                              | Valid Values |
+|-----------|----------|----------|------------------------------------------|--------------|
+| `service` | `string` | yes      | Backend service this frontend connects to | must reference a defined service |
+| `purpose` | `string` | no       | What this connection is used for         | free text |
+
+### `frontends[].client_auth`
+
+| Field            | Type      | Required | Description                              | Valid Values |
+|------------------|-----------|----------|------------------------------------------|--------------|
+| `token_storage`  | `string`  | no       | Where auth tokens are stored             | `cookie`, `localStorage`, `sessionStorage`, `memory`, `async-storage`, `secure-store`, `keychain` |
+| `csrf_protection`| `boolean` | no       | Whether CSRF protection is enabled       | `true`, `false` |
+| `token_refresh`  | `boolean` | no       | Whether automatic token refresh is used  | `true`, `false` |
+| `device_binding` | `boolean` | no       | Whether device-bound auth is used (mobile) | `true`, `false` |
+
+### `frontends[].realtime`
+
+| Field      | Type     | Required | Description                              | Valid Values |
+|------------|----------|----------|------------------------------------------|--------------|
+| `protocol` | `enum`   | no       | Real-time protocol used                  | `websocket`, `socket-io`, `sse`, `polling`, `webrtc` |
+| `provider` | `string` | no       | Real-time / video provider (mobile)      | free text (e.g. `"Cloudflare RTK"`, `"Dyte"`, `"Twilio"`) |
+
+### `frontends[].monitoring`
+
+| Field            | Type     | Required | Description                              | Valid Values |
+|------------------|----------|----------|------------------------------------------|--------------|
+| `error_tracking` | `string` | no       | Error tracking service                   | free text (e.g. `"Sentry"`, `"Bugsnag"`) |
+| `analytics`      | `string` | no       | Analytics service                        | free text (e.g. `"App Insights"`, `"Mixpanel"`) |
+
+### `frontends[].mobile_config` (for `ios`, `android` types)
+
+| Field              | Type       | Required | Description                              | Valid Values |
+|--------------------|------------|----------|------------------------------------------|--------------|
+| `bundle_id`        | `string`   | no       | iOS bundle ID or Android package name    | reverse-domain (e.g. `"com.example.myapp"`) |
+| `build_platform`   | `string`   | no       | Mobile build toolchain                   | free text (e.g. `"Expo Managed"`, `"React Native CLI"`) |
+| `navigation`       | `string`   | no       | Navigation library                       | free text (e.g. `"Expo Router"`, `"React Navigation"`) |
+| `push_providers`   | `string[]` | no       | Push notification providers              | list of free text (e.g. `["FCM", "APNS"]`) |
+| `deep_link_scheme` | `string`   | no       | Custom URL scheme for deep links         | free text (e.g. `"myapp"`) |
+| `associated_domains`| `string[]`| no       | Universal link / app link domains        | list of free text (e.g. `["example.com"]`) |
+| `permissions`      | `string[]` | no       | Required device permissions              | list of free text (e.g. `["camera", "microphone", "notifications"]`) |
+| `ota_updates`      | `string`   | no       | OTA update provider                      | free text (e.g. `"Expo Updates"`, `"CodePush"`) |
 
 ## `services[]`
 
@@ -344,10 +400,39 @@ frontends:
     type: web
     framework: Next.js
     pages: [home, search-results, product-detail, cart, checkout, order-history]
+    build_tool: Webpack
+    rendering: ssr
+    state_management: Zustand
+    data_fetching: React Query
+    component_library: Radix UI
+    form_handling: React Hook Form
+    validation: Zod
+    api_client: fetch
+    styling: Tailwind CSS
+    routing: Next.js App Router
+    deploy_target: Vercel
+    dev_port: 3000
+    backend_connections:
+      - { service: api-gateway, purpose: "All API requests" }
+    client_auth:
+      token_storage: cookie
+      csrf_protection: false
+      token_refresh: true
+    monitoring:
+      error_tracking: Sentry
+      analytics: PostHog
   - name: seller-dashboard
     type: web
     framework: Next.js
     pages: [listings, add-listing, orders, payouts, analytics]
+    build_tool: Webpack
+    rendering: ssr
+    data_fetching: React Query
+    component_library: Radix UI
+    styling: Tailwind CSS
+    deploy_target: Vercel
+    backend_connections:
+      - { service: api-gateway, purpose: "Seller CRUD and analytics" }
 
 services:
   - name: api-gateway

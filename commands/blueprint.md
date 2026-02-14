@@ -25,13 +25,41 @@ If it exists and contains an `intent` object with project requirements:
 
 If the file does not exist or has no `intent` field, proceed with the interactive workflow below (Steps 1 and 2).
 
-### Step 1: Understand the Idea
+### Step 1: Load Intent (if available)
 
-If the user provided a description, confirm your understanding in one sentence. If no description was provided, ask:
+**Before asking any questions**, check if the command argument contains a JSON object (starts with `{`). If it does, parse it as the intent. The JSON contains pre-gathered requirements with this structure:
+
+```json
+{
+  "solution_name": "Name of the product",
+  "description": "What the product does, who it's for, and what makes it valuable",
+  "personas": ["end users", "admins"],
+  "features": ["feature 1", "feature 2"],
+  "stack": "preferred tech stack or empty string",
+  "constraints": {},
+  "preferences": {},
+  "budget": "budget info or empty string",
+  "timeline": "timeline info or empty string"
+}
+```
+
+If a valid JSON intent is provided:
+- Use its contents as the gathered requirements — **do not ask the user any questions from Step 2**
+- Confirm your understanding in 2-3 sentences summarizing the intent, then proceed directly to Step 3
+- Map the intent fields to requirements: `description` → idea, `personas` → user roles, `features` → core actions and feature list, `stack` → tech stack preference, `budget` → budget, `timeline` → timeline
+- For any fields that are empty or missing, make reasonable assumptions and state them explicitly
+
+Also check if an `intent.json` file exists in the current working directory — if it does, read it and use it the same way as above.
+
+If neither inline JSON nor `intent.json` file is found, fall through to Step 2.
+
+### Step 2: Gather Requirements (interactive fallback)
+
+**Only run this step if no intent JSON was provided (inline or file).**
+
+If the user provided a plain-text description in the command, confirm your understanding in one sentence. If no description was provided, ask:
 
 > "What are you building? Describe your product idea in plain English — what it does, who it's for, and what makes it valuable."
-
-### Step 2: Gather Requirements
 
 Using the **architecture-methodology** skill, ask clarifying questions to understand:
 
@@ -52,7 +80,8 @@ Using the **manifest-structure** skill, build a structured manifest covering:
 
 - Project metadata (name, type, description)
 - User roles and expected counts
-- Frontends (type, framework, key pages)
+- Frontends (type, framework, key pages, build tool, routing, data fetching, component library, styling, backend connections, client-side auth, monitoring, deploy target)
+- Mobile apps if applicable (framework, build platform, navigation, push notifications, deep linking, permissions, OTA updates, real-time provider)
 - Backend services (type, framework, responsibilities)
 - Databases (type, purpose, key collections)
 - Integrations (category, service, purpose)

@@ -150,6 +150,25 @@ Use this skill when you need to:
 - ✅ Security features are prioritized early
 - ❌ Sprint backlog missing critical infrastructure setup
 
+#### Frontend ↔ Backend Connections
+- ✅ All frontend `backend_connections` reference defined services
+- ✅ All services consumed by frontends have endpoints documented
+- ✅ Frontend `client_auth.token_storage` is compatible with auth strategy (e.g., cookie for web, secure-store for mobile)
+- ✅ Frontend `realtime.protocol` matches service type (e.g., websocket service exists if frontend uses websocket)
+- ❌ Frontend references a service not defined in `services[]`
+- ❌ Frontend has no `backend_connections` but communicates with services via `communication[]`
+- ⚠️ Mobile frontend missing `client_auth` configuration
+- ⚠️ Frontend using `localStorage` for token storage with sensitive data (prefer `cookie` or `secure-store`)
+
+#### Mobile ↔ Platform Checks
+- ✅ iOS frontend has `bundle_id` defined
+- ✅ Android frontend has `bundle_id` defined
+- ✅ Push notification providers match platform (FCM for Android, APNS for iOS)
+- ✅ Permissions listed match app functionality (camera if video calls, microphone if audio)
+- ❌ Mobile frontend missing `push_providers` but backend has notification service
+- ⚠️ Mobile frontend missing `deep_link_scheme` (needed for push notification deep links)
+- ⚠️ Mobile frontend missing `ota_updates` (recommended for Expo/React Native apps)
+
 ### 4. Best Practices (Medium Priority)
 
 **Architecture patterns**:

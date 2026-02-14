@@ -16,11 +16,14 @@ After generating a blueprint with `/architect:blueprint`, this command creates a
 
 ### Step 1: Check for Blueprint
 
-Check if a blueprint with a system manifest exists earlier in the conversation.
+**First**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does, read the blueprint artifacts from that local directory:
+- Read `blueprint.json` for the full blueprint with all deliverables
+- Read `00-manifest/manifest.json` for the system manifest
+- Extract all components from the manifest (services, frontends, mobile apps, agents)
 
-If yes, extract all components from the manifest (services, frontends, mobile apps, agents).
+**If no local directory tag**, check if a blueprint with a system manifest exists earlier in the conversation. If yes, extract all components from the manifest.
 
-If no blueprint exists, respond:
+If no blueprint exists (neither local files nor conversation), respond:
 
 > "I need an architecture to scaffold from. Run `/architect:blueprint` first to generate your architecture, then come back here to create the projects."
 
@@ -44,8 +47,16 @@ Map manifest entries to scaffoldable components:
 
 | Manifest Section | Component Type | Default Framework |
 |-----------------|----------------|-------------------|
-| `frontend` with type `web` | Frontend | Next.js (App Router) |
-| `frontend` with type `mobile` | Mobile App | React Native (Expo) |
+| `frontends[]` with type `web` | Frontend | Next.js (App Router) |
+| `frontends[]` with type `admin` | Admin Dashboard | React (Vite) |
+| `frontends[]` with type `mobile-web` | Mobile Web App | Next.js (App Router) |
+| `frontends[]` with type `crm` | CRM Frontend | React (Vite) |
+| `frontends[]` with type `booking` | Booking Frontend | React (Vite) |
+| `frontends[]` with type `ai-chat` | AI Chat Interface | React (Vite) |
+| `frontends[]` with type `mobile` + framework `react-native` | Mobile App | React Native (Expo) |
+| `frontends[]` with type `mobile` + framework `flutter` | Mobile App | Flutter |
+| `frontends[]` with type `mobile` + framework `swift` | Mobile App (iOS) | Swift / Xcode |
+| `frontends[]` with type `mobile` + framework `kotlin` | Mobile App (Android) | Kotlin / Android Studio |
 | `services[]` with type `rest-api` or `graphql` | Backend API | Node.js/Express |
 | `services[]` with type `background-worker` | Worker | Node.js/BullMQ |
 | `services[]` with type `websocket` | Real-time Service | Node.js/Socket.io |
@@ -53,7 +64,12 @@ Map manifest entries to scaffoldable components:
 
 ### Step 3: Ask Configuration Questions
 
-Ask the user these questions before proceeding:
+**If `[non_interactive:true]` is in the command argument**, skip all questions and use these defaults:
+- **Parent directory**: current working directory (or the path from `[workspace_dir:...]` if provided)
+- **GitHub or local**: Local directories with git init
+- **Install dependencies**: Yes
+
+**Otherwise**, ask the user these questions before proceeding:
 
 **1. Parent directory**
 
@@ -88,6 +104,9 @@ Pass the following to the **scaffolder** agent:
 - `security` section (auth_strategy, api_security) — for security middleware stubs
 - `observability` section (health_checks, logging) — for health endpoints and logger setup
 - `devops` section (cicd, environments) — for CI/CD workflow and Docker files
+- Per-frontend config: build_tool, rendering, state_management, data_fetching, component_library, form_handling, validation, animation, api_client, backend_connections, client_auth, realtime, monitoring, deploy_target, dev_port
+- Per-mobile config: build_platform, navigation, push_notifications, deep_linking, permissions, ota_updates, realtime (protocol + provider), bundle_id, client_auth (token_storage, device_binding, biometric)
+- `environments` section — for generating `.env.example` files with per-environment URL placeholders
 
 ### Step 5: Print Summary
 
@@ -110,11 +129,13 @@ Each project has:
 - Health check endpoints with dependency check TODOs
 - Structured logging setup
 - CI/CD workflow (.github/workflows/ci.yml)
-- .env.example with credential placeholders
+- .env.example with per-environment URL placeholders
 - .gitignore
 - README.md with setup instructions
 - Git initialized with initial commit
 - Shared type packages (if applicable)
+- Frontend: API client config, backend connection stubs, client auth setup, monitoring SDK init
+- Mobile: push notification config, deep linking setup, permission declarations, OTA update config
 
 Next steps:
 1. Copy .env.example to .env in each project and fill in your credentials

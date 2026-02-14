@@ -23,7 +23,9 @@ You will receive:
 - Whether to create local directories or GitHub repos
 - If GitHub: org name and visibility (public/private)
 - Whether to run dependency installation
-- The full manifest context including: shared types, application patterns, security, observability, and devops sections
+- The full manifest context including: shared types, application patterns, security, observability, devops, and environments sections
+- Per-frontend config: build_tool, rendering, state_management, data_fetching, component_library, form_handling, validation, animation, api_client, backend_connections, client_auth, realtime, monitoring, deploy_target, dev_port
+- Per-mobile config: build_platform, navigation, push_notifications, deep_linking, permissions, ota_updates, realtime, bundle_id, client_auth, monitoring
 
 ## Process
 
@@ -49,15 +51,33 @@ Use the **project-templates** skill to determine the correct starter files for t
 
 #### Supported Frameworks (use project-templates skill)
 
+**Web Frontends:**
+
 | Framework | Initialization Method |
 |-----------|----------------------|
 | Next.js (App Router) | `npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --no-import-alias` |
 | React (Vite) | `npm create vite@latest . -- --template react-ts` |
 | Vue (Nuxt) | `npx nuxi@latest init .` |
+| SvelteKit | `npx sv create .` |
+
+**Mobile Apps:**
+
+| Framework | Initialization Method |
+|-----------|----------------------|
+| React Native (Expo Managed) | `npx create-expo-app@latest . --template expo-template-blank-typescript` |
+| React Native (Expo Bare) | `npx create-expo-app@latest . --template bare-minimum` |
+| React Native CLI | `npx react-native init . --template react-native-template-typescript` |
+| Flutter | `flutter create .` |
+| Swift (iOS) | Write Xcode project files directly from project-templates skill |
+| Kotlin (Android) | Write Android Studio project files directly from project-templates skill |
+
+**Backend Services:**
+
+| Framework | Initialization Method |
+|-----------|----------------------|
 | Node.js/Express | Write files directly from project-templates skill |
 | Python/FastAPI | Write files directly from project-templates skill |
 | Node.js Worker (BullMQ) | Write files directly from project-templates skill |
-| React Native (Expo) | `npx create-expo-app@latest .` |
 | Python Agent (Claude SDK) | Write files directly from project-templates skill |
 | Node.js Agent | Write files directly from project-templates skill |
 
@@ -67,16 +87,16 @@ For write-from-template projects, create all files using the Write tool with con
 
 #### Unsupported Frameworks (LLM-generated scaffold)
 
-If the component's framework is NOT in the table above (e.g. Angular, .NET/ASP.NET, Spring Boot, Django, Go/Gin, Flutter, SvelteKit, Rails, Laravel), generate the scaffold dynamically:
+If the component's framework is NOT in the tables above (e.g. Angular, .NET/ASP.NET, Spring Boot, Django, Go/Gin, Rails, Laravel, Ionic, KMM), generate the scaffold dynamically:
 
 1. **Try CLI first** — Most frameworks have a CLI scaffolder. Try the standard command:
    - Angular: `npx @angular/cli new . --skip-git`
    - .NET: `dotnet new webapi -o .`
    - Spring Boot: `spring init --dependencies=web .` (or write files)
-   - Flutter: `flutter create .`
-   - SvelteKit: `npx sv create .`
+   - Ionic: `npx @ionic/cli start . blank --type=react --capacitor`
    - Django: `django-admin startproject {{component-name}} .`
    - Go: `go mod init {{component-name}}`
+   - Rails: `rails new . --api`
 
    If the CLI succeeds, continue to step 3 (folder structure).
 
@@ -135,7 +155,84 @@ For backend services, add security middleware based on the manifest's `security`
 
 Keep it minimal — stubs with TODOs, not full implementations.
 
-### 5. Add Observability Setup
+### 5. Apply Frontend Configuration (for web frontends)
+
+If the component is a web frontend, apply configuration from the manifest's frontend fields:
+
+**API client setup** — Based on `api_client` (e.g., axios, fetch), create `src/lib/api.ts` with a configured HTTP client instance. Include base URL placeholder from the environment config and interceptors for auth token injection.
+
+**Backend connection stubs** — For each entry in `backend_connections[]`, create a service client file under `src/services/` (e.g., `src/services/auth-service.ts`, `src/services/billing-service.ts`) with typed API method stubs:
+
+```ts
+// src/services/auth-service.ts
+import { api } from "@/lib/api";
+
+// TODO: Implement actual API calls
+export const authService = {
+  login: (email: string, password: string) => api.post("/auth/login", { email, password }),
+  logout: () => api.post("/auth/logout"),
+  getMe: () => api.get("/auth/me"),
+};
+```
+
+**Client auth setup** — Based on `client_auth.token_storage`:
+- `cookie`: Configure `api.ts` with `withCredentials: true` and CSRF token handling
+- `localStorage`/`sessionStorage`: Create `src/lib/auth-storage.ts` with token get/set helpers and add interceptor in `api.ts`
+- `memory`: Create in-memory token store with refresh flow stub
+
+**Monitoring SDK init** — Based on `monitoring`:
+- If `error_tracking` is set (e.g., sentry), add the SDK to dependencies and create `src/lib/monitoring.ts` with initialization code (DSN placeholder in `.env.example`)
+- If `analytics` is set, add analytics init stub
+
+**Realtime setup** — If `realtime` is configured, create `src/lib/realtime.ts` with connection setup for the specified protocol (websocket, socket-io, sse).
+
+**State management** — If `state_management` is set (e.g., zustand, redux), create `src/store/` directory with a sample store file.
+
+**Component library** — If `component_library` is set, add it to dependencies. For radix-ui/shadcn, scaffold the `src/components/ui/` directory structure.
+
+### 6. Apply Mobile Configuration (for mobile apps)
+
+If the component is a mobile app, apply configuration from the manifest's mobile fields:
+
+**Bundle ID** — Set the bundle identifier in native configs:
+- iOS: Update `ios/` project or `app.json` (Expo) with `bundle_id.ios`
+- Android: Update `android/` project or `app.json` (Expo) with `bundle_id.android`
+
+**Backend connection stubs** — Same pattern as web frontends but under the mobile project's `src/services/` or `services/` directory.
+
+**Client auth setup** — Based on `client_auth.token_storage`:
+- `async-storage`: Create `src/lib/auth-storage.ts` using `@react-native-async-storage/async-storage`
+- `secure-store`: Create `src/lib/auth-storage.ts` using `expo-secure-store`
+- `keychain`: Use native keychain wrapper
+- Add device binding and biometric stubs if configured
+
+**Push notification config** — Based on `push_notifications.providers`:
+- Add provider SDKs to dependencies (expo-notifications, @react-native-firebase/messaging, etc.)
+- Create `src/lib/push-notifications.ts` with registration and handler stubs
+- Add channel configuration from `push_notifications.channels`
+
+**Deep linking** — Based on `deep_linking`:
+- Set URL scheme in native config or `app.json`
+- Add `associated_domains` to iOS entitlements
+- Create `src/lib/deep-linking.ts` with route handler stub
+
+**Permissions** — For each permission in `permissions[]`:
+- Add native permission declarations (Info.plist keys for iOS, AndroidManifest.xml permissions)
+- For Expo: add to `app.json` plugins section
+
+**OTA updates** — Based on `ota_updates.provider`:
+- `expo-updates`: Add expo-updates config to `app.json` with channel placeholder
+- `codepush`: Add react-native-code-push to dependencies with config stub
+
+**Realtime setup** — Based on `realtime.protocol` and `realtime.provider`:
+- Add provider SDK to dependencies (e.g., @cloudflare/realtimekit-react-native, @dytesdk/react-native)
+- Create `src/lib/realtime.ts` with connection setup stub
+
+**Monitoring** — Based on `monitoring`:
+- Add crash reporting SDK (e.g., @sentry/react-native) to dependencies and create init stub
+- Add analytics SDK and create tracking helper stub
+
+### 7. Add Observability Setup (for backend services)
 
 For backend services, add basic observability based on the manifest's `observability` section:
 
@@ -157,7 +254,7 @@ healthRouter.get("/", async (_req, res) => {
 
 **Structured logging:** For Node.js services, add `pino` to dependencies and create `src/lib/logger.ts`. For Python services, add structured logging config in `app/lib/logger.py`.
 
-### 6. Add DevOps Files
+### 8. Add DevOps Files
 
 Based on the manifest's `devops` section:
 
@@ -170,11 +267,11 @@ Use the project-templates skill for language-appropriate Dockerfile.
 **docker-compose.yml** (for services with database/Redis dependencies):
 Create a compose file that starts the service + its data dependencies for local development.
 
-### 7. Add Common Files
+### 9. Add Common Files
 
 For every project, ensure these files exist:
 
-- **`.env.example`** — Credential placeholders derived from the manifest's integrations AND security config. Include comments explaining each variable.
+- **`.env.example`** — Credential placeholders derived from the manifest's integrations AND security config. Include per-environment URL placeholders from the `environments` section (e.g., `# DEV: http://localhost:3001`, `# STAGING: https://api.example-staging.com`). Include comments explaining each variable.
 - **`.gitignore`** — Language-appropriate ignores (use project-templates skill).
 - **`README.md`** — Auto-generated with:
   - Component name and description from the manifest
@@ -184,7 +281,7 @@ For every project, ensure these files exist:
   - Available scripts
   - Links to other components in the architecture
 
-### 8. Create Shared Packages (if applicable)
+### 10. Create Shared Packages (if applicable)
 
 If the manifest has a `shared` section with libraries, create a shared package directory:
 
@@ -215,7 +312,7 @@ export interface User {
 **For Python monorepos:**
 Create a `packages/shared-types/` directory with type stubs as dataclasses or Pydantic models.
 
-### 9. Initialize Git
+### 11. Initialize Git
 
 ```bash
 git init
@@ -228,7 +325,7 @@ If GitHub repo was created:
 git push -u origin main
 ```
 
-### 10. Install Dependencies (if requested)
+### 12. Install Dependencies (if requested)
 
 If the user opted for dependency installation:
 
@@ -237,7 +334,7 @@ If the user opted for dependency installation:
 | Node.js / TypeScript | `npm install` |
 | Python | `pip install -r requirements.txt` or `pip install -e .` |
 
-### 11. Report Results
+### 13. Report Results
 
 After completing each component, report:
 
@@ -255,8 +352,9 @@ After completing each component, report:
 
 1. **Shared packages first** — Create shared type packages before service projects so they can reference them
 2. **Backend services** — API servers, workers, agents
-3. **Frontend applications** — Web apps, mobile apps
-4. Shared packages come first because services may import from them
+3. **Web frontends** — Web apps, admin dashboards, CRM/booking/AI-chat interfaces
+4. **Mobile applications** — iOS, Android, cross-platform apps
+5. Shared packages come first because services may import from them. Web frontends and mobile apps come last because their backend_connections reference services that should already exist.
 
 ## Error Handling
 
