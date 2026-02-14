@@ -282,9 +282,11 @@ observability:
 ```yaml
 environments:
   - name: string               # Required. e.g. "development", "staging", "production"
-    url: string                # Optional. Environment URL
+    url: string                # Optional. Primary environment URL (e.g. "https://app.example.com")
     cloud: string              # Optional. Override deployment cloud for this env
-    services: string[]         # Optional. Which services run in this env
+    services:                  # Optional. Services in this env with their base URLs
+      - name: string           # Service name (matches architecture.services[] or projects.backend[])
+        url: string            # Base URL for this service in this environment
     variables:                 # Optional. Non-secret env config
       - key: string
         value: string

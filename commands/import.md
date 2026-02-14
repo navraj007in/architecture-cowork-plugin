@@ -104,7 +104,7 @@ top-level sections.** The only allowed root keys are:
 | CI/CD pipeline (GitHub Actions, etc.) | `deployment.ciCd.provider` |
 | Docker/container setup | `deployment.runtime` |
 | IaC (Terraform, Bicep) | `deployment.infrastructure.iac` |
-| Dev/staging/prod environments | `environments[]` (name, services, variables) |
+| Dev/staging/prod environments | `environments[]` (name, url, services with URLs) |
 | Test frameworks (Jest, Pytest, etc.) | `testing` (unit + e2e) |
 | Logging library (Winston, Pino, etc.) | `observability.logging` |
 | Tracing (OpenTelemetry, Jaeger) | `observability.tracing` |
@@ -236,8 +236,16 @@ deployment:
 
 environments:                           # If dev/staging/prod detected
   - name: development
+    url: "http://localhost:{frontend-port}"     # Primary dev URL
+    services:                                   # Backend service URLs for this env
+      - name: "{backend-service-name}"
+        url: "http://localhost:{port}"
     x-features: ["{feature1}", "{feature2}"]
   - name: production
+    url: "https://{production-domain}"
+    services:
+      - name: "{backend-service-name}"
+        url: "https://api.{production-domain}"
     x-features: ["{feature1}", "{feature2}"]
 
 testing:                                # If test frameworks detected
