@@ -1,0 +1,74 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyLandingPage"
+  description: "Marketing landing page with contact form"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Visitor"
+      goals:
+        - "Learn about the product"
+        - "View pricing and features"
+        - "Submit contact form"
+  coreFlows:
+    - name: "Landing Page Visit"
+      priority: "critical"
+      steps:
+        - "View hero section"
+        - "Browse features"
+        - "Check pricing"
+        - "Submit contact form"
+design:
+  preset: "shadcn"
+  personality: "minimal"
+  palette:
+    primary: "sky-600"
+    secondary: "amber-500"
+    neutral: "slate"
+    surface: "light"
+  typography:
+    heading: "DM Sans"
+    body: "Inter"
+    scale: "spacious"
+  shape:
+    radius: "md"
+    density: "relaxed"
+    shadows: "subtle"
+    borders: "none"
+  motion:
+    transitions: "smooth"
+    pageTransitions: true
+  layout:
+    maxWidth: 1280
+    style: "marketing"
+  iconLibrary: "lucide"
+architecture:
+  style: "modular-monolith"
+  projects:
+    frontend:
+      - name: "web"
+        framework: "nextjs"
+        rendering: "ssg"
+        styling: "tailwind"
+auth:
+  strategy: "none"
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "serverless"
+deployment:
+  cloud: "vercel"
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 500
+    expectedUsersYear1: 10000
+  security:
+    pii: false
+    encryptionInTransit: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "repo-scaffold"
+    - "adr"

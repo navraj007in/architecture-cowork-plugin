@@ -1,0 +1,141 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyMarketplace"
+  description: "Two-sided marketplace connecting buyers and sellers"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Buyer"
+      goals:
+        - "Browse and search listings"
+        - "Place orders"
+        - "Leave reviews"
+    - name: "Seller"
+      goals:
+        - "Create and manage listings"
+        - "Process orders"
+        - "View earnings"
+    - name: "Admin"
+      accessLevel: "admin"
+      goals:
+        - "Moderate listings"
+        - "Manage disputes"
+        - "View platform analytics"
+  coreFlows:
+    - name: "Purchase Flow"
+      priority: "critical"
+      steps:
+        - "Browse or search listings"
+        - "View listing details"
+        - "Place order"
+        - "Submit payment"
+        - "Receive confirmation"
+    - name: "Seller Onboarding"
+      priority: "high"
+      steps:
+        - "Register as seller"
+        - "Verify identity"
+        - "Set up store profile"
+        - "Create first listing"
+    - name: "Payout Flow"
+      priority: "high"
+      steps:
+        - "Order completes"
+        - "Platform calculates fees"
+        - "Seller receives payout"
+design:
+  personality: "bold"
+  palette:
+    primary: "orange-600"
+    secondary: "emerald-500"
+    accent: "sky-400"
+    neutral: "zinc"
+    surface: "light"
+  typography:
+    heading: "Plus Jakarta Sans"
+    body: "Inter"
+    scale: "default"
+  shape:
+    radius: "md"
+    density: "default"
+    shadows: "elevated"
+    borders: "subtle"
+  motion:
+    transitions: "smooth"
+  iconLibrary: "phosphor"
+architecture:
+  style: "modular-monolith"
+  projects:
+    frontend:
+      - name: "web"
+        framework: "nextjs"
+        rendering: "ssr"
+        styling: "tailwind"
+    backend:
+      - name: "api"
+        framework: "nodejs"
+        apiStyle: "rest"
+        orm: "prisma"
+auth:
+  strategy: "oidc"
+  provider: "auth0"
+  roles:
+    - "buyer"
+    - "seller"
+    - "admin"
+  socialProviders:
+    - "google"
+    - "apple"
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "session"
+      - "api"
+      - "query"
+  search:
+    provider: "algolia"
+  storage:
+    blobs:
+      provider: "s3"
+      public: true
+integrations:
+  payments:
+    provider: "stripe"
+    mode: "marketplace"
+    currency: "USD"
+  email:
+    provider: "sendgrid"
+    useCase:
+      - "transactional"
+      - "notifications"
+  monitoring:
+    provider: "sentry"
+deployment:
+  cloud: "aws"
+  ciCd:
+    provider: "github-actions"
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 500
+    expectedUsersYear1: 20000
+  security:
+    pii: true
+    pci: true
+    encryptionAtRest: true
+    encryptionInTransit: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "sequence-diagrams"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "backlog"
+    - "adr"
+    - "cost-estimate"

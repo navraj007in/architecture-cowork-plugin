@@ -1,0 +1,113 @@
+sdlVersion: "0.1"
+solution:
+  name: "AdminPanel"
+  description: "Internal admin dashboard with data management and reporting"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Operator"
+      accessLevel: "authenticated"
+      goals:
+        - "View and manage records"
+        - "Generate reports"
+        - "Process approvals"
+    - name: "Manager"
+      accessLevel: "admin"
+      goals:
+        - "Review team activity"
+        - "Configure workflows"
+        - "Manage user access"
+  coreFlows:
+    - name: "Record Management"
+      priority: "critical"
+      steps:
+        - "Search records"
+        - "View record details"
+        - "Edit or update record"
+        - "Save changes"
+    - name: "Report Generation"
+      priority: "high"
+      steps:
+        - "Select report type"
+        - "Set date range and filters"
+        - "Generate report"
+        - "Export or share"
+design:
+  preset: "ant"
+  personality: "corporate"
+  palette:
+    primary: "blue-700"
+    secondary: "slate-500"
+    neutral: "gray"
+    surface: "light"
+  typography:
+    heading: "Inter"
+    body: "Inter"
+    scale: "compact"
+  shape:
+    radius: "sm"
+    density: "compact"
+    shadows: "subtle"
+    borders: "visible"
+  iconLibrary: "lucide"
+  layout:
+    maxWidth: 1440
+    style: "dashboard"
+architecture:
+  style: "modular-monolith"
+  projects:
+    frontend:
+      - name: "admin"
+        framework: "react"
+        type: "admin"
+        styling: "tailwind"
+        stateManagement: "zustand"
+    backend:
+      - name: "api"
+        framework: "nodejs"
+        apiStyle: "rest"
+        orm: "prisma"
+auth:
+  strategy: "oidc"
+  provider: "auth0"
+  roles:
+    - "operator"
+    - "manager"
+    - "admin"
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "session"
+      - "api"
+integrations:
+  email:
+    provider: "resend"
+    useCase:
+      - "transactional"
+deployment:
+  cloud: "railway"
+  ciCd:
+    provider: "github-actions"
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 20
+    expectedUsersYear1: 200
+  security:
+    pii: true
+    encryptionAtRest: true
+    encryptionInTransit: true
+    auditLogging: "detailed"
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "adr"
+    - "cost-estimate"

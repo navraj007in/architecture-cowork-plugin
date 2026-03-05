@@ -1,0 +1,80 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyPortfolio"
+  description: "Personal portfolio and blog"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Reader"
+      goals:
+        - "Browse portfolio work"
+        - "Read blog posts"
+        - "Contact the author"
+    - name: "Author"
+      accessLevel: "admin"
+      goals:
+        - "Publish blog posts"
+        - "Manage portfolio items"
+  coreFlows:
+    - name: "Content Discovery"
+      priority: "critical"
+      steps:
+        - "Land on homepage"
+        - "Browse portfolio"
+        - "Read a blog post"
+        - "Share or bookmark"
+design:
+  personality: "editorial"
+  palette:
+    primary: "stone-700"
+    secondary: "amber-600"
+    accent: "rose-500"
+    neutral: "stone"
+    surface: "light"
+  typography:
+    heading: "Playfair Display"
+    body: "Source Sans 3"
+    mono: "Fira Code"
+    scale: "spacious"
+  shape:
+    radius: "none"
+    density: "relaxed"
+    shadows: "flat"
+    borders: "subtle"
+  motion:
+    transitions: "smooth"
+    pageTransitions: true
+  layout:
+    maxWidth: 768
+    style: "editorial"
+  iconLibrary: "lucide"
+architecture:
+  style: "modular-monolith"
+  projects:
+    frontend:
+      - name: "site"
+        framework: "nextjs"
+        rendering: "ssg"
+        styling: "tailwind"
+auth:
+  strategy: "none"
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "serverless"
+deployment:
+  cloud: "vercel"
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 200
+    expectedUsersYear1: 5000
+  security:
+    pii: false
+    encryptionInTransit: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "repo-scaffold"
+    - "adr"

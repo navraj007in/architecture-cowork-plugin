@@ -1,0 +1,109 @@
+sdlVersion: "0.1"
+solution:
+  name: "BackOffice"
+  description: "Internal business tool with SSO, workflows, and approval chains"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Operations Staff"
+      accessLevel: "authenticated"
+      goals:
+        - "Process requests"
+        - "Update records"
+        - "Follow workflow steps"
+    - name: "Manager"
+      accessLevel: "admin"
+      goals:
+        - "Approve or reject requests"
+        - "View reports"
+        - "Manage team access"
+  coreFlows:
+    - name: "Request Processing"
+      priority: "critical"
+      steps:
+        - "Receive new request"
+        - "Review details"
+        - "Process or escalate"
+        - "Close request"
+    - name: "Approval Workflow"
+      priority: "high"
+      steps:
+        - "Submit for approval"
+        - "Manager reviews"
+        - "Approve or reject"
+        - "Notify requester"
+design:
+  personality: "corporate"
+  palette:
+    primary: "slate-700"
+    secondary: "sky-500"
+    neutral: "gray"
+    surface: "light"
+  typography:
+    heading: "Inter"
+    body: "Inter"
+    scale: "compact"
+  shape:
+    radius: "sm"
+    density: "compact"
+    shadows: "subtle"
+    borders: "visible"
+  iconLibrary: "lucide"
+  layout:
+    maxWidth: 1440
+    style: "dashboard"
+architecture:
+  style: "modular-monolith"
+  projects:
+    frontend:
+      - name: "admin"
+        framework: "react"
+        type: "admin"
+        styling: "tailwind"
+    backend:
+      - name: "api"
+        framework: "python-fastapi"
+        apiStyle: "rest"
+        orm: "sqlalchemy"
+auth:
+  strategy: "oidc"
+  provider: "entra-id"
+  roles:
+    - "staff"
+    - "manager"
+    - "admin"
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+integrations:
+  email:
+    provider: "ses"
+    useCase:
+      - "transactional"
+      - "notifications"
+deployment:
+  cloud: "azure"
+  ciCd:
+    provider: "azure-devops"
+nonFunctional:
+  availability:
+    target: "99.5"
+  scaling:
+    expectedUsersMonth1: 20
+    expectedUsersYear1: 200
+  security:
+    pii: true
+    encryptionAtRest: true
+    encryptionInTransit: true
+    auditLogging: "detailed"
+  compliance:
+    frameworks:
+      - "soc2"
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "adr"

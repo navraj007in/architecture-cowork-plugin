@@ -1,0 +1,130 @@
+sdlVersion: "0.1"
+solution:
+  name: "MySaaS"
+  description: "Multi-tenant SaaS application with auth, billing, and dashboard"
+  stage: "MVP"
+product:
+  personas:
+    - name: "User"
+      goals:
+        - "Sign up and manage account"
+        - "Use core features"
+        - "Manage subscription"
+    - name: "Team Admin"
+      accessLevel: "authenticated"
+      goals:
+        - "Invite team members"
+        - "Manage team settings"
+        - "View usage analytics"
+    - name: "Super Admin"
+      accessLevel: "admin"
+      goals:
+        - "Manage all tenants"
+        - "View platform metrics"
+  coreFlows:
+    - name: "Onboarding"
+      priority: "critical"
+      steps:
+        - "Sign up with email"
+        - "Verify email"
+        - "Complete profile"
+        - "Choose plan"
+        - "Start trial"
+    - name: "Team Management"
+      priority: "high"
+      steps:
+        - "Create workspace"
+        - "Invite members"
+        - "Assign roles"
+design:
+  preset: "shadcn"
+  personality: "minimal"
+  palette:
+    primary: "teal-600"
+    secondary: "amber-500"
+    neutral: "slate"
+    surface: "light"
+  typography:
+    heading: "DM Sans"
+    body: "Inter"
+    scale: "default"
+  shape:
+    radius: "md"
+    shadows: "subtle"
+    borders: "subtle"
+  iconLibrary: "lucide"
+  componentLibrary: "shadcn/ui"
+architecture:
+  style: "modular-monolith"
+  projects:
+    frontend:
+      - name: "dashboard"
+        framework: "nextjs"
+        rendering: "ssr"
+        styling: "tailwind"
+        stateManagement: "zustand"
+    backend:
+      - name: "api"
+        framework: "nodejs"
+        apiStyle: "rest"
+        orm: "prisma"
+auth:
+  strategy: "oidc"
+  provider: "auth0"
+  roles:
+    - "user"
+    - "team_admin"
+    - "super_admin"
+  sessions:
+    accessToken: "jwt"
+    refreshToken: true
+  socialProviders:
+    - "google"
+    - "github"
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "session"
+      - "api"
+integrations:
+  payments:
+    provider: "stripe"
+    mode: "subscriptions"
+    currency: "USD"
+  email:
+    provider: "resend"
+    useCase:
+      - "transactional"
+      - "notifications"
+  analytics:
+    provider: "posthog"
+  monitoring:
+    provider: "sentry"
+deployment:
+  cloud: "vercel"
+  ciCd:
+    provider: "github-actions"
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 100
+    expectedUsersYear1: 5000
+  security:
+    pii: true
+    encryptionAtRest: true
+    encryptionInTransit: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "sequence-diagrams"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "backlog"
+    - "adr"
+    - "cost-estimate"

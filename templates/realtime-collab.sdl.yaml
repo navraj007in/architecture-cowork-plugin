@@ -1,0 +1,127 @@
+sdlVersion: "0.1"
+solution:
+  name: "CollabSpace"
+  description: "Real-time collaboration platform with live editing and presence"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Collaborator"
+      goals:
+        - "Create and edit documents"
+        - "See changes in real-time"
+        - "Comment and discuss"
+    - name: "Workspace Admin"
+      accessLevel: "admin"
+      goals:
+        - "Manage workspace members"
+        - "Configure permissions"
+        - "View activity logs"
+  coreFlows:
+    - name: "Real-Time Editing"
+      priority: "critical"
+      steps:
+        - "Open document"
+        - "Connect to session"
+        - "Edit collaboratively"
+        - "Auto-save changes"
+    - name: "Team Setup"
+      priority: "high"
+      steps:
+        - "Create workspace"
+        - "Invite members"
+        - "Set permissions"
+design:
+  personality: "editorial"
+  palette:
+    primary: "stone-700"
+    secondary: "amber-600"
+    accent: "sky-500"
+    neutral: "stone"
+    surface: "auto"
+  typography:
+    heading: "Libre Baskerville"
+    body: "Source Sans 3"
+    mono: "Fira Code"
+    scale: "spacious"
+  shape:
+    radius: "none"
+    density: "relaxed"
+    shadows: "flat"
+    borders: "subtle"
+  motion:
+    transitions: "smooth"
+  iconLibrary: "tabler"
+architecture:
+  style: "modular-monolith"
+  projects:
+    frontend:
+      - name: "editor"
+        framework: "react"
+        stateManagement: "zustand"
+        styling: "tailwind"
+    backend:
+      - name: "api"
+        framework: "nodejs"
+        apiStyle: "rest"
+        orm: "prisma"
+      - name: "realtime"
+        framework: "nodejs"
+        type: "worker"
+auth:
+  strategy: "oidc"
+  provider: "clerk"
+  roles:
+    - "viewer"
+    - "editor"
+    - "admin"
+  sessions:
+    accessToken: "jwt"
+    refreshToken: true
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "session"
+      - "api"
+  queues:
+    provider: "redis"
+    useCase:
+      - "event-streaming"
+      - "notifications"
+integrations:
+  email:
+    provider: "resend"
+    useCase:
+      - "transactional"
+      - "notifications"
+  monitoring:
+    provider: "sentry"
+deployment:
+  cloud: "fly-io"
+  ciCd:
+    provider: "github-actions"
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 50
+    expectedUsersYear1: 5000
+    peakConcurrentUsers: 200
+  performance:
+    apiResponseTime: "<50ms"
+  security:
+    pii: false
+    encryptionInTransit: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "sequence-diagrams"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "backlog"
+    - "adr"
+    - "cost-estimate"

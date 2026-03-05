@@ -1,0 +1,126 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyStore"
+  description: "Online store with product catalog, cart, and checkout"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Shopper"
+      goals:
+        - "Browse and search products"
+        - "Add items to cart"
+        - "Complete checkout"
+        - "Track orders"
+    - name: "Store Admin"
+      accessLevel: "admin"
+      goals:
+        - "Manage product catalog"
+        - "Process orders"
+        - "View sales analytics"
+  coreFlows:
+    - name: "Purchase Flow"
+      priority: "critical"
+      steps:
+        - "Browse or search products"
+        - "View product details"
+        - "Add to cart"
+        - "Enter shipping info"
+        - "Submit payment"
+        - "Receive order confirmation"
+    - name: "Product Management"
+      priority: "high"
+      steps:
+        - "Log in as admin"
+        - "Create or edit product"
+        - "Set pricing and inventory"
+        - "Publish product"
+design:
+  personality: "playful"
+  palette:
+    primary: "rose-600"
+    secondary: "orange-500"
+    accent: "sky-400"
+    neutral: "zinc"
+    surface: "light"
+  typography:
+    heading: "Plus Jakarta Sans"
+    body: "Inter"
+    scale: "default"
+  shape:
+    radius: "lg"
+    density: "default"
+    shadows: "elevated"
+    borders: "none"
+  motion:
+    transitions: "smooth"
+  iconLibrary: "phosphor"
+architecture:
+  style: "modular-monolith"
+  projects:
+    frontend:
+      - name: "storefront"
+        framework: "nextjs"
+        rendering: "ssr"
+        styling: "tailwind"
+    backend:
+      - name: "api"
+        framework: "nodejs"
+        apiStyle: "rest"
+        orm: "prisma"
+auth:
+  strategy: "oidc"
+  provider: "clerk"
+  roles:
+    - "shopper"
+    - "admin"
+  sessions:
+    accessToken: "jwt"
+    refreshToken: true
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "session"
+      - "api"
+  storage:
+    blobs:
+      provider: "s3"
+      public: true
+integrations:
+  payments:
+    provider: "stripe"
+    mode: "one-time"
+    currency: "USD"
+  email:
+    provider: "resend"
+    useCase:
+      - "transactional"
+      - "notifications"
+deployment:
+  cloud: "vercel"
+  ciCd:
+    provider: "github-actions"
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 500
+    expectedUsersYear1: 20000
+  security:
+    pii: true
+    pci: true
+    encryptionAtRest: true
+    encryptionInTransit: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "sequence-diagrams"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "backlog"
+    - "adr"
+    - "cost-estimate"

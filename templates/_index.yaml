@@ -1,0 +1,96 @@
+templates:
+  - id: landing-page
+    name: "Landing Page"
+    description: "Marketing landing page with hero, features, pricing, and contact form"
+    icon: "globe"
+    complexity: simple
+    tags: ["Next.js", "Tailwind", "SSG"]
+    file: landing-page.sdl.yaml
+
+  - id: portfolio-blog
+    name: "Portfolio / Blog"
+    description: "Personal portfolio and blog with MDX content and editorial design"
+    icon: "pen-tool"
+    complexity: simple
+    tags: ["Next.js", "MDX", "SSG"]
+    file: portfolio-blog.sdl.yaml
+
+  - id: e-commerce
+    name: "E-Commerce Store"
+    description: "Online store with product catalog, cart, checkout, and Stripe payments"
+    icon: "shopping-cart"
+    complexity: moderate
+    tags: ["Next.js", "Node.js", "Stripe", "Postgres"]
+    file: e-commerce.sdl.yaml
+
+  - id: saas-starter
+    name: "SaaS Starter"
+    description: "Multi-tenant SaaS with auth, team management, and Stripe billing"
+    icon: "layers"
+    complexity: moderate
+    tags: ["Next.js", "Node.js", "Auth0", "Stripe", "Postgres"]
+    file: saas-starter.sdl.yaml
+
+  - id: admin-dashboard
+    name: "Admin Dashboard"
+    description: "Internal admin panel with data tables, reporting, and RBAC"
+    icon: "layout-dashboard"
+    complexity: moderate
+    tags: ["React", "Node.js", "Postgres", "Ant Design"]
+    file: admin-dashboard.sdl.yaml
+
+  - id: mobile-app-api
+    name: "Mobile App + API"
+    description: "Cross-platform React Native app with backend API"
+    icon: "smartphone"
+    complexity: moderate
+    tags: ["React Native", "Node.js", "Firebase", "Postgres"]
+    file: mobile-app-api.sdl.yaml
+
+  - id: ai-chat-app
+    name: "AI Chat App"
+    description: "AI-powered chat with LLM integration, streaming, and conversation history"
+    icon: "bot"
+    complexity: moderate
+    tags: ["Next.js", "FastAPI", "Redis", "Pinecone"]
+    file: ai-chat-app.sdl.yaml
+
+  - id: realtime-collab
+    name: "Real-Time Collaboration"
+    description: "Collaborative editor with WebSockets, presence, and live cursors"
+    icon: "users"
+    complexity: advanced
+    tags: ["React", "Node.js", "WebSocket", "Redis"]
+    file: realtime-collab.sdl.yaml
+
+  - id: marketplace
+    name: "Marketplace"
+    description: "Two-sided marketplace with Stripe Connect, listings, and reviews"
+    icon: "store"
+    complexity: advanced
+    tags: ["Next.js", "Node.js", "Stripe Connect", "Algolia"]
+    file: marketplace.sdl.yaml
+
+  - id: internal-tool
+    name: "Internal Tool"
+    description: "Internal business tool with SSO, workflows, and approval chains"
+    icon: "building-2"
+    complexity: moderate
+    tags: ["React", "FastAPI", "Azure AD", "Postgres"]
+    file: internal-tool.sdl.yaml
+
+  - id: api-only
+    name: "API-Only Backend"
+    description: "REST API service with OpenAPI docs, rate limiting, and API key auth"
+    icon: "server"
+    complexity: simple
+    tags: ["Node.js", "Postgres", "Redis", "OpenAPI"]
+    file: api-only.sdl.yaml
+
+  - id: event-driven-microservices
+    name: "Event-Driven Microservices"
+    description: "Microservices platform with event bus, API gateway, and observability"
+    icon: "git-branch"
+    complexity: advanced
+    tags: ["Node.js", "RabbitMQ", "Terraform", "OpenTelemetry"]
+    file: event-driven-microservices.sdl.yaml

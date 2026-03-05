@@ -1,0 +1,183 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyPlatform"
+  description: "Event-driven microservices platform with API gateway"
+  stage: "Growth"
+product:
+  personas:
+    - name: "End User"
+      goals:
+        - "Use platform features"
+        - "Receive real-time updates"
+    - name: "Platform Admin"
+      accessLevel: "admin"
+      goals:
+        - "Monitor services health"
+        - "View event logs"
+        - "Manage configurations"
+  coreFlows:
+    - name: "Order Processing"
+      priority: "critical"
+      steps:
+        - "User places order"
+        - "Order service validates"
+        - "Payment service charges"
+        - "Inventory service reserves"
+        - "Notification service confirms"
+    - name: "Event Replay"
+      priority: "medium"
+      steps:
+        - "Select event stream"
+        - "Choose time range"
+        - "Replay events"
+        - "Verify state"
+design:
+  personality: "corporate"
+  palette:
+    primary: "blue-600"
+    secondary: "emerald-500"
+    neutral: "slate"
+    surface: "light"
+  typography:
+    heading: "Inter"
+    body: "Inter"
+    mono: "Fira Code"
+    scale: "compact"
+  shape:
+    radius: "sm"
+    density: "compact"
+    shadows: "subtle"
+    borders: "visible"
+  iconLibrary: "lucide"
+  layout:
+    style: "dashboard"
+architecture:
+  style: "microservices"
+  projects:
+    frontend:
+      - name: "portal"
+        framework: "nextjs"
+        rendering: "ssr"
+        styling: "tailwind"
+    backend:
+      - name: "api-gateway"
+        framework: "nodejs"
+        apiStyle: "rest"
+      - name: "order-service"
+        framework: "nodejs"
+        apiStyle: "rest"
+        orm: "prisma"
+      - name: "payment-service"
+        framework: "nodejs"
+        apiStyle: "rest"
+      - name: "notification-worker"
+        framework: "nodejs"
+        type: "worker"
+  services:
+    - name: "api-gateway"
+      kind: "api-gateway"
+      responsibilities:
+        - "Route requests"
+        - "Rate limiting"
+        - "Authentication"
+    - name: "order-service"
+      kind: "backend"
+      responsibilities:
+        - "Order CRUD"
+        - "Order state machine"
+        - "Emit order events"
+    - name: "payment-service"
+      kind: "backend"
+      responsibilities:
+        - "Process payments"
+        - "Handle refunds"
+        - "Emit payment events"
+    - name: "notification-worker"
+      kind: "worker"
+      responsibilities:
+        - "Consume events"
+        - "Send emails"
+        - "Send push notifications"
+auth:
+  strategy: "oidc"
+  provider: "auth0"
+  roles:
+    - "user"
+    - "admin"
+  sessions:
+    accessToken: "jwt"
+    refreshToken: true
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "session"
+      - "api"
+  queues:
+    provider: "rabbitmq"
+    useCase:
+      - "event-streaming"
+      - "async-jobs"
+interServiceCommunication:
+  - pattern: "event-driven"
+    description: "Services communicate via event bus"
+    protocol: "AMQP"
+    async: true
+  - pattern: "http"
+    description: "API gateway routes to services"
+    from: "api-gateway"
+    protocol: "REST over HTTPS"
+    async: false
+integrations:
+  email:
+    provider: "sendgrid"
+    useCase:
+      - "transactional"
+      - "notifications"
+  monitoring:
+    provider: "datadog"
+deployment:
+  cloud: "aws"
+  ciCd:
+    provider: "github-actions"
+  infrastructure:
+    iac: "terraform"
+observability:
+  logging:
+    provider: "pino"
+    structured: true
+    level: "info"
+  tracing:
+    provider: "opentelemetry"
+    samplingRate: 0.1
+  metrics:
+    provider: "prometheus"
+nonFunctional:
+  availability:
+    target: "99.95"
+  scaling:
+    expectedUsersMonth1: 1000
+    expectedUsersYear1: 50000
+    peakConcurrentUsers: 500
+  performance:
+    apiResponseTime: "<200ms"
+  security:
+    pii: true
+    encryptionAtRest: true
+    encryptionInTransit: true
+    auditLogging: "basic"
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "sequence-diagrams"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "iac-skeleton"
+    - "backlog"
+    - "adr"
+    - "deployment-guide"
+    - "cost-estimate"

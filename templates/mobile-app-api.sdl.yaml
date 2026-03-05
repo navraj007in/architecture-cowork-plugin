@@ -1,0 +1,111 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyMobileApp"
+  description: "Cross-platform mobile app with backend API"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Mobile User"
+      goals:
+        - "Sign up via social login"
+        - "Use core features on the go"
+        - "Receive push notifications"
+    - name: "Admin"
+      accessLevel: "admin"
+      goals:
+        - "Manage users"
+        - "View analytics"
+        - "Send push notifications"
+  coreFlows:
+    - name: "User Onboarding"
+      priority: "critical"
+      steps:
+        - "Download app"
+        - "Sign up with Google or Apple"
+        - "Complete profile"
+        - "Enable notifications"
+    - name: "Core Feature"
+      priority: "critical"
+      steps:
+        - "Open app"
+        - "Navigate to feature"
+        - "Perform action"
+        - "View result"
+design:
+  personality: "playful"
+  palette:
+    primary: "cyan-500"
+    secondary: "pink-500"
+    neutral: "zinc"
+    surface: "light"
+  typography:
+    heading: "DM Sans"
+    body: "Inter"
+    scale: "default"
+  shape:
+    radius: "lg"
+    density: "default"
+    shadows: "elevated"
+    borders: "none"
+  motion:
+    transitions: "expressive"
+  iconLibrary: "phosphor"
+architecture:
+  style: "modular-monolith"
+  projects:
+    mobile:
+      - name: "app"
+        platform: "cross-platform"
+        framework: "react-native"
+    backend:
+      - name: "api"
+        framework: "nodejs"
+        apiStyle: "rest"
+        orm: "prisma"
+auth:
+  strategy: "oidc"
+  provider: "firebase"
+  socialProviders:
+    - "google"
+    - "apple"
+  sessions:
+    accessToken: "jwt"
+    refreshToken: true
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "session"
+  storage:
+    blobs:
+      provider: "s3"
+      public: false
+integrations:
+  monitoring:
+    provider: "sentry"
+deployment:
+  cloud: "railway"
+  ciCd:
+    provider: "github-actions"
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 200
+    expectedUsersYear1: 10000
+  security:
+    pii: true
+    encryptionAtRest: true
+    encryptionInTransit: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "backlog"
+    - "adr"
+    - "cost-estimate"

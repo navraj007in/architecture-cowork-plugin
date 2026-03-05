@@ -1,0 +1,91 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyAPI"
+  description: "API-only backend service with OpenAPI docs and rate limiting"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Developer"
+      goals:
+        - "Get API key"
+        - "Read API documentation"
+        - "Integrate API into application"
+    - name: "Platform Admin"
+      accessLevel: "admin"
+      goals:
+        - "Monitor API usage"
+        - "Manage API keys"
+        - "Configure rate limits"
+  coreFlows:
+    - name: "API Integration"
+      priority: "critical"
+      steps:
+        - "Sign up for account"
+        - "Generate API key"
+        - "Read documentation"
+        - "Make first API call"
+        - "Handle responses and errors"
+design:
+  personality: "minimal"
+  palette:
+    primary: "green-500"
+    secondary: "lime-400"
+    neutral: "zinc"
+    surface: "dark"
+  typography:
+    heading: "Space Grotesk"
+    body: "Inter"
+    mono: "JetBrains Mono"
+    scale: "compact"
+  shape:
+    radius: "sm"
+    density: "compact"
+    shadows: "flat"
+    borders: "subtle"
+  iconLibrary: "lucide"
+architecture:
+  style: "modular-monolith"
+  projects:
+    backend:
+      - name: "api"
+        framework: "nodejs"
+        apiStyle: "rest"
+        orm: "prisma"
+        apiVersioning: "url-prefix"
+auth:
+  strategy: "api-key"
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "api"
+integrations:
+  monitoring:
+    provider: "datadog"
+deployment:
+  cloud: "railway"
+  ciCd:
+    provider: "github-actions"
+nonFunctional:
+  availability:
+    target: "99.95"
+  scaling:
+    expectedUsersMonth1: 100
+    expectedUsersYear1: 10000
+  performance:
+    apiResponseTime: "<100ms"
+  security:
+    pii: false
+    encryptionInTransit: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "adr"
+    - "deployment-guide"
+    - "cost-estimate"
