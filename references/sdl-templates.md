@@ -51,6 +51,24 @@ product:
         - "Complete profile"
         - "Start trial"
 
+design:
+  preset: "shadcn"
+  personality: "minimal"
+  palette:
+    primary: "teal-600"
+    secondary: "amber-500"
+    neutral: "slate"
+    surface: "light"
+  typography:
+    heading: "DM Sans"
+    body: "Inter"
+    scale: "default"
+  shape:
+    radius: "md"
+    shadows: "subtle"
+    borders: "subtle"
+  iconLibrary: "lucide"
+
 architecture:
   style: "modular-monolith"
   projects:
@@ -165,6 +183,27 @@ product:
         - "Verify identity"
         - "Set up store"
         - "List first product"
+
+design:
+  personality: "playful"
+  palette:
+    primary: "rose-600"
+    secondary: "orange-500"
+    accent: "sky-400"
+    neutral: "zinc"
+    surface: "light"
+  typography:
+    heading: "Plus Jakarta Sans"
+    body: "Inter"
+    scale: "default"
+  shape:
+    radius: "lg"
+    density: "default"
+    shadows: "elevated"
+    borders: "none"
+  motion:
+    transitions: "smooth"
+  iconLibrary: "phosphor"
 
 architecture:
   style: "microservices"
@@ -546,6 +585,26 @@ product:
     - name: "Document upload + processing"
     - name: "Semantic search query"
 
+design:
+  personality: "minimal"
+  palette:
+    primary: "emerald-500"
+    secondary: "cyan-400"
+    neutral: "zinc"
+    surface: "dark"
+  typography:
+    heading: "Space Grotesk"
+    body: "Inter"
+    mono: "JetBrains Mono"
+    scale: "compact"
+  shape:
+    radius: "sm"
+    density: "compact"
+    shadows: "flat"
+    borders: "subtle"
+  iconLibrary: "lucide"
+  componentLibrary: "shadcn/ui"
+
 architecture:
   style: "modular-monolith"
   projects:
@@ -721,6 +780,25 @@ product:
     - name: "Record management"
     - name: "Report generation"
 
+design:
+  preset: "ant"
+  personality: "corporate"
+  palette:
+    primary: "blue-700"
+    secondary: "slate-500"
+    neutral: "gray"
+    surface: "light"
+  typography:
+    heading: "Inter"
+    body: "Inter"
+    scale: "compact"
+  shape:
+    radius: "sm"
+    density: "compact"
+    shadows: "subtle"
+    borders: "visible"
+  iconLibrary: "lucide"
+
 architecture:
   style: "modular-monolith"
   projects:
@@ -891,6 +969,28 @@ product:
         - "Connect to session"
         - "Edit collaboratively"
         - "Auto-save changes"
+
+design:
+  personality: "editorial"
+  palette:
+    primary: "stone-700"
+    secondary: "amber-600"
+    accent: "sky-500"
+    neutral: "stone"
+    surface: "auto"
+  typography:
+    heading: "Libre Baskerville"
+    body: "Source Sans 3"
+    mono: "Fira Code"
+    scale: "spacious"
+  shape:
+    radius: "none"
+    density: "relaxed"
+    shadows: "flat"
+    borders: "subtle"
+  motion:
+    transitions: "smooth"
+  iconLibrary: "tabler"
 
 architecture:
   style: "modular-monolith"

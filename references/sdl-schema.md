@@ -383,6 +383,57 @@ artifacts:
 
 ---
 
+## design (optional)
+
+Defines the visual design language for frontend components. When present, scaffold prompts MUST follow these constraints instead of defaulting to generic styles.
+
+```yaml
+design:
+  preset: enum               # Optional. shadcn | material | ant | chakra | daisyui | bootstrap | custom
+  personality: enum           # Optional. minimal | corporate | playful | bold | brutalist | editorial | luxury
+  palette:                    # Optional
+    primary: string           # CSS color or Tailwind name. e.g. "#0F766E", "teal-700"
+    secondary: string         # e.g. "#F59E0B", "amber-500"
+    accent: string            # e.g. "#EC4899", "pink-500"
+    neutral: enum             # Tailwind neutral scale. slate | gray | zinc | neutral | stone
+    surface: enum             # light | dark | auto
+    semantic:                 # Optional. Override success/warning/error/info colors
+      success: string
+      warning: string
+      error: string
+      info: string
+  typography:                 # Optional
+    heading: string           # Font family for headings. e.g. "DM Sans", "Playfair Display"
+    body: string              # Font family for body text. e.g. "Inter", "IBM Plex Sans"
+    mono: string              # Font family for code. e.g. "JetBrains Mono", "Fira Code"
+    scale: enum               # compact | default | spacious
+  shape:                      # Optional
+    radius: enum              # none | sm | md | lg | full
+    density: enum             # compact | default | relaxed
+    shadows: enum             # flat | subtle | elevated | dramatic
+    borders: enum             # none | subtle | visible | bold
+  motion:                     # Optional
+    transitions: enum         # none | snappy | smooth | expressive
+    pageTransitions: boolean  # Default: false
+  layout:                     # Optional
+    maxWidth: number          # Max content width in px. e.g. 1280
+    style: enum               # dashboard | marketing | editorial | app-shell | saas
+  iconLibrary: string         # Optional. e.g. "lucide", "heroicons", "phosphor", "tabler"
+  componentLibrary: string    # Optional. e.g. "shadcn/ui", "Radix UI", "Headless UI", "Chakra UI"
+  accessibility:              # Optional
+    wcag: enum                # A | AA | AAA
+    reducedMotion: boolean    # Default: true
+    highContrast: boolean     # Default: false
+```
+
+**Behavior rules:**
+- When `preset` is set, scaffold should install/configure that design system and follow its conventions.
+- When `palette` is set, ALL generated UI code MUST use these colors — never fall back to default Tailwind indigo/purple.
+- When `personality` is set, it constrains layout density, whitespace, border treatment, and animation choices.
+- When `design` is absent entirely, the scaffolder should select a diverse, project-appropriate palette (NOT default indigo).
+
+---
+
 ## Extension Fields
 
 Any field prefixed with `x-` is allowed at any level:

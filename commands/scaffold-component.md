@@ -53,6 +53,7 @@ Also read these cross-cutting SDL sections for context:
 - `observability` — logging, health checks, metrics
 - `devops` — CI/CD, Docker, environments
 - `environments` — for .env.example generation
+- `design` — design system, color palette, typography, shape, personality (see below)
 
 ### Step 3: Scaffold the Component
 
@@ -75,6 +76,13 @@ Generate files based on the component type. Use the SDL configuration to determi
 
 **For frontend web apps** (web, admin, dashboard, crm, booking, ai-chat):
 - Framework project structure (Next.js App Router, React/Vite, etc.)
+- **Design system setup from SDL `design` section:**
+  - Tailwind config with SDL palette colors mapped to primary/secondary/accent
+  - Font setup (Google Fonts / next/font) for declared heading/body/mono fonts
+  - Component library installation if `design.preset` or `design.componentLibrary` specified
+  - Icon library installation if `design.iconLibrary` specified
+  - CSS variables or theme tokens matching the declared personality and shape
+  - If NO design section exists: select a domain-appropriate color palette — NEVER use indigo/purple as the default
 - API client stub pointing to backend services
 - Component library setup if specified
 - State management boilerplate if specified
@@ -84,6 +92,7 @@ Generate files based on the component type. Use the SDL configuration to determi
 **For mobile apps** (mobile, react-native, flutter, swift, kotlin):
 - Mobile project structure (Expo, Flutter, Xcode, Android Studio)
 - Navigation setup (stack/tab)
+- **Theme/design tokens from SDL `design` section** (colors, typography, spacing mapped to platform conventions)
 - API client stub
 - Push notification, deep linking, permission stubs
 - OTA update config if applicable
@@ -132,6 +141,7 @@ Port: {port or "PORT env var"}
 - Scaffold ONLY the named component — do NOT create or modify other component directories
 - Use `[non_interactive:true]` mode — no questions, no confirmations
 - Make reasonable assumptions for anything not specified in the SDL
+- For UI styling: ALWAYS use the SDL `design` section colors if present. If absent, choose a domain-appropriate palette (see design-systems reference). NEVER default to indigo/purple — use teal, emerald, sky, rose, amber, or cyan instead
 - If the component depends on shared types, create import stubs but do NOT scaffold the shared package (another agent handles that)
 - Match framework and runtime conventions exactly (e.g., App Router for Next.js, Expo for React Native)
 - Do NOT include the CTA footer
