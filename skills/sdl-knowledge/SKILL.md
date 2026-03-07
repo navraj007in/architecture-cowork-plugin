@@ -429,6 +429,30 @@ Each generator takes a compiled SDL document and produces deterministic output �
 
 ---
 
+## SDL API Routes
+
+All SDL operations are exposed via REST endpoints at `/api/sdl/*`. All routes require authentication.
+
+| Method | Path | Input | Description |
+|--------|------|-------|-------------|
+| POST | `/api/sdl/validate` | `{ yaml, modules? }` | Validate SDL YAML (supports multi-module with imports) |
+| POST | `/api/sdl/generate` | `{ yaml, artifactType? }` | Generate all artifacts or a single type |
+| POST | `/api/sdl/docker-compose` | `{ yaml }` | Generate Docker Compose for local dev |
+| POST | `/api/sdl/kubernetes` | `{ yaml }` | Generate Kubernetes manifests |
+| POST | `/api/sdl/monitoring` | `{ yaml }` | Generate Prometheus + Grafana configs |
+| POST | `/api/sdl/nginx` | `{ yaml }` | Generate Nginx reverse proxy config |
+| POST | `/api/sdl/coding-rules` | `{ yaml }` | Generate AI coding rules (CLAUDE.md, .cursorrules) |
+| POST | `/api/sdl/diff` | `{ yamlA, yamlB }` | Diff two SDL documents |
+| GET | `/api/sdl/templates` | — | List available SDL templates |
+| GET | `/api/sdl/templates/:id` | — | Get specific template with YAML |
+
+**Notes:**
+- `coding-rules-enforcement` has no dedicated route — use `/api/sdl/generate` with `artifactType: "coding-rules-enforcement"`
+- `deploy-diagram` is not exposed via API — used programmatically by the deploy planner module
+- Routes with `sdlGate` middleware also check billing capabilities (`sdlEdit` capability required)
+
+---
+
 ## Constants
 
 ### Budget Monthly Ceilings
