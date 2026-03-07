@@ -376,6 +376,8 @@ artifacts:
     - adr
     - deployment-guide
     - cost-estimate
+    - coding-rules
+    - coding-rules-enforcement
   formats:
     diagrams: enum           # mermaid | plantuml | structurizr
     adr: enum                # markdown | asciidoc

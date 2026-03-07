@@ -64,6 +64,7 @@ See `references/sdl-schema.md` for the complete field-by-field schema reference 
 ```
 architecture-diagram | sequence-diagrams | openapi | data-model
 repo-scaffold | iac-skeleton | backlog | adr | deployment-guide | cost-estimate
+coding-rules | coding-rules-enforcement
 ```
 
 ---
@@ -402,6 +403,8 @@ Each generator takes a compiled SDL document and produces deterministic output â
 | Kubernetes | K8s manifests (Deployment, Service, HPA, Ingress) | `architecture.projects`, `deployment`, `data` |
 | Monitoring | Prometheus config, alert rules, Grafana dashboard | `architecture.projects`, `nonFunctional`, `data` |
 | Nginx | Reverse proxy config with SSL, gzip, rate limiting | `architecture.projects`, `deployment` |
+| Coding Rules | CLAUDE.md, .cursorrules, copilot-instructions.md | `architecture`, `data`, `auth`, `testing`, `observability`, all projects |
+| Coding Rules Enforcement | ESLint, dependency-cruiser, pre-commit, arch tests | `architecture`, all projects |
 
 ### How SDL drives blueprint deliverables
 
