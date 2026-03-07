@@ -276,6 +276,77 @@ For the full extended library, see `references/service-profiles.md`.
 - **Free tier:** Meilisearch Cloud free plan (100K documents)
 - **Docs:** https://www.meilisearch.com/docs
 
+### Elasticsearch
+- **Signup:** https://cloud.elastic.co
+- **Setup:** Create deployment → Get endpoint → Install client SDK → Create index
+- **Credentials:** Cloud ID or URL, API Key
+- **Free tier:** 14-day trial; self-hosted is free (OSS)
+- **Docs:** https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html
+
+### Azure Cognitive Search
+- **Signup:** https://portal.azure.com
+- **Setup:** Create Search service → Create index → Load data → Query
+- **Credentials:** Endpoint URL, Admin Key, Query Key
+- **Free tier:** Free tier (50MB, 3 indexes)
+- **Docs:** https://learn.microsoft.com/en-us/azure/search/
+
+---
+
+## Vector Databases
+
+### Pinecone
+- **Signup:** https://www.pinecone.io
+- **Setup:** Create index → Choose dimensions/metric → Upsert vectors → Query
+- **Credentials:** API Key, Environment, Index name
+- **Free tier:** Starter plan (1 index, 100K vectors)
+- **Docs:** https://docs.pinecone.io
+
+### Qdrant
+- **Signup:** https://cloud.qdrant.io
+- **Setup:** Create cluster → Create collection → Upload vectors → Search
+- **Credentials:** URL, API Key
+- **Free tier:** 1GB free cluster
+- **Docs:** https://qdrant.tech/documentation/
+
+### Weaviate
+- **Signup:** https://console.weaviate.cloud
+- **Setup:** Create cluster → Define schema → Import objects → Query
+- **Credentials:** URL, API Key
+- **Free tier:** Sandbox cluster (14-day)
+- **Docs:** https://weaviate.io/developers/weaviate
+
+---
+
+## Message Queues
+
+### RabbitMQ (CloudAMQP)
+- **Signup:** https://www.cloudamqp.com
+- **Setup:** Create instance → Get AMQP URL → Install client (amqplib/pika) → Publish/consume
+- **Credentials:** AMQP URL (includes host, port, vhost, credentials)
+- **Free tier:** Little Lemur (1M messages/mo, 20 connections)
+- **Docs:** https://www.rabbitmq.com/documentation.html
+
+### Amazon SQS
+- **Signup:** https://aws.amazon.com
+- **Setup:** Create queue → Get queue URL → Install AWS SDK → Send/receive messages
+- **Credentials:** AWS Access Key, Secret Key, Region, Queue URL
+- **Free tier:** 1M requests/mo
+- **Docs:** https://docs.aws.amazon.com/sqs/
+
+### Apache Kafka (Confluent Cloud)
+- **Signup:** https://confluent.cloud
+- **Setup:** Create cluster → Create topic → Get bootstrap server → Install client
+- **Credentials:** Bootstrap servers, API Key, API Secret
+- **Free tier:** $400 credit for 30 days
+- **Docs:** https://docs.confluent.io/cloud/current/overview.html
+
+### Azure Service Bus
+- **Signup:** https://portal.azure.com
+- **Setup:** Create namespace → Create queue/topic → Get connection string → Install SDK
+- **Credentials:** Connection string
+- **Free tier:** No free tier; Basic tier starts at ~$0.05/M operations
+- **Docs:** https://learn.microsoft.com/en-us/azure/service-bus-messaging/
+
 ---
 
 ## CI/CD

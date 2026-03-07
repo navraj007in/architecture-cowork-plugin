@@ -272,9 +272,22 @@ When converting a system manifest to SDL:
 | Clerk | `auth.provider: clerk` |
 | Cognito | `auth.provider: cognito` |
 | S3 | `data.storage.blobs.provider: s3` |
+| GCS | `data.storage.blobs.provider: gcs` |
+| Azure Blob | `data.storage.blobs.provider: azure-blob` |
+| Cloudflare R2 | `data.storage.blobs.provider: cloudflare-r2` |
 | Redis | `data.cache.type: redis` |
-| Elasticsearch | `data.search.provider: elasticsearch` |
 | RabbitMQ | `data.queues.provider: rabbitmq` |
+| SQS | `data.queues.provider: sqs` |
+| Kafka | `data.queues.provider: kafka` |
+| Azure Service Bus | `data.queues.provider: azure-service-bus` |
+| Elasticsearch | `data.search.provider: elasticsearch` |
+| Algolia | `data.search.provider: algolia` |
+| Typesense | `data.search.provider: typesense` |
+| Meilisearch | `data.search.provider: meilisearch` |
+| Azure Search | `data.search.provider: azure-search` |
+| Pinecone | `data.search.provider: pinecone` |
+| Qdrant | `data.search.provider: qdrant` |
+| Weaviate | `data.search.provider: weaviate` |
 
 ---
 
