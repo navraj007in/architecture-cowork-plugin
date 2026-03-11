@@ -90,6 +90,24 @@ If GitHub:
 
 > "Should I run `npm install` / `pip install` after scaffolding? This takes a few minutes but means projects are ready to run immediately."
 
+### Step 3.5: Check for Design System
+
+Check if the design-system phase has been completed:
+
+1. Look for `architecture-output/design-system/design-tokens.json` in the blueprint directory
+2. Look for a `design` section in `sdl.yaml`
+
+**If design tokens exist**, load them — the scaffolder will use these to configure frontend projects with the correct palette, typography, shape, and motion settings.
+
+**If no design tokens exist but SDL has a `design` section**, use the SDL design fields directly and load the **design-systems.md** reference for implementation patterns.
+
+**If neither exists**, note this in the scaffolder handoff — the scaffolder should infer domain-appropriate defaults from `design-systems.md` (NEVER default to indigo/purple).
+
+Inform the user:
+
+- If design tokens found: `"Design system detected — your scaffolded frontends will use your design tokens."`
+- If no design system: `"Tip: Run /architect:design-system first to get a custom design language. Scaffolding will use domain defaults for now."`
+
 ### Step 4: Delegate to Scaffolder Agent
 
 Pass the following to the **scaffolder** agent:
@@ -107,6 +125,57 @@ Pass the following to the **scaffolder** agent:
 - Per-frontend config: build_tool, rendering, state_management, data_fetching, component_library, form_handling, validation, animation, api_client, backend_connections, client_auth, realtime, monitoring, deploy_target, dev_port
 - Per-mobile config: build_platform, navigation, push_notifications, deep_linking, permissions, ota_updates, realtime (protocol + provider), bundle_id, client_auth (token_storage, device_binding, biometric)
 - `environments` section — for generating `.env.example` files with per-environment URL placeholders
+- **Design system artifacts** (if available):
+  - `design-tokens.json` — full token set for Tailwind config generation
+  - `tailwind.config.patch.ts` — ready-to-merge Tailwind extensions
+  - SDL `design` section — preset, personality, palette, typography, shape, motion, layout, icons, accessibility
+
+#### Frontend Design Integration (when design tokens are available)
+
+For each **frontend component**, the scaffolder MUST:
+
+1. **Tailwind config** — merge `tailwind.config.patch.ts` into the generated `tailwind.config.ts`. Include palette colors, font families, border radius, box shadows, and any custom extensions from the design tokens.
+
+2. **CSS custom properties** — generate `globals.css` with CSS variables matching the design tokens:
+   ```css
+   :root {
+     --color-primary: ...;
+     --color-secondary: ...;
+     --font-heading: ...;
+     --font-body: ...;
+     /* etc. from design-tokens.json */
+   }
+   ```
+
+3. **Font setup** — configure Google Font imports:
+   - Next.js: use `next/font/google` with CSS variable binding
+   - Vite/React: add `<link>` tags or use `@fontsource` packages
+   - Set `--font-heading` and `--font-body` CSS variables
+
+4. **Component library setup** — if a `preset` is specified:
+   - shadcn: generate `components.json` with correct theme, run init
+   - Material UI: generate theme with `createTheme()` using design tokens
+   - Chakra: generate `extendTheme()` config from tokens
+   - DaisyUI: configure `daisyui.themes` in Tailwind config
+
+5. **Layout shell** — generate a base layout matching `design.layout.style`:
+   - `dashboard`: sidebar navigation + header + main content area
+   - `marketing`: hero section + content sections + footer
+   - `editorial`: narrow content column + typographic hierarchy
+   - `app-shell`: responsive top navigation + content area
+   - `saas`: auth layout (login/signup) + dashboard layout + settings layout
+
+6. **Sample page** — generate one themed sample page (`app/page.tsx` or `src/App.tsx`) that demonstrates:
+   - The palette (primary, secondary, accent colors in use)
+   - Typography (heading + body fonts at different scales)
+   - Shape system (cards with correct radius, shadows, borders)
+   - At least 2 styled interactive elements (buttons, inputs)
+   - The layout shell in action
+   - This page serves as a living reference for the design language
+
+7. **Icon library** — install and configure the icon library from `design.iconLibrary`:
+   - Add the correct npm package
+   - Include sample imports in the sample page
 
 ### Step 5: Print Summary
 
@@ -137,12 +206,14 @@ Each project has:
 - Git initialized with initial commit
 - Shared type packages (if applicable)
 - Frontend: API client config, backend connection stubs, client auth setup, monitoring SDK init
+- Frontend: Design tokens integrated — custom palette, typography, layout shell, and sample page (when design-system phase was completed)
 - Mobile: push notification config, deep linking setup, permission declarations, OTA update config
 
 Next steps:
 1. Copy .env.example to .env in each project and fill in your credentials
 2. Follow the README in each project to start the dev server
-3. Start building features!
+3. Open the sample page to see your design system in action
+4. Start building features!
 ```
 
 If GitHub repos were created, include repo URLs in the Path column.
