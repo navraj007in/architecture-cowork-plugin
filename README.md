@@ -102,7 +102,7 @@ Generate a complete design system from the SDL's design section:
 
 ## Solution Design Language (SDL)
 
-SDL is the structured YAML specification that captures all architecture decisions.
+SDL is the structured YAML specification that captures all architecture decisions. For the full specification, schema, templates, and reference implementation, see the [SDL repository](https://github.com/navraj007in/solution-definition-language).
 
 ### Multi-File SDL
 
