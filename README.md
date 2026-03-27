@@ -51,6 +51,10 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 | `/architect:sync-backlog`          | Push sprint backlog into Azure DevOps or Jira as sprints and work items           |
 | `/architect:publish-api-docs`      | Generate interactive API documentation (Swagger UI, Redoc, AsyncAPI)              |
 | `/architect:export-diagrams`       | Render Mermaid diagrams to PNG/SVG with light and dark themes                     |
+| `/architect:deep-research`         | Web-verified competitor analysis, market sizing, and differentiation map          |
+| `/architect:launch-checklist`      | Pre-launch readiness checklist — infra, security, legal, analytics, go-live      |
+| `/architect:onboarding-pack`       | Developer onboarding package for first hire or agency handoff                     |
+| `/architect:investor-update`       | Stakeholder progress update pre-filled from CRs, ADRs, costs, and scaffold data  |
 
 ## What You Get
 
@@ -99,6 +103,47 @@ Generate a complete design system from the SDL's design section:
 - Palette generation with accessibility compliance
 - Typography scale with font family selection
 - Domain-appropriate color recommendations
+
+### From `/architect:deep-research`
+
+Web-verified market intelligence using Claude's WebSearch and WebFetch tools:
+- **Competitor landscape** — 5-8 direct competitors with verified pricing, funding, features, and weaknesses
+- **Market sizing** — TAM/SAM/SOM with sourced estimates and confidence tags ([Verified]/[Estimated])
+- **Feature comparison matrix** — your product vs competitors across key dimensions
+- **Opportunity gaps** — underserved market segments and missing features
+- **Technology trends** — relevant industry and adoption trends
+- All claims sourced with URLs and data freshness dates
+
+### From `/architect:launch-checklist`
+
+Pre-launch readiness checklist tailored to your SDL and deployment config:
+- Infrastructure (DNS, SSL, CDN, auto-scaling)
+- Monitoring (error tracking, APM, alerts, health checks)
+- Security (secrets rotation, CORS, rate limiting, OWASP)
+- Data (backups, migrations, retention policy)
+- Legal (privacy policy, ToS, cookie consent, GDPR/CCPA)
+- Analytics, performance, documentation, and go-live readiness
+- Items tagged [Required]/[Recommended]/[Optional] based on project stage
+
+### From `/architect:onboarding-pack`
+
+Developer onboarding document for first hire or agency handoff:
+- Architecture overview with component diagram (Mermaid)
+- Codebase map (component → directory → purpose → tech)
+- Step-by-step environment setup with copy-pasteable commands
+- Key decisions summarized from ADRs
+- Coding conventions from CLAUDE.md/.cursorrules
+- Component dependency graph and glossary
+
+### From `/architect:investor-update`
+
+Stakeholder progress report pre-filled from project data:
+- Features shipped (from applied Change Requests)
+- Architecture decisions (from ADRs)
+- Technical progress (from scaffold report)
+- Infrastructure costs (from cost estimate)
+- Risks and blockers (from complexity/security scans)
+- Next priorities and team/hiring needs
 
 ## Solution Design Language (SDL)
 
@@ -160,7 +205,7 @@ Generate linter configs, architecture tests, and CI gates from the SDL:
 
 ## Skills
 
-The plugin includes 28 domain knowledge skills:
+The plugin includes 29 domain knowledge skills:
 
 | Skill                          | What It Contains                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
@@ -168,6 +213,7 @@ The plugin includes 28 domain knowledge skills:
 | **Manifest Structure**         | Canonical system manifest format with all enumerated types                                                                |
 | **Application Patterns**       | Architecture patterns (clean, hexagonal, modular monolith, CQRS), folder structures, design principles                   |
 | **Cost Knowledge**             | Real pricing data for cloud compute, databases, LLM tokens, auth, payments, email, hosting, monitoring                    |
+| **Deep Research**              | Structured web research methodology — Discover → Verify → Synthesize with confidence tagging and source citations         |
 | **Known Services**             | Setup steps, credentials, and free tier details for 70+ services across 12 categories                                     |
 | **Diagram Patterns**           | C4 Context/Container, data flow, agent flow, deployment, sequence diagram templates in Mermaid                            |
 | **Agent Architecture**         | AI agent orchestration patterns (ReAct, chain-of-thought, multi-agent), tool design, memory, guardrails                   |
@@ -210,7 +256,7 @@ architecture-cowork-plugin/
 │   ├── env-setup.md
 │   ├── scaffolder.md
 │   └── security-scanner.md
-├── commands/                        # 20 slash commands
+├── commands/                        # 24 slash commands
 │   ├── agent-spec.md
 │   ├── blueprint.md
 │   ├── compare-stack.md
@@ -220,7 +266,11 @@ architecture-cowork-plugin/
 │   ├── export-diagrams.md
 │   ├── generate-data-model.md
 │   ├── hiring-brief.md
+│   ├── deep-research.md
 │   ├── import.md
+│   ├── investor-update.md
+│   ├── launch-checklist.md
+│   ├── onboarding-pack.md
 │   ├── publish-api-docs.md
 │   ├── quick-spec.md
 │   ├── scaffold-component.md
@@ -231,7 +281,7 @@ architecture-cowork-plugin/
 │   ├── setup-env.md
 │   ├── sync-backlog.md
 │   └── well-architected.md
-├── skills/                          # 28 domain knowledge skills
+├── skills/                          # 29 domain knowledge skills
 │   ├── agent-architecture/
 │   ├── api-artifacts/
 │   ├── application-patterns/
@@ -240,6 +290,7 @@ architecture-cowork-plugin/
 │   ├── coding-rules-enforcement/
 │   ├── complexity-factors/
 │   ├── cost-knowledge/
+│   ├── deep-research/
 │   ├── design-system/
 │   ├── diagram-patterns/
 │   ├── export-diagrams/
