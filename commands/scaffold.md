@@ -64,10 +64,11 @@ Map manifest entries to scaffoldable components:
 
 ### Step 3: Ask Configuration Questions
 
-**If `[non_interactive:true]` is in the command argument**, skip all questions and use these defaults:
+**If `[non_interactive:true]` is in the command argument OR if the execution mode constraints say non-interactive**, skip all questions and use these defaults:
 - **Parent directory**: current working directory (or the path from `[workspace_dir:...]` if provided)
 - **GitHub or local**: Local directories with git init
 - **Install dependencies**: Yes
+- **Structure / auth / framework choices**: Derive ALL decisions from solution.sdl.yaml and existing ADRs in architecture-output/adrs/. Follow the SDL exactly — do NOT ask the user to choose between options. If the SDL specifies a monorepo structure, use it. If the SDL specifies auth strategy, implement it. If there's a conflict between existing code and SDL, follow the SDL (the SDL is the source of truth).
 
 **Otherwise**, ask the user these questions before proceeding:
 
