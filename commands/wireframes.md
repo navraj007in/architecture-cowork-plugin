@@ -30,7 +30,9 @@ Load:
 
 ### Step 3: Build Screen Inventory
 
-Infer screens from the SDL:
+**Priority: If `product.screens` exists in SDL, use it as the screen inventory** (user-defined via the Screen Flow Editor, takes precedence over inference). Use `product.screenFlows` for navigation links between wireframes.
+
+**Otherwise, infer screens from the SDL:**
 
 1. **Auth screens** (if SDL has `auth` section):
    - Login, Register, Forgot Password

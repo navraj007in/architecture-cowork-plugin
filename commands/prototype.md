@@ -85,7 +85,9 @@ prototype/
 - Load Google Fonts for heading + body fonts
 
 #### 4.3 — Screen Generation
-For each screen (same inventory as wireframes):
+**Priority: If `product.screens` exists in SDL, use it as the screen inventory** (user-defined via the Screen Flow Editor). Use `product.screenFlows` for navigation routes. Otherwise, infer screens from core flows and data models.
+
+For each screen:
 - Create a React component (or HTML page)
 - Apply the layout shell
 - Populate with realistic mock data derived from data model entities
