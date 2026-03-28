@@ -271,7 +271,55 @@ After generating all files for the component:
 3. **Auth tokens:** If this component authenticates against another service, include token passing in the API client
 4. **Docker networking:** In `docker-compose.yml`, reference other services by name for inter-service communication
 
-### Step 5: Print Summary
+### Step 5: Verify — Install, Build, and Fix
+
+**This step is MANDATORY. Do NOT skip it.**
+
+After writing all files, run the following verification sequence inside the `{name}/` directory:
+
+#### 5a. Install dependencies
+```bash
+cd {name} && npm install   # or pip install, go mod download, etc.
+```
+If install fails (missing packages, version conflicts):
+- Read the error output
+- Fix `package.json` / `requirements.txt` / `go.mod` (add missing deps, fix version ranges)
+- Re-run install until it succeeds
+
+#### 5b. Build / compile
+```bash
+npm run build   # or tsc --noEmit, go build ./..., python -m py_compile, etc.
+```
+For TypeScript projects without a build script, run: `npx tsc --noEmit`
+
+If the build fails (type errors, missing imports, syntax errors):
+- Read EVERY error message
+- Fix the source files — do NOT delete code or add `// @ts-ignore` to make errors go away. Fix them properly:
+  - Missing import → add the import
+  - Type mismatch → fix the type or the value
+  - Missing property → add it to the interface/type
+  - Module not found → install the package or fix the import path
+- Re-run the build
+- **Repeat until the build passes with zero errors**
+
+#### 5c. Run tests (if test files were created)
+```bash
+npm test   # or pytest, go test ./..., etc.
+```
+If tests fail:
+- Read the failure output
+- Fix the test OR the source code (whichever is wrong)
+- Re-run tests until they pass
+
+#### 5d. Lint check (if linter is configured)
+```bash
+npm run lint   # if lint script exists
+```
+Fix lint errors if any. Do NOT disable lint rules to suppress errors.
+
+**The scaffold is NOT complete until install + build succeed with zero errors.** If you cannot resolve an error after 3 attempts, document the remaining issue in the README under a "Known Issues" section — but this should be rare.
+
+### Step 6: Print Summary
 
 ```
 Scaffold complete for "{name}" ({type}, {runtime}):
@@ -279,6 +327,11 @@ Scaffold complete for "{name}" ({type}, {runtime}):
 Files created:
 - {name}/...
 - {name}/...
+
+Verification:
+✓ Dependencies installed
+✓ Build passed (zero errors)
+✓ Tests passed (X/X)
 
 Port: {port or "PORT env var"}
 Test: npm test (or equivalent)
@@ -294,4 +347,5 @@ Start: npm run dev (or equivalent)
 - If the component depends on shared types, create import stubs but do NOT scaffold the shared package (another agent handles that)
 - Match framework and runtime conventions exactly (e.g., App Router for Next.js, Expo for React Native)
 - **CRITICAL: Generate REAL code with actual logic — not placeholder comments, TODOs, or empty function bodies. Every file should work when the project starts.**
+- **CRITICAL: You MUST run install + build and fix all errors before finishing. A scaffold that doesn't compile is a failed scaffold.**
 - Do NOT include the CTA footer
