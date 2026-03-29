@@ -6,120 +6,100 @@ description: Generate navigable HTML wireframes from SDL architecture, core flow
 
 ## Trigger
 
-`/architect:wireframes` — run after blueprint and design-system phases.
+`/architect:wireframes` — run after blueprint phase.
 
-## Purpose
+## Output Budget — READ FIRST
 
-Generate low-fidelity HTML wireframes for every screen in the product. Screens are inferred from SDL core flows, data models, and component types. Each wireframe is a standalone HTML file styled with the project's design tokens, linked together for click-through navigation. Outputs a screen inventory and navigation map.
+- Write **at most 2 HTML files per run** — stop after 2 screens even if more remain
+- Each HTML file must be **under 200 lines**
+- Use the shared `wireframes.css` — never inline CSS in HTML files
+- No JavaScript, no external CDN links
 
 ## Workflow
 
-### Step 1: Gather Inputs
+### Step 1: Check for Manifest
 
-Read:
-1. **SDL file** — components, auth, data models, core flows
-2. **Design tokens** — `architecture-output/design-system/design-tokens.json` or SDL `design` section
-3. **Data model** — `architecture-output/data-model.md` for entity fields and relationships
+Check if `architecture-output/wireframes/_manifest.json` exists.
 
-### Step 2: Load Skills
+**If it exists:** Read it. It has `{ "screens": [...], "generated": [...] }`. Jump to Step 3.
 
-Load:
-- **wireframe-patterns** skill — screen type templates
-- **design-system** skill — token application rules
-- **founder-communication** skill — plain English labels
+**If it does not exist:** Go to Step 2.
 
-### Step 3: Build Screen Inventory
+### Step 2: First Run Setup
 
-**Priority: If `product.screens` exists in SDL, use it as the screen inventory** (user-defined via the Screen Flow Editor, takes precedence over inference). Use `product.screenFlows` for navigation links between wireframes.
+Read the SDL file. Using the **wireframe-patterns** skill, map SDL sections to a screen inventory:
 
-**Otherwise, infer screens from the SDL:**
-
-1. **Auth screens** (if SDL has `auth` section):
-   - Login, Register, Forgot Password
-   - OAuth callback (if OAuth configured)
-
-2. **Dashboard / Home** (always — entry point after login)
-
-3. **Entity CRUD screens** (from `data` section entities):
-   - For each entity: List view, Detail view, Create/Edit form
-   - Example: `Order` entity → Orders List, Order Detail, Create Order
-
-4. **Core flow screens** (from `product.coreFlows`):
-   - Map each flow step to a screen state
-   - Example: "Checkout" flow → Cart → Shipping → Payment → Confirmation
-
-5. **Settings** (always):
-   - Profile, Account Settings
-   - Billing (if subscriptions in SDL)
-   - Team (if multi-tenant)
-
-6. **Landing page** (if frontend component type is 'marketing' or 'landing')
-
-### Step 4: Generate Wireframes
-
-For each screen in the inventory:
-
-1. Create an HTML file: `architecture-output/wireframes/{screen-name}.html`
-2. Apply design tokens as CSS variables:
-   - `--color-primary`, `--color-secondary`, `--font-heading`, `--font-body`
-   - `--radius`, `--shadow`, `--spacing`
-3. Use the appropriate screen type template from **wireframe-patterns** skill
-4. Populate with:
-   - Real field names from data models
-   - Real navigation items from screen inventory
-   - Realistic placeholder data (names, emails, dates — not "lorem ipsum")
-   - Working `<a>` links between wireframe pages
-5. Include a shared navigation header across all pages
-
-### Step 5: Generate Navigation Map
-
-Create `architecture-output/wireframes/navigation-map.mmd`:
-
-```mermaid
-graph TD
-    Login --> Dashboard
-    Dashboard --> OrderList[Orders]
-    Dashboard --> Settings
-    OrderList --> OrderDetail[Order Detail]
-    OrderDetail --> EditOrder[Edit Order]
-    OrderList --> CreateOrder[New Order]
-    Settings --> Profile
-    Settings --> Billing
+```json
+{
+  "screens": [
+    { "id": "login", "name": "Login", "file": "login.html" },
+    { "id": "dashboard", "name": "Dashboard", "file": "dashboard.html" }
+  ],
+  "generated": []
+}
 ```
 
-### Step 6: Generate Index Page
+Write `architecture-output/wireframes/_manifest.json`.
 
-Create `architecture-output/wireframes/index.html`:
-- Lists all screens with links
-- Shows the navigation map (embedded Mermaid)
-- Summary: "X screens generated from Y core flows and Z entities"
+Write `architecture-output/wireframes/wireframes.css`:
 
-### Step 7: Output
-
-Write all files to `architecture-output/wireframes/`:
+```css
+:root{--p:#4f46e5;--bg:#0f172a;--s:#1e293b;--b:#334155;--t:#f1f5f9;--m:#94a3b8;--r:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--t);font-size:14px}
+nav{display:flex;align-items:center;gap:12px;padding:12px 24px;background:var(--s);border-bottom:1px solid var(--b)}
+nav a{color:var(--m);text-decoration:none;font-size:13px}nav a:hover,nav a.active{color:var(--t)}
+nav .logo{font-weight:700;color:var(--t);margin-right:auto}
+main{padding:24px;max-width:1100px;margin:0 auto}
+h1{font-size:20px;font-weight:600;margin-bottom:16px}h2{font-size:15px;font-weight:600;margin-bottom:10px}
+.card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.btn{display:inline-block;padding:8px 16px;background:var(--p);color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;text-decoration:none}
+.btn-ghost{background:transparent;border:1px solid var(--b);color:var(--t)}
+.form-group{margin-bottom:12px}
+label{display:block;font-size:12px;color:var(--m);margin-bottom:4px}
+input,select,textarea{width:100%;padding:8px 10px;background:var(--bg);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-size:13px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--b);font-size:13px}
+th{color:var(--m);font-weight:500}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;background:var(--s);border:1px solid var(--b)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.stat{text-align:center}.stat .value{font-size:28px;font-weight:700}.stat .label{font-size:12px;color:var(--m)}
+.sidebar-layout{display:grid;grid-template-columns:200px 1fr;min-height:calc(100vh - 48px)}
+.sidebar{background:var(--s);border-right:1px solid var(--b);padding:16px}
+.sidebar a{display:block;padding:6px 10px;border-radius:var(--r);color:var(--m);text-decoration:none;font-size:13px;margin-bottom:2px}
+.sidebar a:hover,.sidebar a.active{background:var(--bg);color:var(--t)}
+.content{padding:24px}.actions{display:flex;gap:8px;margin-bottom:16px}
+.empty{text-align:center;padding:48px;color:var(--m)}
 ```
-architecture-output/wireframes/
-├── index.html              # Screen inventory + nav map
-├── navigation-map.mmd      # Mermaid navigation flowchart
-├── login.html
-├── register.html
-├── dashboard.html
-├── orders-list.html
-├── order-detail.html
-├── create-order.html
-├── settings-profile.html
-├── settings-billing.html
-└── ...
-```
 
-## Output Rules
+Then continue to Step 3 with the empty generated list.
 
-- Use **wireframe-patterns** skill for consistent screen layouts
-- Use **founder-communication** skill — labels understandable by non-technical stakeholders
-- Every wireframe must be a valid standalone HTML file (inline CSS, no external deps)
-- All wireframes must share consistent navigation and design token styling
-- Links between pages must work when opened in a browser
-- Use semantic HTML (header, nav, main, section, form)
-- Include `<meta viewport>` for mobile preview
-- Do NOT generate JavaScript — wireframes are static HTML only
-- Do NOT ask questions — infer all screens from SDL
+### Step 3: Pick Next 2 Screens
+
+From the manifest, find screens NOT in `generated`. Take the first 2.
+
+If all screens are generated → go to Step 5 (index + done).
+
+### Step 4: Write Screen Files
+
+For each of the 2 screens:
+
+1. Create `architecture-output/wireframes/{file}`
+2. Use the pattern for that screen type from the **wireframe-patterns** skill
+3. HTML structure: `<!DOCTYPE html>` → `<head>` with `<link rel="stylesheet" href="wireframes.css">` → `<body>` with nav + main content
+4. Use real entity field names and realistic placeholder data
+5. Include working `<a href>` links to related screens
+
+After writing both files, update the manifest: append the screen ids to `generated` and rewrite `_manifest.json`.
+
+### Step 5: Write Index (final run only — when all screens done)
+
+Create `architecture-output/wireframes/index.html` listing all screens with links.
+
+### Step 6: Signal
+
+After Step 4, check if `generated.length < screens.length`:
+
+- **Screens remain:** End your response with exactly: `[WIREFRAMES_CONTINUE] {generated}/{total} screens done.`
+- **All done:** End your response with exactly: `[WIREFRAMES_DONE] All {total} screens generated.`
