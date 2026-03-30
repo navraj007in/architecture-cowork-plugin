@@ -73,10 +73,23 @@ When reading any output file that has NOT been split but is large (>15KB):
     { "id": "R-001", "title": "PMF risk — buyers won't switch from spreadsheets", "score": 20, "level": "Critical" }
   ],
   "design": {
-    "personality": "professional-structured",
-    "primary_color": "#2563eb",
-    "heading_font": "Figtree",
-    "body_font": "Inter"
+    "personality": "bold-commercial",
+    "primary": "#f97316",
+    "primary_dark": "#ea580c",
+    "secondary": "#0ea5e9",
+    "accent": "#fbbf24",
+    "surface": "#ffffff",
+    "surface_elevated": "#f8fafc",
+    "text_primary": "#0f172a",
+    "text_secondary": "#64748b",
+    "border_radius": "8px",
+    "shadow": "0 1px 3px rgba(0,0,0,0.12)",
+    "heading_font": "Clash Display",
+    "body_font": "Poppins",
+    "mono_font": "JetBrains Mono",
+    "icon_library": "lucide-react",
+    "component_library": "shadcn/ui",
+    "tokens_file": "architecture-output/design-system/design-tokens.json"
   }
 }
 ```
@@ -98,7 +111,8 @@ Commands that generate output MUST update `_state.json` after writing their mark
 
 | Command | Fields it writes |
 |---------|-----------------|
-| `blueprint` | `project`, `tech_stack`, `components`, `design` |
+| `blueprint` | `project`, `tech_stack`, `components`, `design` (initial values from SDL) |
+| `design-system` | `design` (full palette, fonts, tokens — overwrites blueprint's initial values) |
 | `generate-data-model` | `entities` |
 | `user-personas` | `personas` |
 | `deep-research` | `market_research` |

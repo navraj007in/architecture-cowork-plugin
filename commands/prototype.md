@@ -28,7 +28,9 @@ Read (use what's available, don't error if missing):
 
 ### Step 2: Design Direction
 
-**If design tokens exist:** Use them for palette, fonts, spacing, shadows, border radius.
+**If `_state.json.design` exists (set by `design-system` command):** Use it as the authoritative source — it contains the full palette (primary, secondary, accent, surface, text colors), fonts, border radius, shadow, icon library, and component library. Do not re-derive from domain.
+
+**If design-tokens.json exists** (`architecture-output/design-system/design-tokens.json`): Use it for full spacing scale, all semantic tokens, and Tailwind config values. `_state.json.design.tokens_file` points to this file.
 
 **If NO design tokens exist (common case):** Derive a distinctive design from the product domain. Do NOT fall back to generic defaults. Instead:
 

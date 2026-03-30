@@ -122,6 +122,40 @@ design:
 
 If `sdl.yaml` already exists, update only the `design` section — preserve everything else.
 
+### Step 7.5: Update _state.json
+
+After updating SDL and writing design-tokens.json, merge the design summary into `architecture-output/_state.json`:
+
+1. Read existing `_state.json` (or start with `{}`)
+2. Extract the key design facts — compact enough to inform prototype + scaffold without reading design-tokens.json
+3. Write back merging only the `design` key:
+
+```json
+{
+  "design": {
+    "personality": "bold-commercial",
+    "primary": "#f97316",
+    "primary_dark": "#ea580c",
+    "secondary": "#0ea5e9",
+    "accent": "#fbbf24",
+    "surface": "#ffffff",
+    "surface_elevated": "#f8fafc",
+    "text_primary": "#0f172a",
+    "text_secondary": "#64748b",
+    "border_radius": "8px",
+    "shadow": "0 1px 3px rgba(0,0,0,0.12)",
+    "heading_font": "Clash Display",
+    "body_font": "Poppins",
+    "mono_font": "JetBrains Mono",
+    "icon_library": "lucide-react",
+    "component_library": "shadcn/ui",
+    "tokens_file": "architecture-output/design-system/design-tokens.json"
+  }
+}
+```
+
+This lets `prototype` and `scaffold-component` get the full palette and font config from `_state.json` without reading `design-tokens.json` or re-deriving the design direction.
+
 ### Step 8: Print Summary
 
 ```

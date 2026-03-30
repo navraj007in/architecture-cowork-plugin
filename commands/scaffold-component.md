@@ -49,7 +49,7 @@ From the matching SDL entry, extract all available fields:
 **First, check for `architecture-output/_state.json`** — if it exists, read it in full. It provides:
 - `entities` — pre-extracted entity names + field lists; use these instead of grepping data-model.md for entity schemas
 - `tech_stack` — tech stack summary; cross-check with SDL for component-specific config
-- `design` — design personality, primary color, fonts; use if SDL has no `design` section
+- `design` — full palette (primary, secondary, accent, surface, text colors), fonts, border-radius, shadow, icon library, component library. If set by `design-system` command, this is the authoritative source — use it instead of SDL's design section or re-deriving from domain. `tokens_file` points to the full `design-tokens.json` if you need the complete spacing scale.
 - `personas` — who uses this component; informs mock data generation for frontends
 
 Then read the SDL and cross-cutting sections:
