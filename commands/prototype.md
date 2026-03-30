@@ -14,14 +14,26 @@ Generate a fully clickable React prototype that founders can demo to investors, 
 
 This is NOT a production application — it's a **demo prototype** with static/mock data, no backend, but polished visual design and working screen flows.
 
+## Output Budget Strategy
+
+A full prototype (10+ screens, 15+ components) exceeds a single output budget. Generation is split into phases using a manifest file. Each phase emits `[PROTOTYPE_CONTINUE]` — Archon auto-reruns until `[PROTOTYPE_DONE]`.
+
 ## Workflow
+
+### Step 0: Check Manifest
+
+Check if `prototype/_manifest.json` exists.
+
+**If it exists:** Read it, determine which phase is complete, and continue from the next phase. Skip to the appropriate step below.
+
+**If it does NOT exist:** This is Phase 1 — start from Step 1.
 
 ### Step 1: Gather Inputs
 
 Read (use what's available, don't error if missing):
 1. **`architecture-output/_state.json`** — read first if it exists; provides compact personas (names + roles for realistic mock data), entities (field lists for typed mock data), and design (personality, colors, fonts). Use these instead of reading full markdown files.
 2. **intent.json** — product name, vision, target users, core features, core flows
-3. **SDL file** (`solution.sdl.yaml`) — components, auth, data models (use `data` section for entity structure), design section, `product.screens`, `product.screenFlows`
+3. **SDL file** (`solution.sdl.yaml`) — components, auth, data models, design section, `product.screens`, `product.screenFlows`
 4. **Design tokens** — from `architecture-output/design-system/design-tokens.json` if available
 5. **Wireframes** — from `architecture-output/wireframes/` if they exist (use as layout guide)
 6. **User personas** — **only if `_state.json.personas` is absent**; from `architecture-output/user-personas.md` for realistic UI copy
@@ -82,33 +94,180 @@ Pick a **distinctive heading font** paired with a readable body font. NEVER use 
 | Professional-structured | Figtree, General Sans | Inter, Geist Sans |
 | Modern-minimal | Sora, Space Grotesk | Geist Sans, Satoshi |
 
-### Step 3: Generate Prototype Project
+### Step 3: Build Screen Inventory & Write Manifest
 
-Create a standalone project in `prototype/` at the project root.
+Before generating any files, build the full screen list and write `prototype/_manifest.json`:
 
-#### 3.1 — Project Structure
+```json
+{
+  "appName": "ProductName",
+  "personality": "professional-structured",
+  "layout": "dashboard",
+  "screens": [
+    { "id": "dashboard", "title": "Dashboard", "phase": 3 },
+    { "id": "users-list", "title": "Users", "phase": 3 },
+    { "id": "user-detail", "title": "User Detail", "phase": 4 },
+    { "id": "settings", "title": "Settings", "phase": 4 },
+    { "id": "login", "title": "Login", "phase": 4 }
+  ],
+  "phase_complete": 0,
+  "files_written": []
+}
+```
+
+Assign screens to phases: Phase 3 gets the first 3 screens, Phase 4 gets the rest.
+
+**Priority: If `product.screens` exists in SDL, use it as the screen inventory.** Otherwise infer from intent.json `core_features` and `core_flows`.
+
+### Step 4: Phase 1 — Foundation Files
+
+Generate these files (config + router + mock data only — no page content yet):
+
 ```
 prototype/
-├── package.json
+├── package.json          ← all deps: react, react-dom, react-router-dom, vite, tailwindcss, lucide-react
 ├── index.html
 ├── vite.config.ts
-├── tailwind.config.ts
+├── tailwind.config.ts    ← themed with chosen palette + fonts
 ├── src/
 │   ├── main.tsx
-│   ├── App.tsx
-│   ├── components/
-│   │   ├── layout/          # Navigation shells
-│   │   ├── ui/              # Reusable primitives
-│   │   └── {feature}/       # Feature-specific components
-│   ├── pages/               # One per screen
+│   ├── App.tsx           ← router with <Route> for every screen (lazy imports ok)
 │   ├── data/
-│   │   └── mock.ts
+│   │   └── mock.ts       ← realistic typed mock data, 10-20 records per entity
 │   └── styles/
-│       └── globals.css
-└── README.md
+│       └── globals.css   ← Google Fonts import, CSS variables for palette
 ```
 
-#### 3.2 — Layout Variety (pick based on product type)
+**mock.ts requirements:**
+- Use proper names from different cultures (not just English names)
+- Use realistic numbers (prices, dates, quantities appropriate to the domain)
+- Include edge cases (long names, zero values, pending statuses)
+- 10-20 records per entity — enough to fill a table and show pagination
+- Include relationships between entities (order references a customer, etc.)
+- Add avatar URLs using `https://api.dicebear.com/9.x/avataaars/svg?seed={name}`
+- For entity structure: use `_state.json.entities` if available
+
+Update `prototype/_manifest.json` → set `phase_complete: 1`, add written files to `files_written`.
+
+Emit: `[PROTOTYPE_CONTINUE]`
+
+### Step 5: Phase 2 — Layout & UI Primitives
+
+Generate layout shell and base UI components:
+
+```
+prototype/src/
+├── components/
+│   ├── layout/
+│   │   ├── Layout.tsx        ← wraps all app pages (sidebar or topnav shell)
+│   │   ├── Sidebar.tsx       ← (if dashboard layout) collapsible, icon + label
+│   │   ├── Header.tsx        ← search bar, notifications bell, user avatar menu
+│   │   └── MobileNav.tsx     ← hamburger + drawer for mobile
+│   └── ui/
+│       ├── Button.tsx        ← primary/secondary/outline/ghost/danger + loading state
+│       ├── Card.tsx          ← header/body/footer slots, hover elevation
+│       ├── Input.tsx         ← label, helper text, error state, icon prefix/suffix
+│       ├── Badge.tsx         ← success/warning/error/info/neutral variants
+│       ├── Avatar.tsx        ← fallback initials, status dot, size variants
+│       ├── Table.tsx         ← sortable headers, row hover, pagination, empty state
+│       ├── Modal.tsx         ← overlay, close button, slide-in animation
+│       ├── Tabs.tsx          ← horizontal tabs with active indicator
+│       ├── Skeleton.tsx      ← loading placeholder shapes
+│       └── EmptyState.tsx    ← icon + message + CTA
+```
+
+**Layout variety — match to product type:**
+- Dashboard/SaaS/CRM: sidebar layout (240px collapsible)
+- Consumer/Marketplace: topnav layout (sticky, transparent-to-solid scroll)
+- Mobile-first/Social: bottom tabs (mobile) + topnav (desktop)
+- Chat/Files: split layout (resizable panels)
+
+Every component must have:
+- Hover and active states
+- Proper TypeScript props interface
+- Uses the chosen palette via Tailwind classes (not hardcoded hex values)
+
+Update manifest → `phase_complete: 2`.
+
+Emit: `[PROTOTYPE_CONTINUE]`
+
+### Step 6: Phase 3 — Personality Components & First Screens
+
+Generate 3-5 personality-specific components then the first 3 screens from the manifest:
+
+**Personality-specific components (pick based on product):**
+- `MetricCard` — dashboards: number, trend arrow, sparkline
+- `ActivityFeed` — social/SaaS: avatar + action + timestamp
+- `PricingCard` — marketing: tier name, price, features, CTA
+- `SearchBar` — content/marketplace: with filters, suggestions
+- `KanbanColumn` — project management: draggable card placeholders
+- `ChatBubble` — messaging/AI: left/right alignment, typing indicator
+- `CalendarView` — booking/scheduling: month grid with event dots
+- `FileCard` — file management: icon, name, size, actions
+- `ProgressBar` / `StepIndicator` — onboarding/wizards
+- `Chart` — simple bar/line/donut chart (pure CSS or recharts)
+
+**First 3 screens** — each page MUST meet:
+1. Visual hierarchy — 3-4 distinct text levels (size + weight + color)
+2. Real content — product-specific labels, table headers, button text (no lorem ipsum)
+3. Interactive states — hover effects on all interactive elements
+4. Uses mock data from `data/mock.ts`
+
+**Page variety requirements:**
+- Dashboard/Home: metric cards + recent activity + quick actions
+- List pages: table with filters, search, bulk actions, pagination
+- Detail pages: header + actions, tabbed content, related items
+- Form pages: multi-section, validation, submit + cancel
+- Settings: left nav, toggles, save/reset
+- Auth: centered card, social buttons, branded background
+
+Update manifest → `phase_complete: 3`, add screen ids to a `screens_done` array.
+
+Emit: `[PROTOTYPE_CONTINUE]`
+
+### Step 7: Phase 4 — Remaining Screens & Verification
+
+Generate all remaining screens from the manifest (those not in `screens_done`).
+
+For each remaining screen, apply the same quality standards as Phase 3:
+- At least one screen should show an **empty state** (no data yet + CTA)
+- At least one screen should show **skeleton loading** (setTimeout 1s before content)
+- Auth pages: centered card layout, not the main shell
+- Every nav item must route to a real page (no dead links)
+- Active nav item visually highlighted
+- Breadcrumbs on nested pages
+
+After all screens are written:
+
+1. Write `prototype/README.md`:
+   - How to run: `cd prototype && npm install && npm run dev`
+   - Design direction: personality, palette, fonts chosen and why
+   - Screen inventory with descriptions
+   - Core flow walkthroughs
+
+2. Run `npm install` in `prototype/`
+
+3. Run build check: `npx tsc --noEmit` (or `npx vite build`)
+   - Fix ALL errors before continuing — type errors, missing imports, broken paths
+   - Re-run until zero errors
+
+Update manifest → `phase_complete: 4`.
+
+Print summary:
+```
+Prototype complete!
+
+Design: {personality} — {heading font} + {body font}, {primary color} palette
+Screens: X pages
+Components: Y reusable components
+Core flows: Z navigable paths
+
+Run: cd prototype && npm install && npm run dev
+```
+
+Emit: `[PROTOTYPE_DONE]`
+
+## Layout Variety Reference
 
 **Do NOT always use sidebar layout.** Match layout to the product:
 
@@ -138,132 +297,18 @@ prototype/
 - Main content panel (detail view)
 - Optional right panel (metadata/properties)
 
-#### 3.3 — Component Library (build 12-15 components, not just 4)
-
-Create components that match the personality. **Each must have visual polish — not just functional HTML.**
-
-**Required base components:**
-- `Button` — primary, secondary, outline, ghost, danger variants. Hover/active states. Loading spinner variant.
-- `Card` — with header, body, footer slots. Hover elevation effect.
-- `Input` — with label, helper text, error state, icon prefix/suffix.
-- `Badge` / `StatusBadge` — color-coded status indicators (success/warning/error/info/neutral).
-- `Avatar` — with fallback initials, status dot, size variants.
-- `Table` — sortable headers, row hover, pagination footer, empty state.
-- `Modal` — with overlay, close button, slide-in animation.
-- `Dropdown` / `Select` — with search, multi-select variant.
-- `Tabs` — horizontal tabs with active indicator.
-- `Toast` / `Notification` — success/error/info variants with auto-dismiss.
-- `Skeleton` — loading placeholder matching each component shape.
-- `EmptyState` — illustration + message + CTA for empty lists/tables.
-
-**Personality-specific components (pick 3-5 based on product):**
-- `MetricCard` — for dashboards: number, trend arrow, sparkline
-- `ActivityFeed` — for social/SaaS: avatar + action + timestamp
-- `PricingCard` — for marketing: tier name, price, features, CTA
-- `SearchBar` — for content/marketplace: with filters, suggestions
-- `KanbanColumn` — for project management: draggable card placeholders
-- `ChatBubble` — for messaging/AI: left/right alignment, typing indicator
-- `CalendarView` — for booking/scheduling: month grid with event dots
-- `FileCard` — for file management: icon, name, size, actions
-- `ProgressBar` / `StepIndicator` — for onboarding/wizards
-- `Chart` — simple bar/line/donut chart using pure CSS or a lightweight lib (recharts)
-
-#### 3.4 — Page Design Quality Standards
-
-**Every page MUST meet these standards:**
-
-1. **Visual hierarchy** — clear distinction between headings, subheadings, body text, and metadata. Use font size, weight, AND color to create 3-4 distinct levels.
-
-2. **Density appropriate to personality** — compact for dashboards, spacious for editorial. Don't use the same padding everywhere.
-
-3. **Real content, not lorem ipsum** — page titles, descriptions, button labels, table headers, form labels must all be product-specific. Use persona names from user-personas.md for user data.
-
-4. **Interactive states** — buttons have hover/active effects, table rows highlight on hover, cards elevate on hover, inputs have focus rings matching the primary color.
-
-5. **Empty states** — at least one page should show an empty state (no data yet) with an illustration or icon, message, and CTA.
-
-6. **Loading states** — at least one page should show skeleton loading for 1 second before revealing content (simulated with setTimeout).
-
-7. **Responsive** — sidebar collapses to hamburger on mobile, tables scroll horizontally, cards stack vertically. Test at 375px and 1440px.
-
-8. **Micro-interactions** — page transitions (fade or slide), button hover scales, dropdown animations, modal backdrop fade. Use CSS transitions, not heavy animation libraries.
-
-9. **Data visualization** — if the product involves metrics/analytics, include at least one chart (CSS-only bar chart, or recharts if in deps). Don't show numbers without visual context.
-
-10. **Consistent spacing system** — use a 4px grid: 4, 8, 12, 16, 24, 32, 48, 64. Don't mix arbitrary px values.
-
-#### 3.5 — Screen Generation
-
-**Priority: If `product.screens` exists in SDL, use it as the screen inventory.** Use `product.screenFlows` for navigation routes. Otherwise infer from intent.json `core_features` and `core_flows`.
-
-Generate ALL screens — do NOT skip any. Each screen should feel different (different component compositions, layouts within the shell, data types displayed).
-
-For variety across pages:
-- **Dashboard/Home** — metric cards + recent activity + quick actions
-- **List pages** — table view with filters, search, bulk actions. Include pagination.
-- **Detail pages** — header with title + actions, tabbed content sections, related items sidebar
-- **Form pages** — multi-section forms with validation, conditional fields, submit + cancel
-- **Settings pages** — left nav with sections, toggle switches, save/reset buttons
-- **Auth pages** — centered card, social login buttons, branded background
-- **Profile pages** — avatar + info header, tabbed content (activity, settings, billing)
-- **Empty/Onboarding** — welcome screen, setup wizard with steps
-
-#### 3.6 — Mock Data Generation
-
-Generate `data/mock.ts` with **realistic, typed, domain-specific data**:
-- Use proper names from different cultures (not just English names)
-- Use realistic numbers (prices, dates, quantities appropriate to the domain)
-- Include edge cases (long names, zero values, pending statuses)
-- 10-20 records per entity — enough to fill a table and show pagination
-- Include relationships between entities (order references a customer, etc.)
-- Add avatar URLs using `https://api.dicebear.com/9.x/avataaars/svg?seed={name}`
-
-#### 3.7 — Navigation & Flow
-
-- Every nav item must route to a real page (no dead links)
-- Core flows must be walkable start-to-finish
-- Add breadcrumbs on nested pages
-- Active nav item must be visually highlighted
-- Include a notification bell with a count badge (static)
-- Include a user menu dropdown (avatar → dropdown with profile, settings, logout)
-
-### Step 4: Verify & Output
-
-1. Run `npm install` in `prototype/`
-2. Run build check (`npx tsc --noEmit` or `npx vite build`)
-3. Fix any errors — don't ship a broken prototype
-4. Write `prototype/README.md` with:
-   - How to run: `cd prototype && npm install && npm run dev`
-   - Design direction: personality, palette, fonts chosen and why
-   - Screen inventory with descriptions
-   - Core flow walkthroughs
-
-### Step 5: Summary
-
-```
-Prototype generated in prototype/
-
-Design: {personality} — {heading font} + {body font}, {primary color} palette
-Screens: X pages
-Components: Y reusable components
-Core flows: Z navigable paths
-
-Run: cd prototype && npm install && npm run dev
-```
-
 ## Output Rules
 
-- **CRITICAL: The prototype must look like a REAL PRODUCT, not a developer exercise.** If you'd be embarrassed to show it to an investor, it's not good enough.
+- **CRITICAL: The prototype must look like a REAL PRODUCT, not a developer exercise.**
 - Mock data must feel real — proper names, realistic numbers, plausible dates, domain-appropriate content
 - Navigation must work — every button/link goes somewhere meaningful
-- Design must be distinctive — if you removed the product name, someone should still be able to tell what domain it's for based on the visual design alone
+- Design must be distinctive — if you removed the product name, someone should still be able to tell the domain from the visual design alone
 - NEVER use generic gray + blue + white for everything. Commit to the personality's palette.
-- NEVER use the same layout for every page. Mix cards, tables, forms, metrics, feeds, and visual elements.
+- NEVER use the same layout for every page. Mix cards, tables, forms, metrics, feeds.
 - Include `package.json` with all dependencies so `npm install && npm run dev` works
-- For entity structure: use `_state.json.entities` if available; otherwise read `architecture-output/data-model.md` — if split, read the index file first; if large, use Grep for the relevant entity
-- If any output markdown file (README, docs) exceeds ~15KB, split into numbered parts — always generate complete content
 - Do NOT connect to any real backend — all data is static/mocked
-- Do NOT ask questions — generate everything from SDL/intent.json
-- Do NOT skip screens — generate every screen in the inventory
-- After generation, verify the dev server starts without errors
+- Do NOT ask questions — generate everything from SDL/intent.json/_state.json
+- Do NOT skip screens — every screen in the manifest must be generated
+- Each phase must update `_manifest.json` before emitting `[PROTOTYPE_CONTINUE]`
+- Do NOT emit `[PROTOTYPE_DONE]` until build verification passes
 - Do NOT include the CTA footer
