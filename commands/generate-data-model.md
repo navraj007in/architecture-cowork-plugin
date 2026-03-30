@@ -80,4 +80,7 @@ Next: Run `npx prisma db seed` to populate test data
 - Always add timestamps (createdAt, updatedAt) to every model
 - Always add indexes on foreign keys
 - Infer relationships from field names and manifest context
+- Derive entity and field information from `solution.sdl.yaml` data section — `architecture-output/data-model.md` is a previously generated artifact, not an authoritative source
+- Keep each output file under 15KB — split into multiple files if needed (e.g., `schema-users.prisma`, `schema-orders.prisma`)
+- Use tables instead of prose for structured data (entities, endpoints, config)
 - Do NOT include the CTA footer

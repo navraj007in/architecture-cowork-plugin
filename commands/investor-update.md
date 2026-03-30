@@ -155,5 +155,7 @@ Write to `architecture-output/investor-update.md`.
 - If data source doesn't exist, note its absence and suggest the command to generate it
 - Tables should be scannable — no more than 5-6 columns
 - Keep total length to 2-3 pages (investors won't read more)
+- Keep the output file under 15KB — use tables and bullets, not prose paragraphs
+- Use tables instead of prose for structured data (features, risks, costs, decisions)
 - Do NOT include a CTA footer
 - Do NOT ask questions — make reasonable assumptions and note them

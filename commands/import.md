@@ -450,3 +450,5 @@ Write `intent.json` using the standard intent schema:
   (inferred/defaulted)
 - Do not expose secrets, passwords, or API key values from .env files
 - Keep the analysis actionable — every observation should have a recommendation
+- Keep each output file under 15KB — split into multiple files if needed (e.g., `import-analysis-stack.md`, `import-analysis-api.md`)
+- Use tables instead of prose for structured data (entities, endpoints, config)

@@ -57,8 +57,8 @@ Also read these cross-cutting SDL sections for context:
 - `data` — database type, ORM, migrations
 
 Also read these deliverables if they exist for richer context:
-- `architecture-output/data-model.md` — entity schemas, relationships, indexes
-- `architecture-output/mvp-scope.md` — prioritized features and user stories
+- `architecture-output/data-model.md` — entity schemas, relationships, indexes. If the file is large, use Grep to find only the relevant entity/model section rather than reading the entire file.
+- `architecture-output/mvp-scope.md` — prioritized features and user stories (only if under 15KB)
 - `architecture-output/user-journeys.md` — core user flows
 - `architecture-output/user-personas.md` — who we're building for
 
@@ -130,7 +130,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 
 **Code depth requirements for backends:**
 - **Routes/Controllers:** Implement ALL endpoints declared in SDL `interfaces`. Each route handler should: parse request params/body, call service layer, return typed response with correct HTTP status codes. Include input validation using zod or joi schemas.
-- **Models/Entities:** Generate complete schema definitions from SDL `dataModels` and `architecture-output/data-model.md`. Include all columns, types, constraints, relationships, indexes. Use the ORM specified in SDL (Prisma, Drizzle, TypeORM, Sequelize, SQLAlchemy, etc.).
+- **Models/Entities:** Generate complete schema definitions from SDL `dataModels` and the `solution.sdl.yaml` data section. Include all columns, types, constraints, relationships, indexes. Use the ORM specified in SDL (Prisma, Drizzle, TypeORM, Sequelize, SQLAlchemy, etc.).
 - **Services:** Implement actual CRUD logic (create, read, update, delete, list with pagination) for each resource. Include error handling (not found, duplicate, validation errors).
 - **Auth middleware:** Implement the strategy from SDL (JWT verification, API key check, OAuth token validation). Include role-based access control stubs if SDL declares roles.
 - **Health check:** Check DB connectivity, cache connectivity, and any external service dependencies. Return structured JSON: `{ status, checks: { db: "ok", cache: "ok" }, uptime, version }`.
@@ -241,7 +241,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 #### DATABASES / DATA STORES (database, db, cache, queue)
 
 **Code depth requirements:**
-- Migration files with ALL tables/collections from SDL `dataModels` and `data-model.md`
+- Migration files with ALL tables/collections from SDL `dataModels` and `solution.sdl.yaml` data section
 - Seed script with realistic sample data (10+ records per table)
 - docker-compose.yml with the database container + volume + health check
 - Connection configuration for each environment
@@ -348,4 +348,7 @@ Start: npm run dev (or equivalent)
 - Match framework and runtime conventions exactly (e.g., App Router for Next.js, Expo for React Native)
 - **CRITICAL: Generate REAL code with actual logic — not placeholder comments, TODOs, or empty function bodies. Every file should work when the project starts.**
 - **CRITICAL: You MUST run install + build and fix all errors before finishing. A scaffold that doesn't compile is a failed scaffold.**
+- When reading `architecture-output/data-model.md`, use Grep to extract only the relevant entity — do not read the entire file
+- Keep each generated markdown output file (README, docs) under 15KB — split if needed
+- Use tables instead of prose for structured data (entities, endpoints, config)
 - Do NOT include the CTA footer

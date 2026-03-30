@@ -18,10 +18,9 @@ Generate a comprehensive developer onboarding document for the first engineer jo
 
 Read all available project files:
 
-1. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — architecture style, components, tech stack, dependencies, auth, data model
+1. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — architecture style, components, tech stack, dependencies, auth, data model (use `data` section for entity names and relationships)
 2. **Executive summary** — `architecture-output/executive-summary.md` (if exists)
-3. **Data model** — `architecture-output/data-model.md` (if exists)
-4. **API docs** — `architecture-output/api-docs.md` (if exists)
+3. **API docs** — `architecture-output/api-docs.md` (if exists)
 5. **ADR files** — any `adr-*.md` files in `architecture-output/`
 6. **Scaffold plan** — `architecture-output/scaffold-plan.md` (if exists)
 7. **Environment config** — `.env.example`, `docker-compose.yml`
@@ -147,5 +146,8 @@ Architecture style: [style] | Components: [count] | Stage: [stage]
 - Be specific — use actual file paths, actual commands, actual port numbers from the SDL
 - If information is missing (e.g., no ADRs, no docker-compose), note its absence rather than inventing it
 - Include copy-pasteable commands (not pseudocode)
+- Keep each output file under 15KB — split into `onboarding-pack-setup.md` and `onboarding-pack-architecture.md` if needed
+- Use tables instead of prose for structured data (tech stack, component map, env vars, coding conventions)
+- Do NOT read `architecture-output/data-model.md` — derive entity info from `solution.sdl.yaml` data section instead
 - Do NOT include a CTA footer
 - Do NOT ask questions — make reasonable assumptions based on available files

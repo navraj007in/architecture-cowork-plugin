@@ -21,13 +21,12 @@ Every generated output file MUST stay within these limits:
 
 Before reading any file, check if you already have the information you need. Apply these rules:
 
-- **Never read a file larger than 15KB** unless the command explicitly requires it
-- **Read `solution.sdl.yaml`** — always fine (it's the source of truth, kept compact)
+- **Read `solution.sdl.yaml`** — always fine (source of truth, compact by design)
 - **Read `_manifest.json` / `blueprint.json`** — fine (structured, compact)
-- **Do NOT read `data-model.md`, `setup-env.md`, `security-architecture.md`, `application-architecture.md`** unless the current command is explicitly updating that file — these are large output artifacts, not inputs
-- **Do NOT read `sprint-backlog.md`, `result.md`, `next-steps.md`** — these are summaries for humans, not AI inputs
-- If you need entity names: read `solution.sdl.yaml` data section (compact)
-- If you need API shape: read `solution.sdl.yaml` — not the generated api-docs
+- **For large output files** (`data-model.md`, `setup-env.md`, `security-architecture.md`, `application-architecture.md`, `sprint-backlog.md`): use **Grep** to extract only the section you need — do not read the full file
+- **`result.md`, `next-steps.md`** — human summaries, do not read as AI inputs
+- If a file is under 10KB, reading the full file is fine
+- If a file is over 15KB, always use Grep first
 
 ## Output Quality Rules
 

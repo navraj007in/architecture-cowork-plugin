@@ -20,11 +20,10 @@ This is NOT a production application — it's a **demo prototype** with static/m
 
 Read (use what's available, don't error if missing):
 1. **intent.json** — product name, vision, target users, core features, core flows
-2. **SDL file** (`solution.sdl.yaml`) — components, auth, data models, design section, `product.screens`, `product.screenFlows`
+2. **SDL file** (`solution.sdl.yaml`) — components, auth, data models (use `data` section for entity structure), design section, `product.screens`, `product.screenFlows`
 3. **Design tokens** — from `architecture-output/design-system/design-tokens.json` if available
-4. **Data model** — from `architecture-output/data-model.md` for entity structure
-5. **Wireframes** — from `architecture-output/wireframes/` if they exist (use as layout guide)
-6. **User personas** — from `architecture-output/user-personas.md` for realistic UI copy
+4. **Wireframes** — from `architecture-output/wireframes/` if they exist (use as layout guide)
+5. **User personas** — from `architecture-output/user-personas.md` for realistic UI copy
 
 ### Step 2: Design Direction
 
@@ -258,6 +257,8 @@ Run: cd prototype && npm install && npm run dev
 - NEVER use generic gray + blue + white for everything. Commit to the personality's palette.
 - NEVER use the same layout for every page. Mix cards, tables, forms, metrics, feeds, and visual elements.
 - Include `package.json` with all dependencies so `npm install && npm run dev` works
+- Do NOT read `architecture-output/data-model.md` — derive entity structure from `solution.sdl.yaml` data section instead
+- Keep each output markdown file (README, docs) under 15KB — split if needed
 - Do NOT connect to any real backend — all data is static/mocked
 - Do NOT ask questions — generate everything from SDL/intent.json
 - Do NOT skip screens — generate every screen in the inventory

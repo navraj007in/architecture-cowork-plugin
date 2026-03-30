@@ -18,13 +18,14 @@ Create a realistic, dependency-aware technical roadmap that sequences work into 
 
 Read these files if they exist:
 - `intent.json` — product vision, constraints, timeline expectations
-- `architecture-output/mvp-scope.md` — prioritized features, complexity estimates, critical path
+- `solution.sdl.yaml` or `sdl.yaml` — architecture components, tech stack, data model complexity
+- `architecture-output/data-model.md` — entity count and complexity (if large, use Grep for the summary/header section only)
 - `architecture-output/user-personas.md` — persona priorities
 - `architecture-output/deep-research.md` — competitive timeline pressure
 - `architecture-output/problem-validation.md` — risk assessment
 - `architecture-output/cost-estimate.md` — budget constraints
-- `solution.sdl.yaml` or `sdl.yaml` — architecture components, tech stack
-- `architecture-output/data-models.md` — data model complexity
+
+Do NOT read `architecture-output/mvp-scope.md` — it can be a large output file. Instead, derive feature scope and complexity from `intent.json` core_features and `solution.sdl.yaml` architecture sections.
 
 ### Step 2: Define Roadmap Parameters
 
@@ -178,6 +179,8 @@ Brief look at what comes after launch:
 - Be realistic about timelines — pad estimates by 30% for solo/small teams
 - Include the dependency graph and critical path — these prevent planning errors
 - Phase exit criteria must be specific and testable, not vague
-- Reference specific features from mvp-scope.md by name
+- Reference specific features from `intent.json` by name (not from mvp-scope.md)
 - Reference architecture components from SDL when available
+- Keep each output file under 15KB — split into `technical-roadmap-phases.md` and `technical-roadmap-resources.md` if needed
+- Use tables instead of prose for structured data (phases, milestones, resource allocation, contingency plans)
 - Do NOT include the CTA footer

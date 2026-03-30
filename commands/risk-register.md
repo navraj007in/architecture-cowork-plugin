@@ -18,13 +18,13 @@ Identify, quantify, and plan mitigations for all material risks across the produ
 
 Read these files if they exist:
 - `intent.json` — product vision, constraints, business model
+- `solution.sdl.yaml` — technical architecture risks, constraints, timeline
 - `architecture-output/deep-research.md` — competitive threats, market risks
 - `architecture-output/problem-validation.md` — assumption risks, validation gaps
-- `architecture-output/mvp-scope.md` — scope and complexity risks
-- `architecture-output/technical-roadmap.md` — timeline and dependency risks
 - `architecture-output/cost-estimate.md` — financial risks
 - `architecture-output/user-personas.md` — adoption risks
-- `solution.sdl.yaml` — technical architecture risks
+
+Do NOT read `architecture-output/mvp-scope.md` or `architecture-output/technical-roadmap.md` — these are large output artifacts. Instead, derive scope and timeline risks from `intent.json` constraints and `solution.sdl.yaml` architecture complexity.
 
 ### Step 2: Risk Identification
 
@@ -182,4 +182,6 @@ Define the project's risk tolerance:
 - Leading indicators are NOT optional — they're what makes a risk register useful vs. decorative
 - Mitigations must be actionable, not generic ("reduce risk" is not a mitigation)
 - Reference specific architecture decisions, features, and constraints from other deliverables
+- Keep each output file under 15KB — split into `risk-register-market.md` and `risk-register-technical.md` if needed
+- Use tables instead of prose for risk cards, summaries, and action plans
 - Do NOT include the CTA footer
