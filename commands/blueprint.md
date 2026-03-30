@@ -561,6 +561,45 @@ Dependencies: Sprint 0 (auth provider configured)
 
 End with: "This is a starting-point backlog. Expect to refine sprint scope after Sprint 1 based on actual velocity. Adjust story estimates and sprint allocation as the team calibrates its pace."
 
+### Step 4.5: Write _state.json
+
+After completing all deliverables, write `architecture-output/_state.json` with the compact project summary. This file gives downstream commands (scaffold, roadmap, risk-register, etc.) instant access to project facts without reading large files.
+
+Read `solution.sdl.yaml` to extract these fields, then write:
+
+```json
+{
+  "project": {
+    "name": "<solution.name>",
+    "description": "<solution.description>",
+    "type": "app|agent|hybrid",
+    "stage": "concept"
+  },
+  "tech_stack": {
+    "frontend": ["<framework> <version>", "Tailwind CSS"],
+    "backend": ["<runtime>", "<framework>", "<orm>"],
+    "database": "<primary db type>",
+    "auth": "<auth provider>",
+    "deployment": "<cloud targets>",
+    "integrations": ["<integration names>"]
+  },
+  "components": [
+    { "name": "<component name>", "type": "<type>", "port": <port>, "framework": "<framework>" }
+  ],
+  "design": {
+    "personality": "<personality from SDL design section or derived from domain>",
+    "primary_color": "<hex>",
+    "heading_font": "<font name>",
+    "body_font": "<font name>"
+  }
+}
+```
+
+Rules:
+- Write to `architecture-output/_state.json` (create `architecture-output/` if it doesn't exist)
+- `entities`, `personas`, `market_research`, `mvp_scope`, `top_risks` are written by other commands — do NOT add them here
+- If the SDL has a `design` section, use those values; otherwise derive from the product domain using the personality table in `/architect:prototype`
+
 ### Step 5: CTA Footer
 
 End the full blueprint with:

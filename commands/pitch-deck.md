@@ -16,16 +16,17 @@ Generate a comprehensive, investor-ready pitch deck with web-verified market dat
 
 ### Step 1: Gather Context
 
-Read ALL of these files if they exist (do NOT ask the user — use what's available):
-- `intent.json` — product name, vision, target users, core features, business constraints
-- `architecture-output/deep-research.md` — web-verified competitor analysis, market sizing (TAM/SAM/SOM), feature comparison matrices, sourced data. USE this data directly instead of re-researching.
-- `architecture-output/user-personas.md` — persona details, prioritization
-- `architecture-output/problem-validation.md` — problem statement, evidence, validation status
-- `architecture-output/mvp-scope.md` — feature priorities, MVP thesis
-- `architecture-output/cost-estimate.md` — infrastructure and development costs
-- `solution.sdl.yaml` — architecture overview
+Read in this order (do NOT ask the user — use what's available):
+1. `architecture-output/_state.json` — read first if it exists; provides compact personas, competitor data, market sizing, MVP scope, and top risks — use these directly for slides 2, 6, 7, 9, 10, 14 without reading full markdown files
+2. `intent.json` — product name, vision, target users, core features, business constraints
+3. `solution.sdl.yaml` — architecture overview for Slide 4 (Product Overview) and Slide 5 (How It Works)
+4. `architecture-output/problem-validation.md` — problem statement, evidence (read in full, typically small)
+5. `architecture-output/cost-estimate.md` — infrastructure and development costs for Slides 13-14 (read in full, typically small)
+6. `architecture-output/deep-research.md` — **only if `_state.json.market_research` is absent**; if reading, Grep for "Market Sizing" and "Competitor Landscape" sections only. USE this data directly instead of re-researching.
+7. `architecture-output/user-personas.md` — **only if `_state.json.personas` is absent**; if reading, Grep for persona names and pain points only
+8. `architecture-output/mvp-scope.md` — **only if `_state.json.mvp_scope` is absent**; if reading, Grep for "Must Have" section only
 
-If deep-research.md does NOT exist, use WebSearch to research market data, competitors, and pricing. Tag numbers as [Verified] or [Estimated].
+If `_state.json.market_research` and `deep-research.md` both do NOT exist, use WebSearch to research market data, competitors, and pricing. Tag numbers as [Verified] or [Estimated].
 
 ### Step 2: Generate All 15 Slides
 

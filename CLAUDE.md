@@ -34,6 +34,77 @@ When reading any output file that has NOT been split but is large (>15KB):
 
 **Always fine to read in full:** `solution.sdl.yaml`, `_manifest.json`, `blueprint.json`, any file under 10KB.
 
+## _state.json — AI Context Layer
+
+`architecture-output/_state.json` is a compact machine-readable file that accumulates structured facts from every command that runs. It is the **first thing to read** when you need project context — cheaper than reading SDL or large markdown files.
+
+### Schema
+
+```json
+{
+  "project": { "name": "...", "description": "...", "type": "app|agent|hybrid", "stage": "concept|mvp|growth" },
+  "tech_stack": {
+    "frontend": ["Next.js 14", "Tailwind CSS"],
+    "backend": ["Node.js", "Express", "Prisma"],
+    "database": "PostgreSQL",
+    "auth": "Clerk",
+    "deployment": "Vercel + Railway",
+    "integrations": ["Stripe", "SendGrid", "Sentry"]
+  },
+  "components": [
+    { "name": "web-app", "type": "web", "port": 3000, "framework": "Next.js" }
+  ],
+  "entities": [
+    { "name": "User", "fields": ["id", "email", "name", "role", "createdAt"], "owner": "api-server" }
+  ],
+  "personas": [
+    { "name": "Sarah Chen", "role": "Procurement Manager", "priority": "P1", "top_pain": "3h/week reconciling invoices manually" }
+  ],
+  "market_research": {
+    "competitors": [{ "name": "Coupa", "pricing": "$50k+/yr", "weakness": "too expensive for SMBs" }],
+    "market_size": "$2.5B TAM, 14% CAGR",
+    "key_insight": "70% of SMBs still use spreadsheets for procurement"
+  },
+  "mvp_scope": {
+    "must_have": ["user auth", "vendor catalog", "order management"],
+    "wont_have": ["mobile app", "AI recommendations"]
+  },
+  "top_risks": [
+    { "id": "R-001", "title": "PMF risk — buyers won't switch from spreadsheets", "score": 20, "level": "Critical" }
+  ],
+  "design": {
+    "personality": "professional-structured",
+    "primary_color": "#2563eb",
+    "heading_font": "Figtree",
+    "body_font": "Inter"
+  }
+}
+```
+
+### Read rules
+
+- **Always check `_state.json` first** before reading large markdown files
+- If `_state.json` exists: read it in full (always under 15KB), use its facts directly
+- If `_state.json` is missing: fall back to `solution.sdl.yaml` and `intent.json`
+- `_state.json` does NOT replace `solution.sdl.yaml` — SDL is authoritative for architecture spec. `_state.json` holds research outputs (competitors, personas, risks, MVP scope) that SDL doesn't contain
+- For deep detail not in `_state.json`: use Grep on the relevant markdown file
+
+### Write rules
+
+Commands that generate output MUST update `_state.json` after writing their markdown deliverable:
+1. Read existing `_state.json` (or start with `{}` if it doesn't exist)
+2. Merge only the fields this command owns (do NOT overwrite other fields)
+3. Write back to `architecture-output/_state.json`
+
+| Command | Fields it writes |
+|---------|-----------------|
+| `blueprint` | `project`, `tech_stack`, `components`, `design` |
+| `generate-data-model` | `entities` |
+| `user-personas` | `personas` |
+| `deep-research` | `market_research` |
+| `mvp-scope` | `mvp_scope` |
+| `risk-register` | `top_risks` |
+
 ## Output Quality Rules
 
 - Generate **complete, detailed output** — no placeholders, no "see documentation", no truncation

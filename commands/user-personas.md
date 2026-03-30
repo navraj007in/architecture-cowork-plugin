@@ -92,6 +92,23 @@ A section mapping personas to product decisions:
 - **Communication tone** — technical vs. friendly vs. enterprise
 - **Platform priority** — mobile-first vs. desktop-first based on persona devices
 
+### Step 6: Update _state.json
+
+After writing `user-personas.md`, update `architecture-output/_state.json` with compact persona summaries:
+
+1. Read existing `_state.json` (or start with `{}`)
+2. For each persona, extract: name, role, priority (from prioritization matrix), top_pain (single most critical pain point, ≤15 words)
+3. Merge into the `personas` array and write back:
+
+```json
+{
+  "personas": [
+    { "name": "Sarah Chen", "role": "Procurement Manager", "priority": "P1", "top_pain": "3h/week reconciling vendor invoices manually" },
+    { "name": "James O.", "role": "Finance Director", "priority": "P2", "top_pain": "no visibility into committed spend until month-end" }
+  ]
+}
+```
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/user-personas.md`

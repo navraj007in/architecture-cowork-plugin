@@ -16,16 +16,17 @@ Create a realistic, dependency-aware technical roadmap that sequences work into 
 
 ### Step 1: Gather Context
 
-Read these files if they exist:
-- `intent.json` — product vision, constraints, timeline expectations
-- `solution.sdl.yaml` or `sdl.yaml` — architecture components, tech stack, data model complexity
-- `architecture-output/data-model.md` — entity count and complexity (if large, use Grep for the summary/header section only)
-- `architecture-output/user-personas.md` — persona priorities
-- `architecture-output/deep-research.md` — competitive timeline pressure
-- `architecture-output/problem-validation.md` — risk assessment
-- `architecture-output/cost-estimate.md` — budget constraints
+Read in this order:
+1. `architecture-output/_state.json` — read first if it exists; provides compact tech_stack, components, entities, personas, mvp_scope, and top_risks — use these instead of reading large markdown files
+2. `intent.json` — product vision, constraints, timeline expectations
+3. `solution.sdl.yaml` or `sdl.yaml` — architecture components, tech stack, data model complexity
+4. `architecture-output/problem-validation.md` — risk assessment (read in full, typically small)
+5. `architecture-output/cost-estimate.md` — budget constraints (read in full, typically small)
+6. `architecture-output/data-model.md` — **only if `_state.json.entities` is absent**; if reading, Grep for the header/summary section only to get entity count and domain groupings
+7. `architecture-output/user-personas.md` — **only if `_state.json.personas` is absent**; if reading, Grep for persona names and priority only
+8. `architecture-output/deep-research.md` — **only if `_state.json.market_research` is absent**; if reading, Grep for competitive timeline pressure
 
-Do NOT read `architecture-output/mvp-scope.md` — it can be a large output file. Instead, derive feature scope and complexity from `intent.json` core_features and `solution.sdl.yaml` architecture sections.
+Do NOT read `architecture-output/mvp-scope.md` — use `_state.json.mvp_scope` if available; otherwise derive scope from `intent.json` core_features and `solution.sdl.yaml`.
 
 ### Step 2: Define Roadmap Parameters
 

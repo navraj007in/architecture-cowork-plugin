@@ -73,6 +73,25 @@ Files created:
 Next: Run `npx prisma db seed` to populate test data
 ```
 
+### Step 5: Update _state.json
+
+After generating ORM schemas, update `architecture-output/_state.json` with a compact entity summary:
+
+1. Read existing `_state.json` (or start with `{}`)
+2. For each generated model/entity, extract: name + field names only (not types, not constraints)
+3. Merge into the `entities` array and write back:
+
+```json
+{
+  "entities": [
+    { "name": "User", "fields": ["id", "email", "name", "role", "createdAt", "updatedAt"], "owner": "<component name>" },
+    { "name": "Order", "fields": ["id", "userId", "total", "status", "createdAt", "updatedAt"], "owner": "<component name>" }
+  ]
+}
+```
+
+This allows `scaffold-component` to know entity shapes without parsing ORM schema files.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

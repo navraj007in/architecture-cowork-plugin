@@ -46,6 +46,14 @@ From the matching SDL entry, extract all available fields:
 - **deploy_target** — deployment target
 - Any other component-specific fields (build_tool, rendering, state_management, navigation, permissions, etc.)
 
+**First, check for `architecture-output/_state.json`** — if it exists, read it in full. It provides:
+- `entities` — pre-extracted entity names + field lists; use these instead of grepping data-model.md for entity schemas
+- `tech_stack` — tech stack summary; cross-check with SDL for component-specific config
+- `design` — design personality, primary color, fonts; use if SDL has no `design` section
+- `personas` — who uses this component; informs mock data generation for frontends
+
+Then read the SDL and cross-cutting sections:
+
 Also read these cross-cutting SDL sections for context:
 - `shared` — shared types, libraries, contracts
 - `application_patterns` — folder convention, architecture style
@@ -57,7 +65,7 @@ Also read these cross-cutting SDL sections for context:
 - `data` — database type, ORM, migrations
 
 Also read these deliverables if they exist for richer context:
-- `architecture-output/data-model.md` — entity schemas, relationships, indexes. If the file is large, use Grep to find only the relevant entity/model section rather than reading the entire file.
+- `architecture-output/data-model.md` — entity schemas, relationships, indexes. **Only read this if the entity you need is NOT in `_state.json.entities`.** If reading, use Grep to find only the relevant entity/model section rather than reading the entire file.
 - `architecture-output/mvp-scope.md` — prioritized features and user stories (if split, read the index file first)
 - `architecture-output/user-journeys.md` — core user flows
 - `architecture-output/user-personas.md` — who we're building for

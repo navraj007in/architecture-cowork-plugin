@@ -16,12 +16,13 @@ Define a sharp MVP boundary that maximizes learning while minimizing build time.
 
 ### Step 1: Gather Context
 
-Read these files if they exist:
-- `intent.json` — core features, target users, business constraints, technical constraints
-- `architecture-output/deep-research.md` — competitor features, market expectations
-- `architecture-output/user-personas.md` — persona priorities, feature preferences
-- `architecture-output/problem-validation.md` — validated assumptions, core problem
-- `architecture-output/user-journeys.md` — critical user flows
+Read in this order:
+1. `architecture-output/_state.json` — read first if it exists; provides compact persona summaries, competitor data, and tech stack. Use `_state.json.personas` instead of reading `user-personas.md`. Use `_state.json.market_research` instead of reading `deep-research.md`.
+2. `intent.json` — core features, target users, business constraints, technical constraints
+3. `architecture-output/problem-validation.md` — validated assumptions, core problem (read in full, typically small)
+4. `architecture-output/user-journeys.md` — critical user flows (read in full, typically small)
+5. `architecture-output/deep-research.md` — **only if `_state.json.market_research` is absent**; if reading, use Grep for the "Feature Comparison Matrix" and "Opportunity Gaps" sections only
+6. `architecture-output/user-personas.md` — **only if `_state.json.personas` is absent**; if reading, use Grep for persona names and "Features they'd use most"
 
 ### Step 2: Define the MVP Thesis
 
@@ -119,6 +120,25 @@ Define how to measure if the MVP succeeded:
 | Core action completion | X% | Funnel analytics | First 30 days |
 | Retention (D7) | X% | Cohort analysis | Day 7-14 |
 | NPS / satisfaction | X | Survey | Day 14-30 |
+
+### Step 9: Update _state.json
+
+After writing `mvp-scope.md`, update `architecture-output/_state.json` with compact scope decisions:
+
+1. Read existing `_state.json` (or start with `{}`)
+2. Extract Must Have feature names and Won't Have feature names
+3. Merge into the `mvp_scope` key and write back:
+
+```json
+{
+  "mvp_scope": {
+    "must_have": ["user auth", "vendor catalog", "purchase order creation", "basic approval workflow"],
+    "wont_have": ["mobile app", "AI spend prediction", "multi-currency", "ERP integration"]
+  }
+}
+```
+
+Keep feature names short (3-5 words each). This lets `technical-roadmap` and `risk-register` understand MVP scope without reading the full mvp-scope.md.
 
 ## Output Rules
 

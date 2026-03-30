@@ -148,6 +148,29 @@ Include header:
 **Confidence**: [High — web-verified / Medium — partially verified / Low — training data only]
 ```
 
+### Step 7: Update _state.json
+
+After writing `deep-research.md`, update `architecture-output/_state.json` with compact market intelligence:
+
+1. Read existing `_state.json` (or start with `{}`)
+2. Extract summary facts from the research
+3. Merge into the `market_research` key and write back:
+
+```json
+{
+  "market_research": {
+    "competitors": [
+      { "name": "Competitor A", "pricing": "$49/mo", "weakness": "no mobile app" },
+      { "name": "Competitor B", "pricing": "$200/mo", "weakness": "steep learning curve" }
+    ],
+    "market_size": "$2.5B TAM, 14% CAGR [Verified]",
+    "key_insight": "70% of SMBs still use spreadsheets — no affordable modern solution exists"
+  }
+}
+```
+
+Limit `competitors` to the top 5 direct competitors. `key_insight` is ONE sentence — the single most important finding for product positioning.
+
 ## Output Rules
 
 - Use **founder-communication** skill — write for founders and investors, not engineers

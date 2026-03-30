@@ -16,15 +16,16 @@ Identify, quantify, and plan mitigations for all material risks across the produ
 
 ### Step 1: Gather Context
 
-Read these files if they exist:
-- `intent.json` — product vision, constraints, business model
-- `solution.sdl.yaml` — technical architecture risks, constraints, timeline
-- `architecture-output/deep-research.md` — competitive threats, market risks
-- `architecture-output/problem-validation.md` — assumption risks, validation gaps
-- `architecture-output/cost-estimate.md` — financial risks
-- `architecture-output/user-personas.md` — adoption risks
+Read in this order:
+1. `architecture-output/_state.json` — read first if it exists; provides compact personas, competitor data, MVP scope, and tech stack — no need to read full markdown files for those
+2. `intent.json` — product vision, constraints, business model
+3. `solution.sdl.yaml` — technical architecture, component complexity, timeline
+4. `architecture-output/problem-validation.md` — assumption risks, validation gaps (read in full, typically small)
+5. `architecture-output/cost-estimate.md` — financial risks (read in full, typically small)
+6. `architecture-output/deep-research.md` — **only if `_state.json.market_research` is absent**; if reading, Grep for "Competitor Landscape" and "Opportunity Gaps" sections only
+7. `architecture-output/user-personas.md` — **only if `_state.json.personas` is absent**; if reading, Grep for persona names and "Barriers to adoption"
 
-Do NOT read `architecture-output/mvp-scope.md` or `architecture-output/technical-roadmap.md` — these are large output artifacts. Instead, derive scope and timeline risks from `intent.json` constraints and `solution.sdl.yaml` architecture complexity.
+Do NOT read `architecture-output/mvp-scope.md` or `architecture-output/technical-roadmap.md` — derive scope and timeline risks from `_state.json.mvp_scope` (if available) or `intent.json` constraints.
 
 ### Step 2: Risk Identification
 
@@ -172,6 +173,26 @@ Define the project's risk tolerance:
 | Risk check-in | Weekly | Tech lead | Critical + High risks only |
 | Full risk review | Biweekly | Full team | All risks, update scores |
 | Risk retrospective | Monthly | Full team + advisors | Re-score, add new risks, retire resolved |
+
+### Step 9: Update _state.json
+
+After writing `risk-register.md`, update `architecture-output/_state.json` with the top risks summary:
+
+1. Read existing `_state.json` (or start with `{}`)
+2. Extract the top 5 risks by score (from the Risk Summary Table)
+3. Merge into the `top_risks` array and write back:
+
+```json
+{
+  "top_risks": [
+    { "id": "R-001", "title": "No PMF — buyers won't switch from spreadsheets", "score": 20, "level": "Critical" },
+    { "id": "R-003", "title": "PostgreSQL full-text search latency at 10K queries", "score": 16, "level": "High" },
+    { "id": "R-007", "title": "Stripe integration complexity underestimated", "score": 12, "level": "Medium" }
+  ]
+}
+```
+
+This gives `pitch-deck` instant access to top risks for the investor risk slide without reading the full register.
 
 ## Output Rules
 
