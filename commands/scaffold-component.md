@@ -187,7 +187,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 
 **Code depth requirements for frontends:**
 - **Pages:** Every page declared in SDL interfaces/screens MUST be created with real content — data tables with mock rows, forms with all fields, dashboards with metric cards. NO empty pages or "Coming soon" placeholders.
-- **Navigation:** Working sidebar/topbar navigation that routes between all pages. Active state highlighting. Responsive — collapses on mobile.
+- **Navigation:** Working sidebar/topbar navigation that routes between all pages. Active state highlighting. **Mobile responsive** — sidebar hidden on mobile (`hidden md:flex`) with hamburger button + slide-in drawer overlay. Bottom tab bar for mobile-first products.
 - **API client:** Typed functions for every backend endpoint. Include request/response type definitions. Handle loading, error, and empty states.
 - **Auth flow:** If SDL declares auth: implement login page, signup page, token storage, protected route wrapper, and logout. Use the auth strategy from SDL (JWT, OAuth, etc.).
 - **UI components:** Build 6-8 reusable components that the pages actually use (not a separate component library — components created to serve the pages).
@@ -372,6 +372,7 @@ Start: npm run dev (or equivalent)
 - Use `[non_interactive:true]` mode — no questions, no confirmations
 - Make reasonable assumptions for anything not specified in the SDL
 - For UI styling: ALWAYS use the SDL `design` section colors if present. If absent, choose a domain-appropriate palette. NEVER default to indigo/purple — use teal, emerald, sky, rose, amber, or cyan instead
+- **ALL frontend scaffolds MUST be mobile responsive** — sidebar collapses to hamburger drawer on mobile, tables degrade to card layout, all grids use responsive breakpoints (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`), touch targets min 44px, modals full-screen on mobile, no fixed-width containers without `max-w` + `w-full`
 - **ALL frontend scaffolds MUST include dark/light mode** (`darkMode: 'class'`, CSS variables, ThemeContext, toggle in header)
 - **ALL frontend scaffolds MUST include i18n** (`i18next` + `react-i18next`, `en.json` + `es.json` + `ar.json`, all strings via `t()`, RTL direction on `<html>`)
 - **ALL frontend scaffolds MUST include accessibility** (semantic HTML, visible focus rings, ARIA labels, WCAG AA contrast, keyboard navigation, modal focus trapping)

@@ -227,6 +227,17 @@ prototype/src/
 - Mobile-first/Social: bottom tabs (mobile) + topnav (desktop)
 - Chat/Files: split layout (resizable panels)
 
+**Mobile responsiveness — REQUIRED on all layouts:**
+- Sidebar: hidden on mobile (`hidden md:flex`), replaced by `MobileNav` hamburger + slide-in drawer
+- Header: collapses search bar to icon on mobile, stacks avatar/actions
+- Tables: on mobile, use card-per-row layout (`hidden md:table` for `<table>`, `block md:hidden` card fallback) — never let tables overflow the viewport
+- Grids: use responsive columns (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`) — never fixed multi-column grids without breakpoints
+- Forms: full-width inputs on mobile (`w-full`), stack label + input vertically
+- Modals: full-screen on mobile (`w-full h-full sm:w-auto sm:h-auto sm:max-w-lg sm:rounded-xl`)
+- Touch targets: all buttons and links min 44×44px on mobile (`min-h-[44px] min-w-[44px]`)
+- Typography: scale down headings on mobile (`text-2xl md:text-4xl`)
+- Bottom tab bar for mobile-first layouts: `fixed bottom-0 inset-x-0 flex md:hidden`
+
 Every component must have:
 - Hover and active states
 - Proper TypeScript props interface
@@ -358,6 +369,7 @@ Emit: `[PROTOTYPE_DONE]`
 - Each phase must update `_manifest.json` before emitting `[PROTOTYPE_CONTINUE]`
 - Do NOT emit `[PROTOTYPE_DONE]` until build verification passes
 - Do NOT include the CTA footer
+- **ALWAYS implement mobile responsiveness** — sidebar hidden on mobile with hamburger drawer, tables degrade to cards, all grids use responsive breakpoints, touch targets min 44px, modals full-screen on mobile
 - **ALWAYS implement dark/light mode** — `darkMode: 'class'` in Tailwind, CSS variable palette, `ThemeContext`, toggle in Header
 - **ALWAYS implement i18n** — `i18next` + `react-i18next`, `en.json` + `es.json` + `ar.json` locale files, all strings via `t()`, RTL direction set on `<html>` for Arabic
 - **ALWAYS implement accessibility** — semantic HTML, visible focus rings, ARIA labels on icon-only elements, WCAG AA contrast, keyboard navigation, modal focus trap
