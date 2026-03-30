@@ -16,13 +16,22 @@ Generate detailed, research-informed user personas that go beyond demographics t
 
 ### Step 1: Gather Context
 
-Read these files if they exist (do NOT ask the user — use what's available):
-- `intent.json` — product name, vision, target users, core features
-- `architecture-output/deep-research.md` — market data, competitor analysis, user segments
-- `architecture-output/problem-validation.md` — problem statement, assumptions
-- `solution.sdl.yaml` or `sdl.yaml` — existing architecture context
+Read in this order — use what's available, skip what isn't needed:
 
-If none exist, derive personas from the project description provided in the prompt.
+1. **`architecture-output/_state.json`** — read first if it exists. Use directly:
+   - `project.name`, `project.description` → product name and domain (replaces `intent.json`)
+   - `market_research.key_insight`, `market_research.competitors[].weakness` → user pain context (replaces reading `deep-research.md`)
+   - If `_state.json` has both `project` and `market_research`, skip steps 2–4 below
+
+2. **`intent.json`** — only if `_state.json` is absent or missing `project.description`; extract name, vision, target users
+
+3. **`architecture-output/deep-research.md`** — only if `_state.json.market_research` is absent; Grep for "User Segments", "Pain Points", and "Opportunity Gaps" sections only — do NOT read the full file
+
+4. **`architecture-output/problem-validation.md`** — only if it exists AND `_state.json` has no `personas`; Grep for "Problem Statement" section only
+
+5. **SDL** — skip entirely unless no other context is available
+
+If nothing exists, derive personas from the project description in the prompt.
 
 ### Step 2: Research (if WebSearch available)
 

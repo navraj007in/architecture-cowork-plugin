@@ -16,13 +16,18 @@ Conduct systematic web-based research to produce a verified market analysis with
 
 ### Step 1: Understand the Product
 
-Read the SDL file (`solution.sdl.yaml` or `sdl.yaml`) to extract:
-- Solution name and description
-- Product type / category
-- Target users (from `product.personas` if available)
-- Core value proposition (from `product.coreFlows` if available)
+Read in this order — stop as soon as you have enough to determine the product category:
 
-If no SDL exists, use the project directory name and any available context.
+1. **`architecture-output/_state.json`** — read first if it exists. Use directly:
+   - `project.name`, `project.description` → product name and category
+   - `project.type` → app / agent / hybrid (shapes competitor search)
+   - If `_state.json` has these fields, skip reading SDL and `intent.json` entirely
+
+2. **`intent.json`** — only if `_state.json` is absent or missing `project.description`; extract name, vision, target users
+
+3. **SDL (`solution.sdl.yaml` or `sdl.yaml`)** — only if both above are absent; Grep for `product:` block only
+
+If nothing exists, use the project directory name as the product name.
 
 Determine the **product category** for research queries (e.g., "collaborative whiteboard", "HIPAA-compliant messaging", "project management tool").
 
