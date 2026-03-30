@@ -16,13 +16,14 @@ Generate a comprehensive pre-launch readiness checklist tailored to the project'
 
 ### Step 1: Gather Project Context
 
-Read the following project files to understand the architecture:
+Read in this order:
 
-1. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — components, auth strategy, data stores, deployment config, observability settings, non-functional requirements
-2. **Architecture output** — read `architecture-output/executive-summary.md` if it exists for high-level context
-3. **Deployment config** — check for `docker-compose.yml`, `.github/workflows/`, Dockerfile, `fly.toml`, `vercel.json`, `netlify.toml`, `render.yaml`
-4. **Environment files** — check `.env.example` for required secrets and config
-5. **Security scan** — read `architecture-output/security-scan.md` if it exists
+1. `architecture-output/_state.json` — read first if it exists; provides compact `project` (name, stage), `tech_stack` (auth provider, deployment, integrations), and `components` (list with types) — use these instead of reading full markdown files for basic project facts
+2. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — components, auth strategy, data stores, deployment config, observability settings, non-functional requirements; **only read if `_state.json` is absent or lacks `tech_stack`/`components`**
+3. **Architecture output** — read `architecture-output/executive-summary.md` if it exists for high-level context (typically small)
+4. **Deployment config** — check for `docker-compose.yml`, `.github/workflows/`, Dockerfile, `fly.toml`, `vercel.json`, `netlify.toml`, `render.yaml`
+5. **Environment files** — check `.env.example` for required secrets and config
+6. **Security scan** — read `architecture-output/security-scan.md` if it exists
 
 ### Step 2: Load Skills
 

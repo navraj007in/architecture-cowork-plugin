@@ -14,11 +14,17 @@ After generating a blueprint with `/architect:blueprint`, this command takes the
 
 ## Workflow
 
-### Step 1: Check for Shared Types
+### Step 1: Read Context & Check for Shared Types
 
-Check if a blueprint with shared types (deliverable 4d) and database definitions exists earlier in the conversation.
+**First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
+- `project.name` → product name for display
+- `tech_stack` → ORM, database type, and framework — use to pre-fill Step 2 ORM question and skip asking if already obvious (e.g. `tech_stack.backend` includes "Prisma" → pre-select Prisma)
+- `entities` → if present, these are already-generated entity summaries; do NOT regenerate ORM schemas that duplicate them — but if the user is running this command, they want fresh schema files regardless
+- `components` → component directory names for knowing where to place schema files
 
-If no shared types exist, respond:
+**Then**, check if a blueprint with shared types (deliverable 4d) and database definitions exists earlier in the conversation.
+
+If no shared types exist and no `_state.json` with project context, respond:
 
 > "I need shared types and database definitions to generate from. Run `/architect:blueprint` first to define your data model, then come back here to generate ORM schemas."
 

@@ -14,16 +14,23 @@ Produce a detailed cost estimate for any product idea or existing architecture. 
 
 ## Workflow
 
-### Step 1: Understand What to Estimate
+### Step 1: Read Context & Understand What to Estimate
 
-If the user provides a description, identify:
+**First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
+- `project.name` and `project.description` → product context without asking the user
+- `tech_stack` → integrations, database, auth provider, deployment targets — use these directly to determine what services to include in the estimate; skip asking if the stack is already known
+- `components` → list of components with types — use to identify compute resources needed
+
+If `_state.json` provides sufficient context (project description + tech stack), proceed directly to Step 2 without asking the user.
+
+If no `_state.json` and the user provides a description, identify:
 - What infrastructure is needed (compute, databases, storage)
 - What third-party services are required
 - Whether AI/LLM costs apply
 
 If the user pastes an existing architecture or manifest, use that directly.
 
-If unclear, ask one question:
+If context is still unclear after checking `_state.json`, ask one question:
 
 > "What are you building, and roughly how many users do you expect in the first 6 months?"
 

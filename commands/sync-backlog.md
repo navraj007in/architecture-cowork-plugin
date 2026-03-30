@@ -14,9 +14,14 @@ After generating a blueprint with `/architect:blueprint`, this command takes the
 
 ## Workflow
 
-### Step 1: Check for Blueprint with Sprint Backlog
+### Step 1: Read Context & Check for Sprint Backlog
 
-Check if a blueprint with a sprint backlog (deliverable 4o) exists earlier in the conversation.
+**First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
+- `project.name` → product name for sprint and epic labels
+- `components` → component names (used as epic names in Step 4 preview)
+- `mvp_scope.must_have` → core features list to cross-reference against backlog stories
+
+**Then**, check if a blueprint with a sprint backlog (deliverable 4o) exists earlier in the conversation.
 
 If yes, extract the sprint table and user stories.
 

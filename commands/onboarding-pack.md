@@ -16,11 +16,12 @@ Generate a comprehensive developer onboarding document for the first engineer jo
 
 ### Step 1: Gather Project Context
 
-Read all available project files:
+Read in this order:
 
-1. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — architecture style, components, tech stack, dependencies, auth, data model (use `data` section for entity names and relationships)
-2. **Executive summary** — `architecture-output/executive-summary.md` (if exists)
-3. **API docs** — `architecture-output/api-docs.md` (if exists)
+1. `architecture-output/_state.json` — read first if it exists; provides compact `project` (name, description, stage), `tech_stack` (frontend, backend, database, auth, deployment), `components` (names, types, ports, frameworks), `entities` (field names per entity), and `design` (palette and fonts). Use these instead of reading full markdown files for tech stack, component list, and entity information.
+2. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — architecture style, detailed component config, auth strategy, data model relationships; **only read SDL sections not covered by `_state.json`** (e.g. inter-service communication, environments, observability config)
+3. **Executive summary** — `architecture-output/executive-summary.md` (if exists, typically small)
+4. **API docs** — `architecture-output/api-docs.md` (if exists, typically small)
 5. **ADR files** — any `adr-*.md` files in `architecture-output/`
 6. **Scaffold plan** — `architecture-output/scaffold-plan.md` (if exists)
 7. **Environment config** — `.env.example`, `docker-compose.yml`

@@ -14,9 +14,15 @@ After generating a blueprint with `/architect:blueprint`, this command creates a
 
 ## Workflow
 
-### Step 1: Check for Blueprint & SDL
+### Step 1: Read Context & Check for Blueprint
 
-**First**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does:
+**First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
+- `project.name` and `project.description` → product name and domain context
+- `tech_stack` → framework and component library choices already made
+- `design` → if present and fully populated (personality + full palette + fonts), the design system was already set — use these values as the starting point rather than re-deriving from scratch
+- `personas` → target audience context; use instead of reading `user-personas.md`
+
+**Then**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does:
 - Read `sdl.yaml` for the SDL document
 - Read `blueprint.json` for the full blueprint
 - Extract product domain, target audience, and frontend components

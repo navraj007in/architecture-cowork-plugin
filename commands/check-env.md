@@ -16,13 +16,15 @@ Scan the SDL specification and project files to determine what tools, runtimes, 
 
 ### Step 1: Read Project Requirements
 
-Read the SDL file (`solution.sdl.yaml` or `sdl.yaml`) to extract:
+Read in this order:
 
-1. **Components** — for each component, note the `runtime`, `language`, `framework`, and `buildTool`
-2. **Data section** — `primaryDatabase`, `cache`, `queue`, `search` — what data stores are needed
-3. **Auth section** — what auth provider is configured (may need specific CLIs)
-4. **Deployment section** — what cloud platform is targeted (may need specific CLIs)
-5. **Infrastructure** — Docker Compose, Kubernetes, Terraform requirements
+1. `architecture-output/_state.json` — read first if it exists; provides compact `tech_stack` (frontend frameworks, backend frameworks, database, auth, deployment, integrations) and `components` (name, type, port, framework). Use these to identify required runtimes, tools, and credentials — skip reading the full SDL if `_state.json` covers the needed fields.
+2. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — **only if `_state.json` is absent or lacks `tech_stack`/`components`**; extract:
+   - **Components** — for each component, note the `runtime`, `language`, `framework`, and `buildTool`
+   - **Data section** — `primaryDatabase`, `cache`, `queue`, `search` — what data stores are needed
+   - **Auth section** — what auth provider is configured (may need specific CLIs)
+   - **Deployment section** — what cloud platform is targeted (may need specific CLIs)
+   - **Infrastructure** — Docker Compose, Kubernetes, Terraform requirements
 
 Also check:
 - `package.json` → `engines.node` for required Node.js version

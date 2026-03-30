@@ -16,18 +16,19 @@ Generate a professional investor or stakeholder update template, pre-filled with
 
 ### Step 1: Gather Project Data
 
-Read all available data sources:
+Read in this order:
 
-1. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — project name, description, stage, components
-2. **Cost estimate** — `architecture-output/cost-estimate.md` (if exists) — monthly infra costs
-3. **Scaffold report** — `.archon/scaffold-report.json` (if exists) — component build status, timestamps
-4. **Change requests** — `.archon/change-requests/cr-index.json` (if exists) — applied CRs with dates
-5. **ADR files** — any `adr-*.md` files in `architecture-output/` — architecture decisions
-6. **Security scan** — `architecture-output/security-scan.md` (if exists) — security posture
-7. **Complexity check** — `architecture-output/complexity-check.md` (if exists) — risk assessment
-8. **Well-architected review** — `architecture-output/well-architected-review.md` (if exists)
-9. **Hiring brief** — `architecture-output/hiring-brief.md` (if exists) — team needs
-10. **Blueprint** — `architecture-output/executive-summary.md` (if exists) — project overview
+1. `architecture-output/_state.json` — read first if it exists; provides compact `project` (name, description, stage), `tech_stack` (components and integrations), `mvp_scope` (must_have / wont_have), and `top_risks` (top 5 risks with scores and levels). Use these directly for sections 1, 3, 4, and 6 without reading full markdown files.
+2. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — **only if `_state.json` is absent or lacks `project`/`tech_stack`**; read only the `solution` and `architecture.projects` sections (Grep for these) to get project name, description, stage, and component list
+3. **Cost estimate** — `architecture-output/cost-estimate.md` (if exists, typically small) — monthly infra costs
+4. **Scaffold report** — `.archon/scaffold-report.json` (if exists) — component build status, timestamps
+5. **Change requests** — `.archon/change-requests/cr-index.json` (if exists) — applied CRs with dates
+6. **ADR files** — any `adr-*.md` files in `architecture-output/` — architecture decisions
+7. **Security scan** — `architecture-output/security-scan.md` (if exists) — security posture; **only if `_state.json.top_risks` is absent**
+8. **Complexity check** — `architecture-output/complexity-check.md` (if exists) — risk assessment; **only if `_state.json.top_risks` is absent**
+9. **Well-architected review** — `architecture-output/well-architected-review.md` (if exists)
+10. **Hiring brief** — `architecture-output/hiring-brief.md` (if exists) — team needs
+11. **Blueprint** — `architecture-output/executive-summary.md` (if exists) — project overview; **only if `_state.json` is absent**
 
 ### Step 2: Load Skills
 
