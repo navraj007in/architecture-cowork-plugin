@@ -31,9 +31,14 @@ Each screen = one `.json` file, ~20-30 lines. 15 screens = ~400 lines total. All
 
 Check if `architecture-output/wireframes/_manifest.json` exists with a non-empty `generated` array. If all screens already exist, output `[WIREFRAMES_DONE]` and stop.
 
-### Step 2: Read SDL
+### Step 2: Read Context
 
-Read the project SDL file. Extract: appName, auth section, product.screens (use as-is if present), product.coreFlows, data entities, component types.
+**First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
+- `project.name` → appName
+- `design` → brand color (`primary`), personality, and fonts — record these for the `theme` field in each spec
+- `entities` → field names for realistic placeholder values in specs
+
+**Then** read the project SDL file. Extract: appName (if not in _state.json), auth section, product.screens (use as-is if present), product.coreFlows, data entities, component types.
 
 ### Step 3: Build Manifest
 
@@ -60,6 +65,16 @@ Key rules:
 - `layout`: `"centered"` for auth, `"sidebar"` for apps with many nav items, `"topnav"` otherwise, `"fullpage"` for landing
 - `navLinks`: map nav label → screen id (e.g. `"Students": "students-list"`)
 - `sections`: use real entity field names from SDL data section, realistic placeholder values
+- `theme`: include a `theme` object in each spec if `_state.json.design` is available:
+  ```json
+  "theme": {
+    "primary": "#f97316",
+    "personality": "bold-commercial",
+    "headingFont": "Clash Display",
+    "bodyFont": "Poppins"
+  }
+  ```
+  If no design context exists, omit the `theme` field entirely.
 
 ### Step 5: Update Manifest
 

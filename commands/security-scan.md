@@ -14,9 +14,14 @@ After scaffolding projects with `/architect:scaffold`, this command validates th
 
 ## Workflow
 
-### Step 1: Check for Security Architecture
+### Step 1: Read Context
 
-Check if a blueprint with a security architecture (deliverable 4f) exists earlier in the conversation.
+**First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
+- `project.name` → product name for the scan report header
+- `tech_stack` → auth provider (Clerk, Auth0, JWT, etc.), framework, ORM — used to tailor checklist items (e.g. Prisma → parameterized queries, Clerk → session token strategy)
+- `components` → which components to scan (names + types)
+
+**Then**, check if a blueprint with a security architecture (deliverable 4f) exists earlier in the conversation.
 
 If no security checklist exists, respond:
 

@@ -14,9 +14,14 @@ After generating a blueprint and scaffolding projects, this command walks throug
 
 ## Workflow
 
-### Step 1: Check for Required Accounts
+### Step 1: Read Context
 
-Check if a blueprint with a Required Accounts list (deliverable 4m) or scaffolded projects with `.env.example` files exist.
+**First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
+- `project.name` → product name for display
+- `tech_stack` → list of integrations (Stripe, SendGrid, etc.) to cross-reference against the accounts list
+- `components` → component directory names + ports for `.env.example` discovery
+
+**Then**, check if a blueprint with a Required Accounts list (deliverable 4m) or scaffolded projects with `.env.example` files exist.
 
 If neither exists, respond:
 

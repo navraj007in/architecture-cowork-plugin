@@ -31,20 +31,38 @@ Check if `prototype/_manifest.json` exists.
 ### Step 1: Gather Inputs
 
 Read (use what's available, don't error if missing):
-1. **`architecture-output/_state.json`** — read first if it exists; provides compact personas (names + roles for realistic mock data), entities (field lists for typed mock data), and design (personality, colors, fonts). Use these instead of reading full markdown files.
-2. **intent.json** — product name, vision, target users, core features, core flows
-3. **SDL file** (`solution.sdl.yaml`) — components, auth, data models, design section, `product.screens`, `product.screenFlows`
-4. **Design tokens** — from `architecture-output/design-system/design-tokens.json` if available
-5. **Wireframes** — from `architecture-output/wireframes/` if they exist (use as layout guide)
-6. **User personas** — **only if `_state.json.personas` is absent**; from `architecture-output/user-personas.md` for realistic UI copy
+
+1. **`architecture-output/_state.json`** — read first if it exists. Use directly:
+   - `entities` → field names for typed mock data
+   - `personas` → names + roles for realistic UI copy and avatar seeds
+   - `design` → personality, colors, fonts (skip Step 2 derivation if present)
+   - `mvp_scope.must_have` → which screens/features are in scope
+
+2. **`intent.json`** — product name, vision, target users, core features, core flows
+
+3. **SDL — extract only prototype-relevant sections** (do NOT read the full file):
+   Use Grep on `solution.sdl.yaml` to extract these sections only:
+   - `product:` block → `screens`, `screenFlows`, `coreFlows` (screen inventory + navigation)
+   - `auth:` block → which auth screens to generate (login, register, MFA, SSO)
+   - `components:` block → component types (web/mobile/api) to determine layout and screen scope
+   - `design:` block → palette, fonts, personality if not in `_state.json`
+   - `data:` block → entity names and field lists for mock data shape — **only if `_state.json.entities` is absent**
+
+   **Skip entirely:** infrastructure, deployment, integrations, environment, security policies, cost — none of these affect the prototype UI.
+
+4. **Design tokens** — `architecture-output/design-system/design-tokens.json` if available
+
+5. **Wireframes manifest** — `architecture-output/wireframes/_manifest.json` if it exists; use the `screens` array as the inventory (already mapped from SDL, saves re-derivation)
+
+6. **User personas** — **only if `_state.json.personas` is absent**; Grep `architecture-output/user-personas.md` for name + role lines only
 
 ### Step 2: Design Direction
 
-**If `_state.json.design` exists (set by `design-system` command):** Use it as the authoritative source — it contains the full palette (primary, secondary, accent, surface, text colors), fonts, border radius, shadow, icon library, and component library. Do not re-derive from domain.
+**If `architecture-output/design-system/design-tokens.json` exists:** This is the authoritative design source. Read it now. Record the exact hex values, font names, spacing scale, border-radius, and shadow. The prototype MUST match the design system exactly — same colors, same fonts, same radii. Skip the domain derivation below entirely.
 
-**If design-tokens.json exists** (`architecture-output/design-system/design-tokens.json`): Use it for full spacing scale, all semantic tokens, and Tailwind config values. `_state.json.design.tokens_file` points to this file.
+**Else if `_state.json.design` exists:** Use it verbatim — palette (primary, primary_dark, secondary, accent, surface, surface_elevated, text_primary, text_secondary), fonts (heading_font, body_font), border_radius, shadow, icon_library, component_library. Do not re-derive from domain.
 
-**If NO design tokens exist (common case):** Derive a distinctive design from the product domain. Do NOT fall back to generic defaults. Instead:
+**If neither exists (common case):** Derive a distinctive design from the product domain. Do NOT fall back to generic defaults. Instead:
 
 #### Personality Selection (pick ONE based on domain)
 
@@ -121,22 +139,49 @@ Assign screens to phases: Phase 3 gets the first 3 screens, Phase 4 gets the res
 
 ### Step 4: Phase 1 — Foundation Files
 
+**Before writing any files — resolve the design source (in priority order):**
+
+1. **`architecture-output/design-system/design-tokens.json` exists** → Read it in full. Use its exact values for every color, font, spacing, border-radius, and shadow in `tailwind.config.ts` and `globals.css`. Do not invent or adjust any value.
+2. **`_state.json.design` exists but no tokens file** → Use its palette (primary, secondary, accent, surface, text colors, border_radius, shadow) and font names verbatim. Check `_state.json.design.tokens_file` — if it points to a file, read that file.
+3. **Neither exists** → Derive from domain as described in Step 2.
+
 Generate these files (config + router + mock data only — no page content yet):
 
 ```
 prototype/
-├── package.json          ← all deps: react, react-dom, react-router-dom, vite, tailwindcss, lucide-react
+├── package.json          ← all deps: react, react-dom, react-router-dom, vite, tailwindcss, lucide-react, i18next, react-i18next
 ├── index.html
 ├── vite.config.ts
-├── tailwind.config.ts    ← themed with chosen palette + fonts
+├── tailwind.config.ts    ← exact values from design-tokens.json or _state.json.design — not re-derived; darkMode: 'class'
 ├── src/
 │   ├── main.tsx
-│   ├── App.tsx           ← router with <Route> for every screen (lazy imports ok)
+│   ├── App.tsx           ← router with <Route> for every screen; wraps in ThemeProvider + I18nextProvider
+│   ├── context/
+│   │   └── ThemeContext.tsx   ← useTheme() hook — persists to localStorage, defaults to system preference
+│   ├── i18n/
+│   │   ├── index.ts           ← i18next init (react-i18next)
+│   │   └── locales/
+│   │       ├── en.json        ← all UI strings in English
+│   │       └── es.json        ← all UI strings in Spanish (auto-translated placeholder values)
 │   ├── data/
 │   │   └── mock.ts       ← realistic typed mock data, 10-20 records per entity
 │   └── styles/
-│       └── globals.css   ← Google Fonts import, CSS variables for palette
+│       └── globals.css   ← Google Fonts @import; CSS variables for light AND dark palettes
 ```
+
+**Dark/light mode requirements:**
+- `tailwind.config.ts`: set `darkMode: 'class'`
+- `globals.css`: define `:root` variables for light mode and `.dark` overrides for dark mode. Map all palette colors to CSS variables (`--color-primary`, `--color-surface`, `--color-text-primary`, etc.)
+- `ThemeContext.tsx`: reads `localStorage.getItem('theme')` on init; if absent, uses `window.matchMedia('prefers-color-scheme: dark')`; toggles `dark` class on `<html>`; exposes `theme` and `toggleTheme()`
+- Every component uses `bg-surface text-text-primary` (CSS variable-backed Tailwind classes) — never hardcoded light/dark colors
+- Header component (Phase 2) must include a theme toggle button (sun/moon icon)
+
+**Internationalisation & RTL requirements:**
+- `i18next` + `react-i18next` — initialised in `src/i18n/index.ts` with `en` as default, `es` as second locale, `ar` as third
+- All user-facing strings use `useTranslation()` hook: `const { t } = useTranslation(); ... t('nav.dashboard')`
+- `en.json`, `es.json`, and `ar.json` must cover: nav labels, page titles, table headers, button labels, form labels, empty states, error messages
+- Header component (Phase 2) must include a language switcher dropdown (EN / ES / AR)
+- **RTL support:** When language changes, update `document.documentElement.dir` (`'rtl'` for `ar`, `'ltr'` otherwise) and `document.documentElement.lang`. Store this in the i18n init `languageChanged` callback. Tailwind's `rtl:` modifier is available — use it for layout-sensitive classes (e.g. `rtl:flex-row-reverse`, `rtl:text-right`)
 
 **mock.ts requirements:**
 - Use proper names from different cultures (not just English names)
@@ -186,6 +231,7 @@ Every component must have:
 - Hover and active states
 - Proper TypeScript props interface
 - Uses the chosen palette via Tailwind classes (not hardcoded hex values)
+- **Accessibility:** Semantic HTML elements (`<nav>`, `<main>`, `<aside>`, `<section>`, `<button>`, `<header>`). All interactive elements have visible focus rings (`focus-visible:ring-2`). `aria-label` or `aria-labelledby` on icon-only buttons. Tables use `<thead>`, `<th scope="col">`. Form inputs paired with `<label htmlFor>`. Modals trap focus and close on Escape. WCAG AA contrast (4.5:1 for text).
 
 Update manifest → `phase_complete: 2`.
 
@@ -312,3 +358,6 @@ Emit: `[PROTOTYPE_DONE]`
 - Each phase must update `_manifest.json` before emitting `[PROTOTYPE_CONTINUE]`
 - Do NOT emit `[PROTOTYPE_DONE]` until build verification passes
 - Do NOT include the CTA footer
+- **ALWAYS implement dark/light mode** — `darkMode: 'class'` in Tailwind, CSS variable palette, `ThemeContext`, toggle in Header
+- **ALWAYS implement i18n** — `i18next` + `react-i18next`, `en.json` + `es.json` + `ar.json` locale files, all strings via `t()`, RTL direction set on `<html>` for Arabic
+- **ALWAYS implement accessibility** — semantic HTML, visible focus rings, ARIA labels on icon-only elements, WCAG AA contrast, keyboard navigation, modal focus trap

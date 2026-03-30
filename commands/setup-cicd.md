@@ -14,9 +14,15 @@ After generating a blueprint with `/architect:blueprint`, this command takes the
 
 ## Workflow
 
-### Step 1: Check for DevOps Blueprint
+### Step 1: Read Context
 
-Check if a blueprint with a DevOps section (deliverable 4h) exists earlier in the conversation.
+**First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
+- `project.name` → product name for workflow file comments
+- `tech_stack.deployment` → default deployment target (Vercel, Railway, AWS, etc.) — pre-fill Step 2 question
+- `tech_stack.frontend`, `tech_stack.backend` → framework detection for build commands (e.g. Next.js → `npm run build`, Go → `go build ./...`)
+- `components` → list of components to configure pipelines for
+
+**Then**, check if a blueprint with a DevOps section (deliverable 4h) exists earlier in the conversation.
 
 If no DevOps blueprint exists, respond:
 

@@ -193,11 +193,31 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 - **UI components:** Build 6-8 reusable components that the pages actually use (not a separate component library — components created to serve the pages).
 - **Mock data:** Realistic, domain-appropriate data in `data/mock.ts`. Typed objects, not random strings. Enough data to fill tables (10+ rows) and populate dashboards.
 - **Design system:** Apply SDL `design` section:
-  - Tailwind config with SDL palette colors mapped to primary/secondary/accent
+  - Tailwind config with SDL palette colors mapped to primary/secondary/accent; set `darkMode: 'class'`
+  - CSS variables in `globals.css` for both `:root` (light) and `.dark` (dark) — all palette colors as CSS vars
   - Font setup for declared heading/body/mono fonts
   - Component library installation if specified
   - Icon library installation if specified
   - If NO design section: select a domain-appropriate color palette — NEVER use indigo/purple as default
+- **Dark/light mode — REQUIRED on all frontend scaffolds:**
+  - `ThemeContext.tsx` with `useTheme()` hook — reads `localStorage`, falls back to `prefers-color-scheme`, toggles `dark` class on `<html>`
+  - All components use CSS variable-backed Tailwind classes (`bg-surface`, `text-text-primary`) — never hardcoded colours
+  - Theme toggle button (sun/moon icon) in the Header/Navbar
+- **Internationalisation & RTL — REQUIRED on all frontend scaffolds:**
+  - Install `i18next` + `react-i18next`
+  - `src/i18n/index.ts` — initialise with `en` default, `es` as second locale, `ar` as third
+  - `src/i18n/locales/en.json`, `es.json`, and `ar.json` — cover all nav labels, page titles, button labels, table headers, form labels, empty states
+  - All user-facing strings via `useTranslation()`: `const { t } = useTranslation(); t('nav.dashboard')`
+  - Language switcher dropdown (EN / ES / AR) in Header/Navbar
+  - RTL support: in i18next `languageChanged` callback, set `document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'` and `document.documentElement.lang = lang`. Use Tailwind `rtl:` modifier for layout-sensitive classes.
+- **Accessibility — REQUIRED on all frontend scaffolds:**
+  - Semantic HTML: `<nav>`, `<main>`, `<aside>`, `<header>`, `<section>`, `<button>` (never `<div onClick>`)
+  - Visible focus rings on all interactive elements: `focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none`
+  - `aria-label` or `aria-labelledby` on all icon-only buttons and inputs without visible labels
+  - Tables: `<thead>`, `<th scope="col">` headers; list items use `role="listitem"` implicitly via `<li>`
+  - Form inputs: every `<input>` has a paired `<label htmlFor>` — no floating-label without aria fallback
+  - Modals: trap focus inside while open, close on Escape key, restore focus to trigger element on close
+  - WCAG AA contrast: text must meet 4.5:1 against background. Verify colour palette choices against this threshold — if in doubt, darken text or lighten background.
 - **State management:** If SDL specifies (zustand, redux, etc.), set up stores for auth state and at least one domain store.
 
 ---
@@ -352,6 +372,9 @@ Start: npm run dev (or equivalent)
 - Use `[non_interactive:true]` mode — no questions, no confirmations
 - Make reasonable assumptions for anything not specified in the SDL
 - For UI styling: ALWAYS use the SDL `design` section colors if present. If absent, choose a domain-appropriate palette. NEVER default to indigo/purple — use teal, emerald, sky, rose, amber, or cyan instead
+- **ALL frontend scaffolds MUST include dark/light mode** (`darkMode: 'class'`, CSS variables, ThemeContext, toggle in header)
+- **ALL frontend scaffolds MUST include i18n** (`i18next` + `react-i18next`, `en.json` + `es.json` + `ar.json`, all strings via `t()`, RTL direction on `<html>`)
+- **ALL frontend scaffolds MUST include accessibility** (semantic HTML, visible focus rings, ARIA labels, WCAG AA contrast, keyboard navigation, modal focus trapping)
 - If the component depends on shared types, create import stubs but do NOT scaffold the shared package (another agent handles that)
 - Match framework and runtime conventions exactly (e.g., App Router for Next.js, Expo for React Native)
 - **CRITICAL: Generate REAL code with actual logic — not placeholder comments, TODOs, or empty function bodies. Every file should work when the project starts.**

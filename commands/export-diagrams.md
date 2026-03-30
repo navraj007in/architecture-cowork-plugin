@@ -14,9 +14,12 @@ After generating a blueprint with `/architect:blueprint`, this command renders a
 
 ## Workflow
 
-### Step 1: Check for Diagrams
+### Step 1: Read Context & Check for Diagrams
 
-**First**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does, read the Mermaid diagram files from that local directory:
+**First**, check for `architecture-output/_state.json`. If it exists, read it and extract:
+- `project.name` → used in diagram titles and output folder naming
+
+**Then**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does, read the Mermaid diagram files from that local directory:
 - Look in `02-architecture-diagrams/` for `.mermaid` files
 - Read `blueprint.json` for the full deliverable data including diagrams
 
