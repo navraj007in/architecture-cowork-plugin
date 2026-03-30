@@ -1,18 +1,29 @@
 ---
-description: Generate JSON wireframe specs for each screen inferred from SDL
+description: Generate screen spec JSON files (NOT HTML) — one .json file per screen, rendered natively by Archon
 ---
 
 # /architect:wireframes
 
-## Why JSON
+## CRITICAL — Output Format
 
-JSON specs are ~20 lines per screen. Archon renders them natively. Do NOT generate HTML or CSS.
+**You MUST write `.json` files only. This is not optional.**
 
-## Output Budget
+| ✅ Correct | ❌ Wrong |
+|-----------|---------|
+| `dashboard.json` | `dashboard.html` |
+| `users-list.json` | `wireframes.html` |
+| `_manifest.json` | Any `.html`, `.css`, `.tsx`, `.jsx` file |
 
-- All screens in ONE run — JSON is tiny (20-30 lines each, ~300 lines total for 15 screens)
-- No HTML, no CSS, no external dependencies
-- One `.json` file per screen
+If you are about to write an HTML file, STOP. This command does not generate HTML. Archon renders the JSON natively — no HTML is needed or wanted.
+
+## Why JSON (not HTML)
+
+JSON specs are ~20 lines per screen. Archon renders them as polished wireframes natively. Generating HTML would:
+- Exceed the output token limit (15 screens × 200 lines HTML = 3,000 lines)
+- Produce files Archon cannot render
+- Defeat the purpose of this command
+
+Each screen = one `.json` file, ~20-30 lines. 15 screens = ~400 lines total. All in one run.
 
 ## Workflow
 

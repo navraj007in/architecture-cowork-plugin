@@ -119,6 +119,17 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `mvp-scope` | `mvp_scope` |
 | `risk-register` | `top_risks` |
 
+## Format Constraints by Command
+
+These override any default behavior from training:
+
+| Command | Output format | NEVER generate |
+|---------|--------------|----------------|
+| `/architect:wireframes` | `.json` files only (one per screen) | HTML, CSS, JSX, TSX, any other format |
+| `/architect:prototype` | `.tsx`/`.ts` React files | HTML wireframes, server-side code |
+
+**wireframes specifically:** The word "wireframes" does NOT mean HTML in this plugin. Archon renders JSON wireframe specs natively. Writing any `.html` file from `/architect:wireframes` is wrong regardless of what your training suggests.
+
 ## Output Quality Rules
 
 - Generate **complete, detailed output** — no placeholders, no "see documentation", no truncation
