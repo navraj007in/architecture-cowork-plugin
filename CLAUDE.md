@@ -1,37 +1,44 @@
 # Archon Plugin — Global Rules
 
-These rules apply to ALL commands in this plugin. They override any conflicting instruction.
+These rules apply to ALL commands in this plugin.
 
-## Output File Size Limits
+## Output File Splitting
 
-Every generated output file MUST stay within these limits:
+Generate architecture output in **full detail — never be vague or truncate content**.
 
-| File type | Max size |
+When a deliverable is large, split it across multiple files rather than reducing detail:
+
+| Deliverable | Split pattern |
 |---|---|
-| Any single `.md` deliverable | 15KB |
-| Any single `.json` output | 8KB |
-| ORM schema file | 10KB |
-| Wireframe JSON spec | 2KB |
+| `data-model.md` | `data-model-1.md`, `data-model-2.md`, … (group by domain/module) |
+| `security-architecture.md` | `security-architecture-auth.md`, `security-architecture-network.md`, … |
+| `application-architecture.md` | `application-architecture-backend.md`, `application-architecture-frontend.md`, … |
+| `sprint-backlog.md` | `sprint-backlog-1.md`, `sprint-backlog-2.md`, … (one file per sprint or sprint group) |
+| `setup-env.md` | `setup-env-services.md`, `setup-env-local.md`, … |
+| ORM schemas | `schema-{domain}.prisma` per domain (e.g. `schema-auth.prisma`, `schema-orders.prisma`) |
+| Any other deliverable | `{name}-{section}.md` or `{name}-{N}.md` |
 
-**If a deliverable would exceed the limit, split it:**
-- Write a `{name}-summary.md` (key decisions + table of contents, ≤2KB)
-- Write `{name}-{section}.md` for each section (e.g. `data-model-users.md`, `data-model-orders.md`)
+**Always write an index file** when splitting: `{name}-index.md` listing what each part contains and which entities/topics are in each file. This is the file other commands should read first.
 
-## Read Budget Per Task
+**Split threshold**: if a single file would exceed ~15KB of content, split it. There is no upper limit on total output size — generate everything in full detail.
 
-Before reading any file, check if you already have the information you need. Apply these rules:
+## Read Strategy for Large Outputs
 
-- **Read `solution.sdl.yaml`** — always fine (source of truth, compact by design)
-- **Read `_manifest.json` / `blueprint.json`** — fine (structured, compact)
-- **For large output files** (`data-model.md`, `setup-env.md`, `security-architecture.md`, `application-architecture.md`, `sprint-backlog.md`): use **Grep** to extract only the section you need — do not read the full file
-- **`result.md`, `next-steps.md`** — human summaries, do not read as AI inputs
-- If a file is under 10KB, reading the full file is fine
-- If a file is over 15KB, always use Grep first
+When reading a deliverable that has been split:
+1. Read the `{name}-index.md` first to locate the relevant section
+2. Read only the specific part file(s) that contain what you need
+3. Use Grep on a part file if you need a specific entity/section within it
+
+When reading any output file that has NOT been split but is large (>15KB):
+- Use Grep to extract the relevant section rather than reading the entire file
+
+**Always fine to read in full:** `solution.sdl.yaml`, `_manifest.json`, `blueprint.json`, any file under 10KB.
 
 ## Output Quality Rules
 
-- Use tables instead of prose lists wherever possible (4x more information-dense)
-- Do not repeat the same information in multiple sections
-- Do not add filler headings like "Overview", "Introduction", "Background" — start with the content
-- Do not add a "Next Steps" or "CTA" footer unless the command explicitly requires it
+- Generate **complete, detailed output** — no placeholders, no "see documentation", no truncation
+- Use tables for structured data (entities, endpoints, config, comparisons) — more information-dense than prose
+- Do not add filler headings ("Overview", "Introduction", "Background") — start with the content
+- Do not add "Next Steps" or CTA footers unless the command explicitly requires it
 - Do not explain what you're about to do — just do it
+- Do not repeat the same information across sections or files

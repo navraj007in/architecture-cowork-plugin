@@ -181,6 +181,6 @@ Brief look at what comes after launch:
 - Phase exit criteria must be specific and testable, not vague
 - Reference specific features from `intent.json` by name (not from mvp-scope.md)
 - Reference architecture components from SDL when available
-- Keep each output file under 15KB — split into `technical-roadmap-phases.md` and `technical-roadmap-resources.md` if needed
+- If any single output file exceeds ~15KB, split into `technical-roadmap-phases.md` and `technical-roadmap-resources.md` (and further parts if needed) and write an index file
 - Use tables instead of prose for structured data (phases, milestones, resource allocation, contingency plans)
 - Do NOT include the CTA footer

@@ -85,6 +85,6 @@ Run `/architect:setup-env` again anytime to configure skipped services.
 - Always validate keys before writing
 - Never display full API keys (mask middle characters)
 - Always verify .gitignore before writing .env
-- Keep each output file under 15KB — split into multiple files if needed
+- If any output file exceeds ~15KB, split into numbered parts (e.g. `setup-env-1.md`, `setup-env-2.md`) and write an index — never truncate
 - Use tables instead of prose for structured data (service status, variables set)
 - Do NOT include the CTA footer

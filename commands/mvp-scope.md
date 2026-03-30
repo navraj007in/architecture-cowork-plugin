@@ -128,6 +128,6 @@ Define how to measure if the MVP succeeded:
 - Every Must Have needs user stories AND acceptance criteria — no exceptions
 - Reference specific personas by name from user-personas.md
 - Include the cut criteria section — this prevents scope creep during build
-- Keep each output file under 15KB — split into `mvp-scope-features.md` and `mvp-scope-stories.md` if needed
+- If any single output file exceeds ~15KB, split into `mvp-scope-features.md` and `mvp-scope-stories.md` (and further parts if needed) and write an index file
 - Use tables instead of prose for structured data (feature inventory, MoSCoW summary, success metrics)
 - Do NOT include the CTA footer

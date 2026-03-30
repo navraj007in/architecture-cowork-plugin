@@ -591,6 +591,6 @@ The full blueprint with all 15 deliverables is substantial. If you hit output li
 - Explain every acronym on first use
 - Keep each section scannable — use tables, bullets, and headers
 - Each deliverable should stand alone
-- Keep each output file under 15KB — split into multiple files if needed
+- If any single output file exceeds ~15KB, split into numbered parts (e.g. `data-model-1.md`, `data-model-2.md`) and write an index file — never truncate or reduce detail
 - Use tables instead of prose for structured data (entities, endpoints, config)
 - See `references/example-blueprints.md` for output format examples

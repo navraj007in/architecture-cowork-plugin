@@ -182,6 +182,6 @@ Define the project's risk tolerance:
 - Leading indicators are NOT optional — they're what makes a risk register useful vs. decorative
 - Mitigations must be actionable, not generic ("reduce risk" is not a mitigation)
 - Reference specific architecture decisions, features, and constraints from other deliverables
-- Keep each output file under 15KB — split into `risk-register-market.md` and `risk-register-technical.md` if needed
+- If any single output file exceeds ~15KB, split into `risk-register-market.md` and `risk-register-technical.md` (and further parts if needed) and write an index file
 - Use tables instead of prose for risk cards, summaries, and action plans
 - Do NOT include the CTA footer

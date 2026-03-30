@@ -257,8 +257,8 @@ Run: cd prototype && npm install && npm run dev
 - NEVER use generic gray + blue + white for everything. Commit to the personality's palette.
 - NEVER use the same layout for every page. Mix cards, tables, forms, metrics, feeds, and visual elements.
 - Include `package.json` with all dependencies so `npm install && npm run dev` works
-- Do NOT read `architecture-output/data-model.md` — derive entity structure from `solution.sdl.yaml` data section instead
-- Keep each output markdown file (README, docs) under 15KB — split if needed
+- Read `architecture-output/data-model.md` for entity structure — if split, read the index file first; if large, use Grep for the relevant entity
+- If any output markdown file (README, docs) exceeds ~15KB, split into numbered parts — always generate complete content
 - Do NOT connect to any real backend — all data is static/mocked
 - Do NOT ask questions — generate everything from SDL/intent.json
 - Do NOT skip screens — generate every screen in the inventory

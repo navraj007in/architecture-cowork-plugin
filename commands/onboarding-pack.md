@@ -146,7 +146,7 @@ Architecture style: [style] | Components: [count] | Stage: [stage]
 - Be specific — use actual file paths, actual commands, actual port numbers from the SDL
 - If information is missing (e.g., no ADRs, no docker-compose), note its absence rather than inventing it
 - Include copy-pasteable commands (not pseudocode)
-- Keep each output file under 15KB — split into `onboarding-pack-setup.md` and `onboarding-pack-architecture.md` if needed
+- If any single output file exceeds ~15KB, split into `onboarding-pack-setup.md` and `onboarding-pack-architecture.md` (and further parts if needed) and write an index file
 - Use tables instead of prose for structured data (tech stack, component map, env vars, coding conventions)
 - Do NOT read `architecture-output/data-model.md` — derive entity info from `solution.sdl.yaml` data section instead
 - Do NOT include a CTA footer

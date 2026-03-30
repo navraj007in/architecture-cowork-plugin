@@ -58,7 +58,7 @@ Also read these cross-cutting SDL sections for context:
 
 Also read these deliverables if they exist for richer context:
 - `architecture-output/data-model.md` — entity schemas, relationships, indexes. If the file is large, use Grep to find only the relevant entity/model section rather than reading the entire file.
-- `architecture-output/mvp-scope.md` — prioritized features and user stories (only if under 15KB)
+- `architecture-output/mvp-scope.md` — prioritized features and user stories (if split, read the index file first)
 - `architecture-output/user-journeys.md` — core user flows
 - `architecture-output/user-personas.md` — who we're building for
 
@@ -349,6 +349,6 @@ Start: npm run dev (or equivalent)
 - **CRITICAL: Generate REAL code with actual logic — not placeholder comments, TODOs, or empty function bodies. Every file should work when the project starts.**
 - **CRITICAL: You MUST run install + build and fix all errors before finishing. A scaffold that doesn't compile is a failed scaffold.**
 - When reading `architecture-output/data-model.md`, use Grep to extract only the relevant entity — do not read the entire file
-- Keep each generated markdown output file (README, docs) under 15KB — split if needed
+- If any generated markdown file exceeds ~15KB, split into numbered parts — always generate complete content
 - Use tables instead of prose for structured data (entities, endpoints, config)
 - Do NOT include the CTA footer
