@@ -1,59 +1,87 @@
 ---
 name: wireframe-patterns
-description: Screen type patterns and SDL-to-screen mapping rules for HTML wireframe generation.
+description: JSON wireframe spec patterns — SDL-to-screen mapping and section examples for each screen type.
 ---
 
-# Wireframe Patterns
+# Wireframe Patterns (JSON)
 
-## SDL → Screen Mapping
+## SDL → Screen Inventory
 
-| SDL source | Screens to generate |
+| SDL source | Screens |
 |---|---|
 | `auth` section | login, register, forgot-password |
-| `product.screens` | use as-is (user-defined, takes priority) |
+| `product.screens` | use as-is (takes priority over inference) |
 | `product.coreFlows` | one screen per distinct flow step |
-| `data` entity | {entity}-list, {entity}-detail, {entity}-form |
+| `data` entity | `{entity}-list`, `{entity}-detail`, `{entity}-form` |
 | always | dashboard, settings-profile |
-| billing/subscriptions | settings-billing |
+| subscriptions/billing | settings-billing |
 | multi-tenant | settings-team |
 | marketing/landing component | landing |
 
-## Screen → HTML Pattern
+## Section Types by Screen
 
-**login / register / forgot-password**
-— Centered card (max-width 380px), form-groups for fields, btn submit, link to sibling auth screen.
+**login / register / forgot-password** → layout: `centered`
+```json
+{ "type": "form", "fields": [{"label":"Email","type":"email"},{"label":"Password","type":"password"}] }
+```
 
-**dashboard**
-— grid3 stat cards at top (key metrics from data entities), card with recent-items table below, sidebar-layout if app has 5+ screens.
+**dashboard** → layout: `sidebar`
+```json
+{ "type": "stats", "items": [{"label":"Total Users","value":"1,240","trend":"+8%"},{"label":"Revenue","value":"$42K","trend":"+12%"}] },
+{ "type": "table", "title": "Recent Activity", "columns": ["User","Action","Date","Status"], "rows": [["Alice Chen","Created order","Mar 29","Active"]] }
+```
 
-**{entity}-list**
-— actions div with `[+ New {Entity}]` btn, table with entity fields as columns, badge for status fields, `<a>` link on name column to detail screen.
+**{entity}-list** → layout: `topnav` or `sidebar`
+```json
+{ "type": "table", "title": "Orders", "columns": ["ID","Customer","Amount","Status","Date"], "rows": [["#1042","Sarah Chen","$240","Pending","Mar 29"]] }
+```
 
-**{entity}-detail**
-— `← Back` link, h1 with entity name, card with field/value rows, actions div with Edit and Delete btns.
+**{entity}-detail** → layout: `topnav`
+```json
+{ "type": "detail", "title": "Order #1042", "pairs": [{"label":"Customer","value":"Sarah Chen"},{"label":"Amount","value":"$240"},{"label":"Status","value":"Pending"}] }
+```
 
-**{entity}-form (create/edit)**
-— card wrapping form-groups for each entity field, input types matching field type (select for enum, textarea for long text), btn submit + btn-ghost cancel.
+**{entity}-form (create/edit)** → layout: `topnav`, centered card
+```json
+{ "type": "form", "title": "New Order", "fields": [{"label":"Customer","type":"text"},{"label":"Product","type":"select","options":["Widget A","Widget B"]},{"label":"Notes","type":"textarea"}] }
+```
 
-**settings-profile**
-— sidebar-layout with nav links to settings sub-pages, form-groups for user fields.
+**settings-profile** → layout: `sidebar`
+```json
+{ "type": "tabs", "tabs": ["Profile","Notifications","Security"] },
+{ "type": "form", "fields": [{"label":"Full Name","type":"text"},{"label":"Email","type":"email"},{"label":"Bio","type":"textarea"}] }
+```
 
-**settings-billing**
-— Current plan card, upgrade options, payment method section.
+**settings-billing** → layout: `sidebar`
+```json
+{ "type": "cards", "title": "Plans", "cards": [{"title":"Free","description":"Up to 3 projects","badge":"Current"},{"title":"Pro — $29/mo","description":"Unlimited projects"}] }
+```
 
-**landing**
-— Full-width hero section, grid3 feature cards, pricing section, footer.
+**landing** → layout: `fullpage`
+```json
+{ "type": "hero", "headline": "Build faster with MyApp", "subheading": "The platform for modern teams.", "cta": "Get Started Free" },
+{ "type": "cards", "title": "Features", "cards": [{"title":"Fast","description":"Deploy in minutes"},{"title":"Secure","description":"SOC2 compliant"},{"title":"Scalable","description":"Grows with you"}] }
+```
 
-**chat / messaging**
-— sidebar-layout: channel list left, message thread right, input bar at bottom.
+**chat/messaging** → layout: `sidebar`
+```json
+{ "type": "chat", "channels": ["general","team","support"], "messages": [{"user":"Alice","time":"10:42am","text":"Good morning everyone!"},{"user":"Bob","time":"10:45am","text":"Morning! Ready for standup?"}] }
+```
 
-## Rules
+## Full Example (dashboard.json)
 
-- Use field names from SDL data entities — never generic "field1"
-- Use realistic placeholder values: "Sarah Chen", "2024-03-15", "$1,240" — not "lorem ipsum"
-- Every screen needs nav links to 3-5 other screens
-- List screens need working links to their detail screen
-- Forms need Cancel link back to list screen
-- Status fields get a `.badge` element
-- Keep HTML under 200 lines per file
-- Link to `wireframes.css` — never inline styles
+```json
+{
+  "screen": "dashboard",
+  "title": "Dashboard",
+  "appName": "NexusVET",
+  "layout": "sidebar",
+  "nav": ["Dashboard","Students","Courses","Reports","Settings"],
+  "activeNav": "Dashboard",
+  "navLinks": {"Students":"students-list","Courses":"courses-list","Reports":"reports","Settings":"settings-profile"},
+  "sections": [
+    {"type":"stats","items":[{"label":"Total Students","value":"142","trend":"+12%"},{"label":"Active Courses","value":"18"},{"label":"Completion Rate","value":"87%"},{"label":"Revenue","value":"$24.5K","trend":"+8%"}]},
+    {"type":"table","title":"Recent Enrollments","columns":["Student","Course","Enrolled","Status"],"rows":[["Sarah Chen","React Fundamentals","Mar 28","Active"],["James Liu","Node.js Advanced","Mar 27","Active"],["Emma Wilson","Python Basics","Mar 26","Completed"]]}
+  ]
+}
+```
