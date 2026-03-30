@@ -38,7 +38,7 @@ Check if `architecture-output/wireframes/_manifest.json` exists with a non-empty
 - `design` → brand color (`primary`), personality, and fonts — record these for the `theme` field in each spec
 - `entities` → field names for realistic placeholder values in specs
 
-**Then** read the project SDL file. Extract: appName (if not in _state.json), auth section, product.screens (use as-is if present), product.coreFlows, data entities, component types.
+**Then** read the SDL — **only if `_state.json` is absent or missing `project.name`**; Grep for `product:` block (screens, coreFlows, auth) and `components:` block only. Do NOT read the full SDL file.
 
 ### Step 3: Build Manifest
 

@@ -17,10 +17,10 @@ Define a sharp MVP boundary that maximizes learning while minimizing build time.
 ### Step 1: Gather Context
 
 Read in this order:
-1. `architecture-output/_state.json` — read first if it exists; provides compact persona summaries, competitor data, and tech stack. Use `_state.json.personas` instead of reading `user-personas.md`. Use `_state.json.market_research` instead of reading `deep-research.md`.
-2. `intent.json` — core features, target users, business constraints, technical constraints
-3. `architecture-output/problem-validation.md` — validated assumptions, core problem (read in full, typically small)
-4. `architecture-output/user-journeys.md` — critical user flows (read in full, typically small)
+1. `architecture-output/_state.json` — read first if it exists; use `project`, `personas`, `market_research`, `mvp_scope` directly — these replace reading intent.json, user-personas.md, and deep-research.md
+2. `intent.json` — **only if `_state.json.project` is absent**; extract name, vision, core features, business/technical constraints
+3. `architecture-output/problem-validation.md` — **only if it exists**; Grep for "Problem Statement" and "Core Assumptions" sections only
+4. `architecture-output/user-journeys.md` — **only if it exists**; Grep for journey names and "Success state" lines only
 5. `architecture-output/deep-research.md` — **only if `_state.json.market_research` is absent**; if reading, use Grep for the "Feature Comparison Matrix" and "Opportunity Gaps" sections only
 6. `architecture-output/user-personas.md` — **only if `_state.json.personas` is absent**; if reading, use Grep for persona names and "Features they'd use most"
 

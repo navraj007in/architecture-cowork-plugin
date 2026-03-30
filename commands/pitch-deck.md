@@ -17,9 +17,9 @@ Generate a comprehensive, investor-ready pitch deck with web-verified market dat
 ### Step 1: Gather Context
 
 Read in this order (do NOT ask the user — use what's available):
-1. `architecture-output/_state.json` — read first if it exists; provides compact personas, competitor data, market sizing, MVP scope, and top risks — use these directly for slides 2, 6, 7, 9, 10, 14 without reading full markdown files
-2. `intent.json` — product name, vision, target users, core features, business constraints
-3. `solution.sdl.yaml` — architecture overview for Slide 4 (Product Overview) and Slide 5 (How It Works)
+1. `architecture-output/_state.json` — read first if it exists; use `project`, `personas`, `market_research`, `mvp_scope`, `top_risks`, `tech_stack`, `components` directly — these cover slides 2, 4, 5, 6, 7, 9, 10, 14 without needing intent.json or SDL
+2. `intent.json` — **only if `_state.json.project` is absent**; extract name, vision, target users, core features, business constraints
+3. `solution.sdl.yaml` — **only if `_state.json.components` is absent**; Grep for `product:` block (screens, coreFlows) and `components:` block only — do NOT read the full file
 4. `architecture-output/problem-validation.md` — problem statement, evidence (read in full, typically small)
 5. `architecture-output/cost-estimate.md` — infrastructure and development costs for Slides 13-14 (read in full, typically small)
 6. `architecture-output/deep-research.md` — **only if `_state.json.market_research` is absent**; if reading, Grep for "Market Sizing" and "Competitor Landscape" sections only. USE this data directly instead of re-researching.
