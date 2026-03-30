@@ -16,12 +16,13 @@ Map the complete user experience from discovery through retention. Produces deta
 
 ### Step 1: Gather Context
 
-Read these files if they exist:
-- `intent.json` — core features, product vision
-- `architecture-output/user-personas.md` — persona details, goals, pain points
-- `architecture-output/mvp-scope.md` — prioritized features, Must Haves
-- `architecture-output/deep-research.md` — competitor UX insights
-- `solution.sdl.yaml` — architecture components, API endpoints
+Read in this order:
+1. `architecture-output/_state.json` — read first if it exists; provides compact personas (name, role, top_pain), mvp_scope (must_have list), and market_research (competitor UX weaknesses) — use these instead of reading full markdown files
+2. `intent.json` — core features, product vision
+3. `solution.sdl.yaml` — architecture components, core flows, screens
+4. `architecture-output/user-personas.md` — **only if `_state.json.personas` is absent**; if reading, Grep for persona goals and "Current workflow" sections only
+5. `architecture-output/mvp-scope.md` — **only if `_state.json.mvp_scope` is absent**; if reading, Grep for "Must Have" section only
+6. `architecture-output/deep-research.md` — **only if `_state.json.market_research` is absent**; if reading, Grep for competitor weakness/UX gaps only
 
 ### Step 2: Identify Core Journeys
 

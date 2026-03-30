@@ -19,11 +19,12 @@ This is NOT a production application — it's a **demo prototype** with static/m
 ### Step 1: Gather Inputs
 
 Read (use what's available, don't error if missing):
-1. **intent.json** — product name, vision, target users, core features, core flows
-2. **SDL file** (`solution.sdl.yaml`) — components, auth, data models (use `data` section for entity structure), design section, `product.screens`, `product.screenFlows`
-3. **Design tokens** — from `architecture-output/design-system/design-tokens.json` if available
-4. **Wireframes** — from `architecture-output/wireframes/` if they exist (use as layout guide)
-5. **User personas** — from `architecture-output/user-personas.md` for realistic UI copy
+1. **`architecture-output/_state.json`** — read first if it exists; provides compact personas (names + roles for realistic mock data), entities (field lists for typed mock data), and design (personality, colors, fonts). Use these instead of reading full markdown files.
+2. **intent.json** — product name, vision, target users, core features, core flows
+3. **SDL file** (`solution.sdl.yaml`) — components, auth, data models (use `data` section for entity structure), design section, `product.screens`, `product.screenFlows`
+4. **Design tokens** — from `architecture-output/design-system/design-tokens.json` if available
+5. **Wireframes** — from `architecture-output/wireframes/` if they exist (use as layout guide)
+6. **User personas** — **only if `_state.json.personas` is absent**; from `architecture-output/user-personas.md` for realistic UI copy
 
 ### Step 2: Design Direction
 
@@ -257,7 +258,7 @@ Run: cd prototype && npm install && npm run dev
 - NEVER use generic gray + blue + white for everything. Commit to the personality's palette.
 - NEVER use the same layout for every page. Mix cards, tables, forms, metrics, feeds, and visual elements.
 - Include `package.json` with all dependencies so `npm install && npm run dev` works
-- Read `architecture-output/data-model.md` for entity structure — if split, read the index file first; if large, use Grep for the relevant entity
+- For entity structure: use `_state.json.entities` if available; otherwise read `architecture-output/data-model.md` — if split, read the index file first; if large, use Grep for the relevant entity
 - If any output markdown file (README, docs) exceeds ~15KB, split into numbered parts — always generate complete content
 - Do NOT connect to any real backend — all data is static/mocked
 - Do NOT ask questions — generate everything from SDL/intent.json

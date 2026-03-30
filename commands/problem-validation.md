@@ -16,10 +16,11 @@ Rigorously validate the problem space before committing to a solution. Produces 
 
 ### Step 1: Gather Context
 
-Read these files if they exist:
-- `intent.json` — product vision, target users, problem statement
-- `architecture-output/deep-research.md` — market data, competitor landscape
-- `architecture-output/user-personas.md` — user segments and pain points
+Read in this order:
+1. `architecture-output/_state.json` — read first if it exists; provides compact personas (top pains per segment) and market_research (competitor weaknesses, market size, key insight) — use these instead of reading full markdown files
+2. `intent.json` — product vision, target users, problem statement
+3. `architecture-output/deep-research.md` — **only if `_state.json.market_research` is absent**; if reading, Grep for "Executive Summary" and "Opportunity Gaps" sections only
+4. `architecture-output/user-personas.md` — **only if `_state.json.personas` is absent**; if reading, Grep for "Pain points" and "Current workflow" sections only
 
 ### Step 2: Research (if WebSearch available)
 
