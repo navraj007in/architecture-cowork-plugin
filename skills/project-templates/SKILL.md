@@ -756,6 +756,86 @@ updates:
 
 > Generate one block per package ecosystem present in the project. Always include the `github-actions` block.
 
+### Security Scanning Workflow
+
+Add `.github/workflows/security.yml` — language-agnostic, works for all runtimes:
+
+```yaml
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"   # weekly Monday 06:00 UTC
+
+permissions:
+  contents: read
+  security-events: write   # required for CodeQL to upload SARIF results
+
+jobs:
+  secret-scan:
+    name: Secret scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so Gitleaks can scan all commits
+
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql:
+    name: SAST (CodeQL)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Add only the languages present in this repo
+        language: [javascript-typescript]
+        # Other supported values: python, go, csharp, java, ruby, swift
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-and-quality
+
+      - uses: github/codeql-action/autobuild@v3
+
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+```
+
+**Language matrix values by runtime:**
+
+| Runtime | `language` value |
+|---|---|
+| Node.js / TypeScript | `javascript-typescript` |
+| Python | `python` |
+| Go | `go` |
+| .NET / C# | `csharp` |
+| Multiple runtimes in monorepo | list all: `[javascript-typescript, python]` |
+
+> CodeQL results appear in the GitHub Security tab → Code scanning alerts. No external accounts needed — it's built into GitHub.
+
+**.gitleaks.toml (optional — add to repo root to suppress false positives):**
+```toml
+[allowlist]
+description = "Global allowlist"
+paths = [
+  ".env.example",      # example files intentionally contain placeholder keys
+]
+regexes = [
+  "EXAMPLE_",          # suppress vars named *_EXAMPLE_*
+  "your-.*-here",      # suppress placeholder strings
+]
+```
+
 ### .gitignore
 
 > Runtime-specific .gitignore files are in the runtime sub-files (nodejs.md, python.md, go.md, dotnet.md). Always add one per component.
