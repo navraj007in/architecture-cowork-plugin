@@ -27,16 +27,16 @@ If the file does not exist or has no `intent` field, proceed with the interactiv
 
 ### Step 0.5: Detect Existing Blueprint
 
-After Step 0, **before** gathering any requirements, check whether this project already has a blueprint:
+After Step 0, **before** gathering any requirements, check whether this project already has a blueprint or was previously imported:
 
-1. Look for `sdl.yaml` in the current working directory.
+1. Look for `solution.sdl.yaml` in the current working directory.
 2. Look for `architecture-output/_state.json`.
 
 **If neither file exists:** this is a fresh project — proceed normally to Step 1.
 
-**If either file exists:** this project has already been blueprinted. Do the following:
+**If either file exists:** this project has already been blueprinted or imported. Do the following:
 
-a) Read `architecture-output/_state.json` (if present) to get the summary. Also read the first 40 lines of `sdl.yaml` for the solution name and component list.
+a) Read `architecture-output/_state.json` (if present) to get the summary. Also read the first 40 lines of `solution.sdl.yaml` for the solution name and component list.
 
 b) Present a brief summary of what was previously designed:
 
@@ -44,7 +44,7 @@ b) Present a brief summary of what was previously designed:
 Found an existing blueprint for: [project name]
   Components : [list component names and types]
   Tech stack : [frontend / backend / database summary]
-  SDL file   : sdl.yaml
+  SDL file   : solution.sdl.yaml
   Deliverables: architecture-output/ ([N] files present)
 ```
 
@@ -98,7 +98,7 @@ The architecture hasn't changed — the user wants richer, more detailed output 
 **Option 4 — Cancel:**
 - Reply: "Blueprint unchanged. Run `/architect:blueprint` again when you're ready to update it." Then stop.
 
-> **Never silently overwrite an existing `sdl.yaml` or `architecture-output/` without first asking which option the user wants.**
+> **Never silently overwrite an existing `solution.sdl.yaml` or `architecture-output/` without first asking which option the user wants.**
 
 ### Step 1: Load Intent (if available)
 
@@ -126,7 +126,9 @@ If a valid JSON intent is provided:
 
 Also check if an `intent.json` file exists in the current working directory — if it does, read it and use it the same way as above.
 
-If neither inline JSON nor `intent.json` file is found, fall through to Step 2.
+**Additionally, if `solution.sdl.yaml` exists in the current working directory, read it now** — even if intent.json was already loaded. The SDL from a prior import or blueprint run contains confirmed technical details (exact frameworks, port numbers, auth strategy, databases, design tokens, observability state, environment URLs) that must be preserved in the new blueprint. When building the manifest in Step 3, treat `solution.sdl.yaml` as the authoritative source for all technical fields it contains — do not re-derive or overwrite them from intent.json or Step 2 answers. Only add or extend what the SDL is missing.
+
+If neither inline JSON, `intent.json`, nor `solution.sdl.yaml` is found, fall through to Step 2.
 
 ### Step 2: Gather Requirements (interactive fallback)
 
@@ -219,9 +221,11 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
    - Adjust the interpretation of the manifest
    - If ambiguous, ask ONE clarifying question
 
-7. **Save the SDL file to the project root directory** as `sdl.yaml`. Do not place it inside `architecture/`, `artifacts/`, or any subfolder.
+7. **Save the SDL file to the project root directory** as `solution.sdl.yaml`. Do not place it inside `architecture/`, `artifacts/`, or any subfolder. This filename is the canonical SDL name used by all commands — never write `sdl.yaml`.
 
-**Do not show raw SDL to the user unless they ask.** Use it internally to drive consistent deliverable generation. Confirm: "Architecture spec saved to `./sdl.yaml`"
+**If `solution.sdl.yaml` already existed** (from a prior import or blueprint run): merge the newly generated SDL into it — preserve any fields the new manifest doesn't cover (e.g. `x-confidence` annotations, `x-evidence` fields, `observability` detail, `errorHandling`, `configuration`, `interServiceCommunication` that were reverse-engineered during import). The rule is: blueprint-generated fields take precedence for architecture decisions; import-detected fields take precedence for implementation reality (ports, exact library versions, hardening state).
+
+**Do not show raw SDL to the user unless they ask.** Use it internally to drive consistent deliverable generation. Confirm: "Architecture spec saved to `./solution.sdl.yaml`"
 
 **SDL drives these deliverables deterministically:**
 - 4b: Architecture Diagrams — solution architecture + service communication + agent flow (from `architecture` + `data` + `auth` + `integrations`)
