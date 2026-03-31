@@ -123,6 +123,7 @@ top-level sections.** The only allowed root keys are:
 | Maturity signals (CI/CD, monitoring, tests) | `solution.stage` (MVP/Growth/Enterprise) |
 | Frontend apps (React, Vue, Angular, etc.) | `architecture.projects.frontend[]` |
 | Dev server port for frontend (vite.config, next.config, package.json scripts, .env.example) | `architecture.projects.frontend[].x-port` |
+| Git remote origin URL (`subRepo.gitOrigin` or `git remote get-url origin`) | `architecture.projects.frontend[].x-gitOrigin` / `architecture.projects.backend[].x-gitOrigin` |
 | Backend services/APIs | `architecture.projects.backend[]` |
 | Mobile apps | `architecture.projects.mobile[]` |
 | Microservice boundaries | `architecture.services[]` (with kind + responsibilities) |
@@ -201,11 +202,15 @@ architecture:
       - name: "{app name}"
         framework: nextjs | react | vue | angular | svelte | solid
         # Add rendering, styling, stateManagement if detected
+        x-port: {dev server port}
+        x-gitOrigin: "{git remote origin URL — omit if not a git repo}"
     backend:                            # Include if backend exists
       - name: "{service name}"
         framework: nodejs | python-fastapi | dotnet | go | java-spring | ruby-rails | php-laravel
         apiStyle: rest | graphql | grpc | mixed
         orm: prisma | typeorm | mongoose | sqlalchemy | ef-core | gorm | sequelize
+        x-port: {port}
+        x-gitOrigin: "{git remote origin URL — omit if not a git repo}"
   services:                             # Required if style=microservices (min 2)
     - name: "{service name}"
       kind: backend | worker | function | api-gateway
