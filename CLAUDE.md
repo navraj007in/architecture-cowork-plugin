@@ -206,6 +206,13 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `check-env` | activity log only (no `_state.json` fields) |
 | `publish-api-docs` | activity log only (no `_state.json` fields) |
 | `sdl` (validate/diff/template) | no writes |
+| `cost-estimate` | activity log only (no `_state.json` fields) |
+| `security-scan` | activity log only (conditional — if `security-scan.md` written) |
+| `setup-cicd` | activity log only (no `_state.json` fields) |
+| `wireframes` | activity log only (no `_state.json` fields) |
+| `launch-check` | no writes (file-system scan only) |
+| `quick-spec` | no writes (in-conversation response only) |
+| `sprint-status` | no writes (in-conversation report only) |
 
 ## Format Constraints by Command
 
