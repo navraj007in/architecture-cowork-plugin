@@ -14,6 +14,19 @@ After generating a blueprint with `/architect:blueprint`, this command creates a
 
 ## Workflow
 
+### Step 0.5: Load Prior Activity Context
+
+Before anything else, check if `architecture-output/_activity.jsonl` exists in the current working directory.
+
+If it does, read it and extract the **last 3 entries** (tail of file). These are the most recent units of work done on this project. Use them to orient yourself:
+- Which components have already been scaffolded or modified
+- Whether a previous scaffold run completed, failed, or was partial
+- What code changes were made since the last scaffold
+
+Include this context silently when making decisions in subsequent steps (e.g. skip re-scaffolding a component that was completed last run unless the user specifically asks). Do not print this log to the user unless they ask.
+
+If the file does not exist, this is a fresh project — proceed normally.
+
 ### Step 1: Check for Blueprint
 
 **First**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does, read the blueprint artifacts from that local directory:
@@ -206,9 +219,25 @@ For each **frontend component**, the scaffolder MUST:
    - Add the correct npm package
    - Include sample imports in the sample page
 
-### Step 5: Print Summary
+### Step 5: Log Activity
 
-After the scaffolder agent completes, print a summary:
+Before printing the summary, append one line to `architecture-output/_activity.jsonl` (create the file if it doesn't exist).
+
+The entry must be a single JSON object on one line (no pretty-printing):
+
+```json
+{"ts":"<ISO-8601 timestamp>","phase":"scaffold","outcome":"completed|partial|failed","components":[{"name":"api-server","framework":"dotnet","status":"created"},{"name":"web-app","framework":"nextjs","status":"augmented"}],"summary":"<one sentence: what was scaffolded and any notable issues>"}
+```
+
+Rules:
+- `outcome`: `completed` if all components succeeded, `partial` if some failed, `failed` if none succeeded
+- `components`: one entry per component — include `name`, `framework`, and `status` (`created` / `augmented` / `failed`)
+- `summary`: plain English, one sentence, e.g. "Scaffolded api-server (.NET Clean Architecture) and web-app (Next.js). worker-service skipped — scaffold failed." Keep it under 120 chars.
+- Append to the file — never overwrite existing entries.
+
+### Step 6: Print Summary
+
+After logging activity, print a summary:
 
 ```
 Scaffold complete! Here's what was created:
