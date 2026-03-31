@@ -103,8 +103,19 @@ If pricing differs significantly:
 
 Use the **cost-knowledge** skill for pricing data.
 
+### Final Step: Write Output and Log Activity
+
+Write the full deliverable to `architecture-output/compare-stack.md`.
+
+Then append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"compare-stack","outcome":"completed","files":["architecture-output/compare-stack.md"],"summary":"Stack comparison: <option-A> vs <option-B> — recommended <winner> for <use-case>."}
+```
+
 ## Output Rules
 
+- Write the full deliverable to `architecture-output/compare-stack.md`
 - Use the **cost-knowledge** skill for pricing data
 - Use the **founder-communication** skill for tone
 - Always provide a clear recommendation — do not sit on the fence

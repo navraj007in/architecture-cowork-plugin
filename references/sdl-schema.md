@@ -456,7 +456,7 @@ These are hard errors — SDL will not compile if violated:
 | # | Condition | Requirement | Error Code |
 |---|-----------|-------------|------------|
 | 1 | `architecture.style = "microservices"` | `services[]` must have 2+ items | `MICROSERVICES_REQUIRES_SERVICES` |
-| 2 | `auth.strategy = "oidc"` | `auth.provider` must be set | `OIDC_REQUIRES_PROVIDER` |
+| 2 | `auth.strategy = "oidc"` | `auth.identityProvider` must be set | `OIDC_REQUIRES_PROVIDER` |
 | 3 | `nonFunctional.security.pii = true` | `encryptionAtRest` must be `true` | `PII_REQUIRES_ENCRYPTION` |
 | 4 | `deployment.infrastructure.iac = "cloudformation"` | `deployment.cloud` must be `"aws"` | `INCOMPATIBLE_CLOUD_IAC` |
 | 5 | `data.primaryDatabase.type = "mongodb"` | No backend may have `orm = "ef-core"` | `INCOMPATIBLE_DATABASE_ORM` |

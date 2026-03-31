@@ -35,7 +35,7 @@ Check if `architecture-output/wireframes/_manifest.json` exists with a non-empty
 
 **First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
 - `project.name` → appName
-- `design` → `primary`, `secondary`, `accent`, `personality`, `heading_font`, `body_font`, `mono_font`, `borderRadius`, `shadow`, `componentLibrary` — use all of these in the `theme` field of each spec
+- `design` → `primary`, `secondary`, `accent`, `personality`, `heading_font`, `body_font`, `mono_font`, `border_radius`, `shadow`, `component_library` — use all of these in the `theme` field of each spec
 - `design.tokens_file` → if present, read that file (e.g. `architecture-output/design-system/design-tokens.json`) to get precise token values for spacing, border radius, shadows, and motion — use these values in the `theme` object for complete fidelity
 - `entities` → field names for realistic placeholder values in specs
 
@@ -67,7 +67,7 @@ See **wireframe-patterns** skill for section types and examples per screen type.
 Key rules:
 - `layout`: `"centered"` for auth, `"sidebar"` for apps with many nav items, `"topnav"` otherwise, `"fullpage"` for landing
 - `navLinks`: map nav label → screen id (e.g. `"Students": "students-list"`)
-- `sections`: use real entity field names from SDL data section, realistic placeholder values
+- `sections`: use real entity field names from `domain.entities[]` or `_state.json.entities`, realistic placeholder values
 - `theme`: include a `theme` object in each spec if `_state.json.design` is available:
   ```json
   "theme": {
@@ -80,12 +80,12 @@ Key rules:
     "heading_font": "Clash Display",
     "body_font": "Poppins",
     "mono_font": "JetBrains Mono",
-    "borderRadius": "8px",
+    "border_radius": "8px",
     "shadow": "0 1px 3px rgba(0,0,0,0.12)",
-    "componentLibrary": "shadcn/ui"
+    "component_library": "shadcn/ui"
   }
   ```
-  Populate from `_state.json.design` first; if `design.tokens_file` exists, override `borderRadius`, `shadow`, and any extended palette values from the token file.
+  Populate from `_state.json.design` first; if `design.tokens_file` exists, override `border_radius`, `shadow`, and any extended palette values from the token file.
   If no design context exists, omit the `theme` field entirely.
 
 ### Step 5: Update Manifest

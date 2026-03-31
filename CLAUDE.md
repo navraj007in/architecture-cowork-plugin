@@ -139,6 +139,15 @@ These field names are canonical. Commands MUST use exactly these names — no al
 | `components[].framework` | string | |
 | `design.personality` | string | |
 | `design.primary` | string | hex — NOT `primary_color` |
+| `design.primary_dark` | string | hex |
+| `design.secondary` | string | hex |
+| `design.accent` | string | hex |
+| `design.surface` | string | hex |
+| `design.surface_elevated` | string | hex |
+| `design.text_primary` | string | hex |
+| `design.text_secondary` | string | hex |
+| `design.border_radius` | string | e.g. `"8px"` — NOT `borderRadius` |
+| `design.shadow` | string | CSS shadow value |
 | `design.heading_font` | string | snake_case — NOT `headingFont` |
 | `design.body_font` | string | snake_case — NOT `bodyFont` |
 | `design.mono_font` | string | snake_case — NOT `monoFont` |
@@ -186,6 +195,17 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `investor-update` | `investor_update` (`generated_at`) |
 | `onboarding-pack` | `onboarding_pack` (`generated_at`) |
 | `hiring-brief` | `hiring_brief` (`generated_at`) |
+| `well-architected` | activity log only (no `_state.json` fields) |
+| `complexity-check` | activity log only (no `_state.json` fields) |
+| `compare-stack` | activity log only (no `_state.json` fields) |
+| `scaffold` | activity log only — writes `filesCreated` to `_activity.jsonl` per component |
+| `scaffold-component` | activity log only — writes `filesCreated` to `_activity.jsonl` |
+| `visualise` | activity log only (no `_state.json` fields) |
+| `export-diagrams` | activity log only (no `_state.json` fields) |
+| `agent-spec` | activity log only (no `_state.json` fields) |
+| `check-env` | activity log only (no `_state.json` fields) |
+| `publish-api-docs` | activity log only (no `_state.json` fields) |
+| `sdl` (validate/diff/template) | no writes |
 
 ## Format Constraints by Command
 

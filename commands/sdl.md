@@ -103,6 +103,12 @@ sdlVersion: "0.1"
      ```
    - Follow the write rules in CLAUDE.md — do NOT overwrite fields owned by other commands
 
+9. **Log Activity** — append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"sdl","outcome":"completed","files":["solution.sdl.yaml"],"summary":"SDL generated for <project-name>: <architecture-style>, <N> components, <N> artifacts."}
+```
+
 ---
 
 ### Mode 2: Validate SDL

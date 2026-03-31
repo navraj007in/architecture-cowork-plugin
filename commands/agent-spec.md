@@ -161,8 +161,17 @@ You are [agent name], an AI [role] that [purpose].
 [When and how to escalate to a human]
 ```
 
+### Final Step: Log Activity
+
+Write the full output to `architecture-output/agent-spec.md`. Then append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"agent-spec","outcome":"completed","files":["architecture-output/agent-spec.md"],"summary":"Agent spec generated: <orchestration-pattern> pattern with <N> tools and token cost estimate."}
+```
+
 ## Output Rules
 
+- Write the full deliverable to `architecture-output/agent-spec.md`
 - Use the **agent-architecture** skill for all pattern decisions
 - Use the **cost-knowledge** skill for LLM pricing
 - Use the **diagram-patterns** skill for the agent flow diagram

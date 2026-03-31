@@ -73,6 +73,16 @@ To re-render after changes: npx mmdc -i <file>.mmd -o <file>.png
 To edit interactively: paste .mmd source into mermaid.live
 ```
 
+### Final Step: Log Activity
+
+After the export completes, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"export-diagrams","outcome":"completed","files":[],"summary":"Exported <N> diagrams to <output-dir> in <formats> formats (light + dark variants)."}
+```
+
+List all exported file paths in the `files` array.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

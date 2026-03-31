@@ -77,7 +77,7 @@ These are hard errors — SDL will not compile if violated:
 | # | Condition | Requirement | Error Code | Fix |
 |---|-----------|-------------|------------|-----|
 | 1 | `architecture.style = "microservices"` | `services[]` must have 2+ items | `MICROSERVICES_REQUIRES_SERVICES` | Add services array with 2+ entries, or use `modular-monolith` |
-| 2 | `auth.strategy = "oidc"` | `auth.provider` must be set | `OIDC_REQUIRES_PROVIDER` | Add provider (auth0, cognito, entra-id, etc.) |
+| 2 | `auth.strategy = "oidc"` | `auth.identityProvider` must be set | `OIDC_REQUIRES_PROVIDER` | Add identityProvider (auth0, cognito, entra-id, etc.) |
 | 3 | `nonFunctional.security.pii = true` | `encryptionAtRest` must be `true` | `PII_REQUIRES_ENCRYPTION` | Set `encryptionAtRest: true` |
 | 4 | `deployment.infrastructure.iac = "cloudformation"` | `deployment.cloud` must be `"aws"` | `INCOMPATIBLE_CLOUD_IAC` | Change iac to terraform/cdk, or cloud to aws |
 | 5 | `data.primaryDatabase.type = "mongodb"` | No backend may have `orm = "ef-core"` | `INCOMPATIBLE_DATABASE_ORM` | Use mongoose for MongoDB, or postgres for EF Core |
@@ -275,10 +275,10 @@ When converting a system manifest to SDL:
 | Datadog | `integrations.monitoring.provider: datadog` |
 | Sentry | `integrations.monitoring.provider: sentry` |
 | Cloudflare | `integrations.cdn.provider: cloudflare` |
-| Auth0 | `auth.provider: auth0` |
-| Firebase Auth | `auth.provider: firebase` |
-| Clerk | `auth.provider: clerk` |
-| Cognito | `auth.provider: cognito` |
+| Auth0 | `auth.identityProvider: auth0` |
+| Firebase Auth | `auth.identityProvider: firebase` |
+| Clerk | `auth.identityProvider: clerk` |
+| Cognito | `auth.identityProvider: cognito` |
 | S3 | `data.storage.blobs.provider: s3` |
 | GCS | `data.storage.blobs.provider: gcs` |
 | Azure Blob | `data.storage.blobs.provider: azure-blob` |

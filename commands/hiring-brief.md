@@ -147,12 +147,14 @@ Evaluation criteria:
 - Communication process
 ```
 
-### Final Step: Update _state.json
+### Final Step: Update _state.json and Log Activity
 
-After writing all output files, merge a completion marker into `architecture-output/_state.json`:
-1. Read existing `_state.json` (or start with `{}`)
-2. Merge the `hiring_brief` field shown below — do NOT overwrite other fields
-3. Write back to `architecture-output/_state.json`
+After writing all output files:
+
+1. Merge a completion marker into `architecture-output/_state.json`:
+   - Read existing `_state.json` (or start with `{}`)
+   - Merge the `hiring_brief` field shown below — do NOT overwrite other fields
+   - Write back to `architecture-output/_state.json`
 
 ```json
 {
@@ -160,8 +162,15 @@ After writing all output files, merge a completion marker into `architecture-out
 }
 ```
 
+2. Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"hiring-brief","outcome":"completed","files":["architecture-output/hiring-brief.md"],"summary":"Hiring brief generated: <N> roles defined with interview questions and posting templates."}
+```
+
 ## Output Rules
 
+- Write the full deliverable to `architecture-output/hiring-brief.md`
 - Use the **founder-communication** skill for tone — this is for non-technical founders hiring developers
 - Keep role descriptions practical and specific to the actual product
 - Interview questions should relate to the actual architecture, not generic CS questions

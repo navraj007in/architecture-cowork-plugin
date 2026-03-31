@@ -118,17 +118,25 @@ Summarize the overall validation status:
 
 **Recommended next step:** One specific action to take before writing code.
 
-### Final Step: Update _state.json
+### Final Step: Update _state.json and Log Activity
 
-After writing all output files, merge a completion marker into `architecture-output/_state.json`:
-1. Read existing `_state.json` (or start with `{}`)
-2. Merge the `problem_validation` field shown below — do NOT overwrite other fields
-3. Write back to `architecture-output/_state.json`
+After writing all output files:
+
+1. Merge a completion marker into `architecture-output/_state.json`:
+   - Read existing `_state.json` (or start with `{}`)
+   - Merge the `problem_validation` field shown below — do NOT overwrite other fields
+   - Write back to `architecture-output/_state.json`
 
 ```json
 {
   "problem_validation": { "generated_at": "<ISO-8601>", "validated": true }
 }
+```
+
+2. Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"problem-validation","outcome":"completed","files":["architecture-output/problem-validation.md"],"summary":"Problem validation completed: <N> assumptions mapped, <N> experiments designed, overall readiness: <status>."}
 ```
 
 ## Output Rules

@@ -69,6 +69,16 @@ Write all visualisations to `architecture-output/`:
 
 Also render diagrams to PNG/SVG if Mermaid CLI is available.
 
+### Final Step: Log Activity
+
+After writing all output files, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"visualise","outcome":"completed","files":["architecture-output/topology.mmd","architecture-output/deployment-topology.mmd","architecture-output/component-matrix.md"],"summary":"Visualisation generated: topology, deployment diagram, component matrix, and <N> data flow diagrams."}
+```
+
+List all generated files in the `files` array.
+
 ## Output Rules
 
 - Use **diagram-patterns** skill for consistent Mermaid syntax

@@ -170,7 +170,7 @@ When shutdown begins, `app.locals.isShuttingDown = true` is set before `server.c
 
 ### Auth-provider matrix
 
-| SDL `auth.provider` | Token storage | Refresh mechanism |
+| SDL `auth.identityProvider` | Token storage | Refresh mechanism |
 |---|---|---|
 | `clerk` | Clerk SDK manages internally | `await clerk.session?.getToken({ skipCache: true })` |
 | `auth0` | SDK manages in memory | `await auth0.getAccessTokenSilently({ ignoreCache: true })` |
@@ -473,7 +473,7 @@ const EnvSchema = z.object({
   SERVICE_NAME: z.string().default('api'),
   SERVICE_VERSION: z.string().default('0.0.0'),
   ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
-  // Add provider-specific vars here based on SDL auth.provider
+  // Add provider-specific vars here based on SDL auth.identityProvider
 });
 
 const _env = EnvSchema.safeParse(process.env);

@@ -69,6 +69,16 @@ Deploy: push api-docs/ to GitHub Pages, Vercel, or Netlify
 Import: drag api-server.postman.json into Postman for API testing
 ```
 
+### Final Step: Log Activity
+
+After the export completes, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"publish-api-docs","outcome":"completed","files":[],"summary":"API docs published: <N> specs rendered (<formats>) to <output-dir>."}
+```
+
+List all published file paths in the `files` array.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

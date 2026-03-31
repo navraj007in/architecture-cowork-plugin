@@ -133,12 +133,14 @@ Generate TWO files:
    - Include source URLs in speaker notes
    - After generating the .pptx, delete the generator script
 
-### Final Step: Update _state.json
+### Final Step: Update _state.json and Log Activity
 
-After writing all output files, merge a completion marker into `architecture-output/_state.json`:
-1. Read existing `_state.json` (or start with `{}`)
-2. Merge the `pitch_deck` field shown below — do NOT overwrite other fields
-3. Write back to `architecture-output/_state.json`
+After writing all output files:
+
+1. Merge a completion marker into `architecture-output/_state.json`:
+   - Read existing `_state.json` (or start with `{}`)
+   - Merge the `pitch_deck` field shown below — do NOT overwrite other fields
+   - Write back to `architecture-output/_state.json`
 
 ```json
 {
@@ -146,9 +148,15 @@ After writing all output files, merge a completion marker into `architecture-out
 }
 ```
 
+2. Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"pitch-deck","outcome":"completed","files":["architecture-output/pitch-deck.md","architecture-output/pitch-deck.pptx"],"summary":"Pitch deck generated: 15 slides with market data, competitive analysis, and financial projections."}
+```
+
 ## Output Rules
 
-- Write BOTH files to the project root
+- Write BOTH files to `architecture-output/`
 - Every slide must have substantial content — minimum 3-4 bullet points or a data table
 - For slides with market data, include a "Sources" note
 - Reuse data from existing deliverables — don't re-research what's already been done

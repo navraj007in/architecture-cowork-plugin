@@ -37,6 +37,10 @@ For each extracted story:
 
 Read `architecture-output/_activity.jsonl` and all `<component>/_activity.jsonl` files. Collect all `filesCreated` entries (scaffold writes `filesCreated`, not `filesChanged`).
 
+If no `_activity.jsonl` files exist anywhere in the project, inform the user:
+
+> "No activity logs found. Activity logs are written by commands like `/architect:scaffold`, `/architect:blueprint`, and others as they run. Without logs, all stories will show as ⏳ pending. Run scaffold or other commands to start generating activity data."
+
 ### Step 4: Keyword matching
 
 For each story, extract keywords (words > 3 chars). Match against activity file paths and summaries:

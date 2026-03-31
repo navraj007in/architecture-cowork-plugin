@@ -138,12 +138,14 @@ Prioritized list of 8-10 UX/product recommendations derived from the journey ana
 
 1. **[Recommendation]** — Because [journey insight]. Impact: [High/Med]. Effort: [S/M/L].
 
-### Final Step: Update _state.json
+### Final Step: Update _state.json and Log Activity
 
-After writing all output files, merge a completion marker into `architecture-output/_state.json`:
-1. Read existing `_state.json` (or start with `{}`)
-2. Merge the `user_journeys` field shown below — do NOT overwrite other fields
-3. Write back to `architecture-output/_state.json`
+After writing all output files:
+
+1. Merge a completion marker into `architecture-output/_state.json`:
+   - Read existing `_state.json` (or start with `{}`)
+   - Merge the `user_journeys` field shown below — do NOT overwrite other fields
+   - Write back to `architecture-output/_state.json`
 
 ```json
 {
@@ -152,6 +154,12 @@ After writing all output files, merge a completion marker into `architecture-out
 ```
 
 (Replace `<N>` with the actual number of journey maps generated.)
+
+2. Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"user-journeys","outcome":"completed","files":["architecture-output/user-journeys.md"],"summary":"User journeys mapped: <N> journeys across <N> personas with friction analysis and touchpoint inventory."}
+```
 
 ## Output Rules
 

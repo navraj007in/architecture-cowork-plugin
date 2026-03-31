@@ -29,7 +29,7 @@ Generates a `docker-compose.yml` for local development with all services, databa
 - `data.cache.type` — Redis container
 - `data.queues.provider` — queue container (rabbitmq, kafka, redis)
 - `data.search.provider` — search container (elasticsearch, meilisearch, typesense)
-- `auth.provider` — auth env vars (Auth0, Clerk, Cognito, Firebase)
+- `auth.identityProvider` — auth env vars (Auth0, Clerk, Cognito, Firebase)
 - `solution.name` — container naming
 
 **What it includes per service**:
@@ -65,7 +65,7 @@ Generates production-ready K8s manifests with Deployments, Services, HPA, Ingres
 - `nonFunctional.security.encryptionInTransit` — TLS/cert-manager annotations
 - `data.primaryDatabase.type` — ConfigMap DB_TYPE
 - `data.cache.type` — ConfigMap REDIS_ENABLED
-- `auth.provider` — ConfigMap AUTH_PROVIDER
+- `auth.identityProvider` — ConfigMap AUTH_PROVIDER
 
 **Resource limits**:
 

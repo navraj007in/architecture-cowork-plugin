@@ -104,8 +104,19 @@ Compare the scores against stage-appropriate expectations:
 >
 > [One sentence on the most important thing to address next.]
 
+### Final Step: Write Output and Log Activity
+
+Write the full deliverable to `architecture-output/well-architected-review.md`.
+
+Then append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"well-architected","outcome":"completed","files":["architecture-output/well-architected-review.md"],"summary":"Well-architected review: overall score <X>/5 across 6 pillars with <N> improvement recommendations."}
+```
+
 ## Output Rules
 
+- Write the full deliverable to `architecture-output/well-architected-review.md`
 - Use the **well-architected** skill for all pillar definitions and scoring
 - Use the **founder-communication** skill for tone
 - Always score all 6 pillars — never skip one

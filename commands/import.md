@@ -632,6 +632,7 @@ Write `intent.json` using the standard intent schema:
 - Write analysis to `architecture-output/import-analysis.md`
 - Write intent to `intent.json` in the project root
 - **Update `architecture-output/_state.json`** after writing all files: read existing (or start with `{}`), then merge `project`, `tech_stack`, `components`, and `design` fields derived from the SDL. Follow the write rules in CLAUDE.md.
+  **IMPORTANT — SDL is camelCase, `_state.json` is snake_case:** When writing `design` fields, convert from SDL's camelCase to `_state.json`'s canonical snake_case names: `headingFont` → `heading_font`, `bodyFont` → `body_font`, `monoFont` → `mono_font`, `borderRadius` → `border_radius`, `componentLibrary` → `component_library`, `iconLibrary` → `icon_library`, `tokensFile` → `tokens_file`. See Schema Enforcement Rules in CLAUDE.md for the complete canonical field list.
 - After writing all files, return a brief summary listing every file created
   and key findings — including the production hardening score (x/9)
 - If the codebase is too large to fully analyze, state assumptions explicitly

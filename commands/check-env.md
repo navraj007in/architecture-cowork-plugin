@@ -141,6 +141,14 @@ For each missing tool, provide install commands for:
 - **Windows**: `choco install ...` or `scoop install ...`
 - **Docker**: `docker run ...` for databases
 
+### Final Step: Log Activity
+
+After writing `architecture-output/env-readiness.md`, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"check-env","outcome":"completed","files":["architecture-output/env-readiness.md"],"summary":"Environment check: <X> ready, <Y> missing, <Z> warnings."}
+```
+
 ## Output Rules
 
 - Use **founder-communication** skill for clear descriptions

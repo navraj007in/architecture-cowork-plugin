@@ -44,8 +44,6 @@ Run all 9 production hardening pattern checks against the project's backend entr
 | 9 | Retry + timeout | Outbound HTTP calls use AbortController timeout and exponential backoff retry |
 | 10 | Soft delete | ORM models have `deletedAt` field and transparent query filter middleware |
 
-Wait — patterns 3–10 are the 8 new checks; together with the existing helmet/CORS (pattern 1) and health check (pattern 2), the hardening score is **x/9** (patterns 1–9 above; soft delete is pattern 10 and counts as an optional bonus check outside the 9-point score).
-
 The 9 scored hardening patterns are:
 
 | # | Pattern |

@@ -92,8 +92,19 @@ Based on the overall score:
 | 6-7 (Advanced) | Small team (2-3 devs) or focused agency | $10K-30K | 2-4 months |
 | 8-10 (Very Advanced) | Dedicated team with specialists | $30K-100K+ | 4-12 months |
 
+### Final Step: Write Output and Log Activity
+
+Write the full deliverable to `architecture-output/complexity-check.md`.
+
+Then append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"complexity-check","outcome":"completed","files":["architecture-output/complexity-check.md"],"summary":"Complexity check: <X>/10 (<label>) with <N> risk flags identified."}
+```
+
 ## Output Rules
 
+- Write the full deliverable to `architecture-output/complexity-check.md`
 - Use the **complexity-factors** skill for scoring methodology
 - Use the **founder-communication** skill for tone
 - Always include the factor breakdown table

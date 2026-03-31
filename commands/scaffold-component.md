@@ -41,7 +41,7 @@ From the matching SDL entry, extract all available fields:
 - **framework** — framework if specified (express, fastapi, next, react, react-native, flutter, django, spring, etc.)
 - **purpose** — what the component does
 - **interfaces** — endpoints, events, screens, or ports
-- **dataModels** / **dataOwnership** — data responsibilities
+- **dataOwnership** — data responsibilities (cross-reference with `domain.entities[]` in SDL)
 - **port** — assigned port
 - **deploy_target** — deployment target
 - Any other component-specific fields (build_tool, rendering, state_management, navigation, permissions, etc.)
@@ -117,7 +117,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 │   │   ├── validation.ts        # Request validation middleware
 │   │   └── rate-limit.ts        # Rate limiting config
 │   ├── models/                  # Or entities/ — one per data model
-│   │   └── {entity}.ts          # Schema/model definition from SDL dataModels
+│   │   └── {entity}.ts          # Schema/model definition from domain.entities[] or data-model.md
 │   ├── schemas/                 # Zod schemas — one per resource
 │   │   └── {resource}.ts        # Create/update/list/params schemas + inferred types
 │   ├── services/                # Business logic layer
@@ -143,7 +143,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 
 **Code depth requirements for backends:**
 - **Routes/Controllers:** Implement ALL endpoints declared in SDL `interfaces`. Each route handler should: parse request params/body, call service layer, return typed response with correct HTTP status codes. Include input validation using zod or joi schemas.
-- **Models/Entities:** Generate complete schema definitions from SDL `dataModels` and the `solution.sdl.yaml` data section. Include all columns, types, constraints, relationships, indexes. Use the ORM specified in SDL (Prisma, Drizzle, TypeORM, Sequelize, SQLAlchemy, etc.).
+- **Models/Entities:** Generate complete schema definitions from `domain.entities[]` in `solution.sdl.yaml` and `architecture-output/data-model.md` (if it exists). Include all columns, types, constraints, relationships, indexes. Use the ORM specified in SDL (Prisma, Drizzle, TypeORM, Sequelize, SQLAlchemy, etc.).
 - **Services:** Implement actual CRUD logic (create, read, update, delete, list with pagination) for each resource. Include error handling (not found, duplicate, validation errors).
 - **Auth middleware:** Implement the strategy from SDL (JWT verification, API key check, OAuth token validation). Include role-based access control stubs if SDL declares roles. Read `auth.serviceTokenModel` from SDL (jwt | session | api-key) to determine the correct token validation mechanism for backend middleware and the correct injection strategy for the frontend API client.
 - **Health check:** Check DB connectivity, cache connectivity, and any external service dependencies. Return structured JSON: `{ status, checks: { db: "ok", cache: "ok" }, uptime, version }`.
@@ -299,7 +299,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 #### DATABASES / DATA STORES (database, db, cache, queue)
 
 **Code depth requirements:**
-- Migration files with ALL tables/collections from SDL `dataModels` and `solution.sdl.yaml` data section
+- Migration files with ALL tables/collections from `domain.entities[]` in SDL and `architecture-output/data-model.md` (if it exists)
 - Seed script with realistic sample data (10+ records per table)
 - docker-compose.yml with the database container + volume + health check
 - Connection configuration for each environment
