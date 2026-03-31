@@ -53,25 +53,28 @@ design:
     style: "dashboard"
 architecture:
   style: "microservices"
+  # Each service declares its own framework — framework is per-component, not global.
+  # This example shows a polyglot setup; replace each value with what your team has chosen.
   projects:
     frontend:
       - name: "portal"
-        framework: "nextjs"
+        framework: "nextjs"           # web portal — Next.js SSR
         rendering: "ssr"
         styling: "tailwind"
     backend:
       - name: "api-gateway"
-        framework: "nodejs"
+        framework: "nodejs"           # lightweight gateway — Node.js/Express
         apiStyle: "rest"
       - name: "order-service"
-        framework: "nodejs"
+        framework: "dotnet"           # core domain service — .NET Clean Architecture
         apiStyle: "rest"
-        orm: "prisma"
+        pattern: "clean-architecture"
       - name: "payment-service"
-        framework: "nodejs"
+        framework: "dotnet"           # financial domain — .NET for strong typing + enterprise patterns
         apiStyle: "rest"
+        pattern: "clean-architecture"
       - name: "notification-worker"
-        framework: "nodejs"
+        framework: "python-fastapi"   # lightweight consumer — Python suited for async I/O
         type: "worker"
   services:
     - name: "api-gateway"

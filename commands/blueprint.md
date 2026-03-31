@@ -68,7 +68,7 @@ Using the **architecture-methodology** skill, ask clarifying questions to unders
 - **Core action**: What is the single most important thing a user does?
 - **Integrations**: Payments, email, SMS, auth, maps, storage, analytics?
 - **AI agents**: If applicable — what should the agent do, what tools, what LLM?
-- **Tech stack preference**: Does the team have an existing stack (e.g. ".NET", "Python", "Angular")? If yes, use it. If no preference, recommend and explain why.
+- **Tech stack preference**: Does the team have an existing stack (e.g. ".NET", "Python", "Angular")? If yes, use it. If no preference, recommend and explain why. For microservices, ask whether each service uses the same framework or different ones — capture framework **per service** for polyglot architectures (e.g. payment-service in .NET, analytics-service in Python). Every component must end up with an explicit `framework` field — never leave it blank or silently apply a global default.
 - **Budget**: Monthly infrastructure budget and/or total development budget
 - **Timeline**: When do you need this live?
 
@@ -80,9 +80,9 @@ Using the **manifest-structure** skill, build a structured manifest covering:
 
 - Project metadata (name, type, description)
 - User roles and expected counts
-- Frontends (type, framework, key pages, build tool, routing, data fetching, component library, styling, backend connections, client-side auth, monitoring, deploy target)
-- Mobile apps if applicable (framework, build platform, navigation, push notifications, deep linking, permissions, OTA updates, real-time provider)
-- Backend services (type, framework, responsibilities)
+- Frontends (type, **framework** — explicit value required e.g. `nextjs`/`react-vite`/`angular`/`vue`/`svelte`, key pages, build tool, routing, data fetching, component library, styling, backend connections, client-side auth, monitoring, deploy target)
+- Mobile apps if applicable (**framework** — explicit value required e.g. `react-native`/`flutter`/`swift`/`kotlin`, build platform, navigation, push notifications, deep linking, permissions, OTA updates, real-time provider)
+- Backend services (type, **framework** — explicit value required per service e.g. `nodejs`/`dotnet`/`python-fastapi`/`go`/`java-spring`/`django`/`ruby-rails` — every service gets its own field, never share a global default without confirming, responsibilities)
 - Databases (type, purpose, key collections)
 - Integrations (category, service, purpose)
 - AI agents if applicable (orchestration, tools, memory, guardrails)

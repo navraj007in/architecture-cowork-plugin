@@ -27,40 +27,47 @@ If no blueprint exists (neither local files nor conversation), respond:
 
 > "I need an architecture to scaffold from. Run `/architect:blueprint` first to generate your architecture, then come back here to create the projects."
 
-### Step 2: List Components
+### Step 2: List Components and Detect Existing Code
 
-Present all identified components in a numbered list:
+For each component, check whether `<parent-dir>/<component-name>` already exists on disk:
+- If it exists and contains source files (package.json, requirements.txt, go.mod, pubspec.yaml, .csproj, or any `src/` / `app/` / `lib/` directory), mark it **EXISTS**.
+- If it does not exist or is empty, mark it **NEW**.
+
+Present the components with status:
 
 ```
 I found these components in your architecture:
 
-1. web-app (Next.js / App Router) — Frontend
-2. api-server (Node.js / Express) — REST API
-3. worker-service (Node.js / BullMQ) — Background worker
-4. mobile-app (React Native / Expo) — iOS + Android
-5. support-agent (Python / FastAPI) — AI agent with Claude
+1. web-app (Next.js) — Frontend               [NEW]
+2. api-server (.NET Clean Architecture) — API  [EXISTS — will augment]
+3. worker-service (Python/FastAPI) — Worker    [NEW]
 
-Ready to scaffold all 5 projects.
+New components will be scaffolded from scratch.
+Existing components will be augmented — missing files added, nothing overwritten.
 ```
 
-Map manifest entries to scaffoldable components:
+**Framework resolution — always follow this precedence:**
+1. SDL `framework` field on the component — authoritative, always use it if present
+2. ADRs in `architecture-output/adrs/` — if an ADR selects a technology for this component, follow it
+3. Table default below — only when neither SDL nor ADR specifies a framework
 
-| Manifest Section | Component Type | Default Framework |
-|-----------------|----------------|-------------------|
-| `frontends[]` with type `web` | Frontend | Next.js (App Router) |
-| `frontends[]` with type `admin` | Admin Dashboard | React (Vite) |
-| `frontends[]` with type `mobile-web` | Mobile Web App | Next.js (App Router) |
-| `frontends[]` with type `crm` | CRM Frontend | React (Vite) |
-| `frontends[]` with type `booking` | Booking Frontend | React (Vite) |
-| `frontends[]` with type `ai-chat` | AI Chat Interface | React (Vite) |
-| `frontends[]` with type `mobile` + framework `react-native` | Mobile App | React Native (Expo) |
-| `frontends[]` with type `mobile` + framework `flutter` | Mobile App | Flutter |
-| `frontends[]` with type `mobile` + framework `swift` | Mobile App (iOS) | Swift / Xcode |
-| `frontends[]` with type `mobile` + framework `kotlin` | Mobile App (Android) | Kotlin / Android Studio |
-| `services[]` with type `rest-api` or `graphql` | Backend API | Node.js/Express |
-| `services[]` with type `background-worker` | Worker | Node.js/BullMQ |
-| `services[]` with type `websocket` | Real-time Service | Node.js/Socket.io |
-| `agents[]` | AI Agent | Python/FastAPI |
+**Failing to respect a framework declared in the SDL is a scaffolding error. If the SDL says `.NET`, scaffold .NET.**
+
+| Manifest Section | Component Type | SDL `framework` values recognised | Default (SDL silent) |
+|-----------------|----------------|------------------------------------|----------------------|
+| `frontends[]` with type `web` | Frontend | `nextjs`, `react-vite`, `vue`, `nuxt`, `svelte`, `angular` | Next.js (App Router) |
+| `frontends[]` with type `admin` | Admin Dashboard | `react-vite`, `nextjs`, `angular` | React (Vite) |
+| `frontends[]` with type `mobile-web` | Mobile Web App | `nextjs`, `react-vite` | Next.js (App Router) |
+| `frontends[]` with type `crm` | CRM Frontend | `react-vite`, `nextjs`, `angular` | React (Vite) |
+| `frontends[]` with type `booking` | Booking Frontend | `react-vite`, `nextjs` | React (Vite) |
+| `frontends[]` with type `ai-chat` | AI Chat Interface | `react-vite`, `nextjs` | React (Vite) |
+| `frontends[]` with type `mobile` | Mobile App | `react-native`, `flutter`, `swift`, `kotlin` | React Native (Expo) |
+| `services[]` with type `rest-api` or `graphql` | Backend API | `nodejs`, `dotnet`, `python-fastapi`, `go`, `java-spring`, `ruby-rails`, `django` | Node.js/Express |
+| `services[]` with type `background-worker` | Worker | `nodejs`, `dotnet`, `python`, `go` | Node.js/BullMQ |
+| `services[]` with type `websocket` | Real-time Service | `nodejs`, `dotnet`, `go` | Node.js/Socket.io |
+| `agents[]` | AI Agent | `python-fastapi`, `nodejs` | Python/FastAPI |
+
+Always show the resolved framework next to each component name so the user can verify before scaffolding proceeds.
 
 ### Step 3: Ask Configuration Questions
 
@@ -111,9 +118,30 @@ Inform the user:
 
 ### Step 4: Delegate to Scaffolder Agent
 
+Before delegating, build an `existing_state` map for every **EXISTS** component. For each, read:
+1. Package manifest (`package.json`, `requirements.txt`, `go.mod`, `*.csproj`, etc.) — installed deps and scripts
+2. Entry point (`src/index.ts`, `main.py`, `Program.cs`, etc.) — what is already wired up
+3. `.env.example` if present — to avoid duplicating variable definitions
+4. Directory listing of `src/` (or equivalent) — which folders/files already exist
+
+Summarise into the `existing_state` map:
+```json
+{
+  "api-server": {
+    "mode": "augment",
+    "installed_deps": ["express", "helmet"],
+    "has_dockerfile": false,
+    "has_env_example": true,
+    "existing_src_dirs": ["controllers", "routes"],
+    "missing": ["Dockerfile", "docker-compose.yml", ".github/workflows/ci.yml"]
+  }
+}
+```
+
 Pass the following to the **scaffolder** agent:
 
-- Component list with names, types, and frameworks
+- Component list with names, types, frameworks, and `mode` (`"new"` or `"augment"`)
+- `existing_state` map (populated for augment-mode components)
 - Parent directory path
 - GitHub config (if applicable): org name, visibility
 - Whether to install dependencies
@@ -188,7 +216,7 @@ Scaffold complete! Here's what was created:
 | # | Component | Framework | Path | Status |
 |---|-----------|-----------|------|--------|
 | 1 | web-app | Next.js | ./web-app | Created |
-| 2 | api-server | Express | ./api-server | Created |
+| 2 | api-server | .NET | ./api-server | Augmented (existing code preserved) |
 | 3 | worker-service | BullMQ | ./worker-service | Created |
 | 4 | mobile-app | Expo | ./mobile-app | Created |
 | 5 | support-agent | FastAPI | ./support-agent | Created |
