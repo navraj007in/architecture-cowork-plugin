@@ -48,12 +48,13 @@ Found an existing blueprint for: [project name]
   Deliverables: architecture-output/ ([N] files present)
 ```
 
-c) Ask the user ONE question with three numbered options:
+c) Ask the user ONE question with four numbered options:
 
 > "I found an existing blueprint. What would you like to do?
 > 1. **Update** — tell me what changed and I'll regenerate only the affected sections
-> 2. **Full regenerate** — re-run the complete blueprint from scratch (overwrites everything)
-> 3. **Cancel** — keep the existing blueprint unchanged"
+> 2. **Deepen** — same requirements, but go deeper on specific sections to add more detail
+> 3. **Full regenerate** — re-run the complete blueprint from scratch (overwrites everything)
+> 4. **Cancel** — keep the existing blueprint unchanged"
 
 **Option 1 — Update mode:**
 - Ask: "What has changed? (e.g. added a new service, changed the tech stack for payments, updated the budget)"
@@ -67,11 +68,34 @@ c) Ask the user ONE question with three numbered options:
 - Proceed to regenerate only those deliverables.
 - For `_state.json` (Step 4.5): **merge** the updated fields — do not overwrite fields owned by other commands (`entities`, `personas`, `market_research`, `mvp_scope`, `top_risks`, `design` if design-system has already run).
 
-**Option 2 — Full regenerate:**
+**Option 2 — Deepen mode:**
+
+The architecture hasn't changed — the user wants richer, more detailed output on top of what was already generated. Multiple deepen passes are explicitly supported; each pass can expand different sections.
+
+- Ask: "Which sections would you like to go deeper on? For example:
+  - **API specs** — full OpenAPI with all error codes, edge cases, pagination
+  - **Sprint backlog** — expand stories with more acceptance criteria, sub-tasks, effort breakdowns
+  - **Security** — threat model per endpoint, OWASP mitigations with code examples
+  - **Data model** — full entity relationships, indexes, constraints, migration scripts
+  - **Architecture** — add sequence diagrams for each core flow, detailed error propagation paths
+  - **Cost** — per-environment cost breakdown, scaling thresholds, cost-per-user projections
+  - **DevOps** — full GitHub Actions YAML, Dockerfile examples, environment config tables
+  - **All of the above** — run a full depth pass on every section"
+
+- Read the existing deliverable file(s) for the selected sections **before** regenerating — use the existing content as a baseline, not a blank slate.
+- Produce an enriched version that:
+  - Retains everything from the previous version
+  - Adds the detail that was missing or summarised: concrete examples, edge cases, additional tables, code snippets, sequence diagrams, alternative approaches
+  - Explicitly marks new content with a `<!-- deepened: pass N -->` comment at the top of each expanded section (where N = how many deepen passes have been run, tracked in `_state.json` under `blueprint.deepen_passes`)
+- Write the enriched file back, overwriting the shallower version.
+- Update `_state.json`: increment `blueprint.deepen_passes` (start at 1 if not present).
+- Do **not** re-run Steps 1–3 in deepen mode — the SDL and manifest are unchanged.
+
+**Option 3 — Full regenerate:**
 - Confirm: "Understood — regenerating full blueprint and overwriting all existing files."
 - Proceed with the full workflow from Step 1 as normal.
 
-**Option 3 — Cancel:**
+**Option 4 — Cancel:**
 - Reply: "Blueprint unchanged. Run `/architect:blueprint` again when you're ready to update it." Then stop.
 
 > **Never silently overwrite an existing `sdl.yaml` or `architecture-output/` without first asking which option the user wants.**
@@ -646,6 +670,9 @@ Write or merge:
     "primary_color": "<hex>",
     "heading_font": "<font name>",
     "body_font": "<font name>"
+  },
+  "blueprint": {
+    "deepen_passes": 0
   }
 }
 ```
@@ -654,6 +681,7 @@ Rules:
 - Write to `architecture-output/_state.json` (create `architecture-output/` if it doesn't exist)
 - `entities`, `personas`, `market_research`, `mvp_scope`, `top_risks` are written by other commands — do NOT add them here
 - If the SDL has a `design` section, use those values; otherwise derive from the product domain using the personality table in `/architect:prototype`
+- `blueprint.deepen_passes` starts at `0` on first run; increment by 1 each time deepen mode completes
 
 ### Step 5: CTA Footer
 
