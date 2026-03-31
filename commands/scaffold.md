@@ -129,6 +129,8 @@ Check if the design-system phase has been completed:
 
 **If neither exists**, note this in the scaffolder handoff — the scaffolder should infer domain-appropriate defaults from `design-systems.md` (NEVER default to indigo/purple).
 
+Also load `skills/production-hardening/SKILL.md` — the scaffolder applies all 9 production hardening patterns to every Node.js backend and React/Next.js frontend during scaffold generation.
+
 Inform the user:
 
 - If design tokens found: `"Design system detected — your scaffolded frontends will use your design tokens."`
@@ -269,9 +271,15 @@ Scaffold complete! Here's what was created:
 
 Each project has:
 - Framework starter code with folder structure matching the architecture pattern
-- Security middleware stubs (CORS, auth, rate limiting)
-- Health check endpoints with dependency check TODOs
-- Structured logging setup
+- Security middleware: CORS from `ALLOWED_ORIGINS`, helmet with environment-specific CSP directives, rate limiting
+- Auth token interceptor in frontend API client: Bearer token injection, 401 → refresh → retry, redirect on refresh failure
+- Health check endpoints: actual DB (`SELECT 1`) and cache (`PING`) checks, `{ status, uptime, version, memory, checks }` JSON, 503 on critical failure
+- Structured logging: pino JSON in prod, pino-pretty in dev; correlationId on every log line; zero console.log
+- Correlation ID propagation: `x-correlation-id` generated/forwarded by backend middleware; sent by frontend API client
+- Graceful shutdown: SIGTERM/SIGINT handling, connection draining, clean exit
+- Zod validation: env vars validated at startup; request body/params/query validated before every handler
+- Retry + timeout: 10s AbortController timeout + 3-attempt exponential backoff on all outbound HTTP calls
+- Soft delete: `deletedAt` on all Prisma models, transparent Prisma middleware, no hard deletes
 - Dockerfile (all backends and agents; web frontends where applicable)
 - docker-compose.yml (all backends with data dependencies; web frontends where applicable)
 - CI/CD workflow (.github/workflows/ci.yml)
@@ -286,9 +294,11 @@ Each project has:
 
 Next steps:
 1. Copy .env.example to .env in each project and fill in your credentials
-2. Follow the README in each project to start the dev server
-3. Open the sample page to see your design system in action
-4. Start building features!
+2. Review `src/config/index.ts` in each backend service — fill in any auth-provider-specific env vars
+3. Update `ALLOWED_ORIGINS` in `.env` for each backend and frontend to match your actual domain(s)
+4. Follow the README in each project to start the dev server
+5. Open the sample page to see your design system in action
+6. Start building features!
 ```
 
 If GitHub repos were created, include repo URLs in the Path column.

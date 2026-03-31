@@ -111,15 +111,20 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 │   │   └── {resource}.ts        # One per SDL interface endpoint group
 │   ├── middleware/
 │   │   ├── auth.ts              # JWT/session verification (from SDL auth strategy)
+│   │   ├── correlation-id.ts    # Generate/forward x-correlation-id header
 │   │   ├── error-handler.ts     # Global error handler with structured responses
+│   │   ├── request-logger.ts    # Per-request pino child logger bound to req.log
 │   │   ├── validation.ts        # Request validation middleware
 │   │   └── rate-limit.ts        # Rate limiting config
 │   ├── models/                  # Or entities/ — one per data model
 │   │   └── {entity}.ts          # Schema/model definition from SDL dataModels
+│   ├── schemas/                 # Zod schemas — one per resource
+│   │   └── {resource}.ts        # Create/update/list/params schemas + inferred types
 │   ├── services/                # Business logic layer
 │   │   └── {resource}.ts        # Service functions (CRUD + domain logic stubs)
 │   ├── lib/
-│   │   ├── logger.ts            # Structured logger (pino/winston)
+│   │   ├── logger.ts            # Pino structured logger (pino-pretty dev, JSON prod)
+│   │   ├── http-client.ts       # Outbound service calls with retry + timeout
 │   │   └── errors.ts            # Custom error classes (NotFound, Unauthorized, etc.)
 │   └── types/
 │       └── index.ts             # Shared types, request/response interfaces
@@ -142,6 +147,17 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 - **Services:** Implement actual CRUD logic (create, read, update, delete, list with pagination) for each resource. Include error handling (not found, duplicate, validation errors).
 - **Auth middleware:** Implement the strategy from SDL (JWT verification, API key check, OAuth token validation). Include role-based access control stubs if SDL declares roles.
 - **Health check:** Check DB connectivity, cache connectivity, and any external service dependencies. Return structured JSON: `{ status, checks: { db: "ok", cache: "ok" }, uptime, version }`.
+- **Production hardening — REQUIRED on all Node.js backends:** Read `skills/production-hardening/SKILL.md` and apply all 9 patterns. Specifically:
+  - **Correlation ID** (`src/middleware/correlation-id.ts`): generate/forward `x-correlation-id` on every request. Mount BEFORE logger middleware.
+  - **Graceful shutdown** (`src/index.ts`): handle SIGTERM/SIGINT, drain HTTP server, disconnect Prisma, quit Redis, force-exit after 10s. Set `app.locals.isShuttingDown = true` on shutdown start.
+  - **Zod validation** (`src/schemas/`, `src/middleware/validate.ts`): one schema file per resource. Validate body, params, query before every handler. Return `{ error: { code: 'VALIDATION_ERROR', details: error.flatten() } }` on 400.
+  - **Env validation** (`src/config/index.ts`): Zod schema for ALL env vars. Import config as the FIRST import in `src/index.ts`. `process.exit(1)` with clear field errors on failure.
+  - **Deep health check** (`src/routes/health.ts`): run `SELECT 1` against DB, `PING` against Redis. Return `{ status, version, uptime, memory, checks: { db, cache } }`. Return 503 on DB failure, 200 on cache failure. Return 503 immediately when `app.locals.isShuttingDown === true`.
+  - **Structured logger** (`src/lib/logger.ts`): pino with pino-pretty in dev, JSON in prod. Base fields: `service`, `version`, `env`. Child logger per-request includes `correlationId`. ZERO `console.log` in any generated file except `src/config/index.ts` startup abort.
+  - **Retry + timeout** (`src/lib/http-client.ts`): all outbound `fetch` calls wrapped with AbortController (10s timeout) and 3-attempt exponential backoff (100/200/400ms). Never retry 4xx.
+  - **Soft delete** (Prisma schema + `src/middleware/soft-delete.ts`): add `deletedAt DateTime?` + `@@index([deletedAt])` to every model. Prisma middleware rewrites delete→update and filters `deletedAt: null` on all reads. Apply in `src/config/database.ts`.
+  - **CSP + CORS** (`src/index.ts`): helmet with explicit CSP directives per environment (strict in prod, relaxed in dev). CORS from `ALLOWED_ORIGINS` env var. Add `ALLOWED_ORIGINS` to `.env.example`.
+- **Request logger middleware** (`src/middleware/request-logger.ts`): log every incoming request with method, URL, and correlationId via a pino child logger bound to `req.log`. Use `req.log` in all route handlers (not the root logger) so correlationId appears on every log line from that request.
 - **Config:** Validate ALL env vars at startup using a schema — fail fast with clear error messages if required vars are missing.
 - **Error handling:** Global error handler that catches all exceptions, logs them, and returns consistent error response format: `{ error: { code, message, details? } }`.
 - **Database setup:** Include migration files or schema sync commands. For Prisma: include `schema.prisma` with all models. For Drizzle: include schema files. For raw SQL: include migration files.
@@ -188,7 +204,13 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 **Code depth requirements for frontends:**
 - **Pages:** Every page declared in SDL interfaces/screens MUST be created with real content — data tables with mock rows, forms with all fields, dashboards with metric cards. NO empty pages or "Coming soon" placeholders.
 - **Navigation:** Working sidebar/topbar navigation that routes between all pages. Active state highlighting. **Mobile responsive** — sidebar hidden on mobile (`hidden md:flex`) with hamburger button + slide-in drawer overlay. Bottom tab bar for mobile-first products.
-- **API client:** Typed functions for every backend endpoint. Include request/response type definitions. Handle loading, error, and empty states.
+- **API client** (`src/lib/api.ts`): Typed functions for every backend endpoint. Read `skills/production-hardening/SKILL.md` Pattern 3 (Auth Token Interceptor) and Pattern 7 (Retry + Timeout) and implement both in `api.ts`:
+  - Send `x-correlation-id: crypto.randomUUID()` on every request (Pattern 1 frontend integration)
+  - Inject Bearer token from the auth provider declared in SDL `auth.provider` (see provider matrix in skill)
+  - On 401: attempt token refresh once using the provider-appropriate refresh call, retry original request; redirect to `/login` on refresh failure
+  - `AbortController` with 10s timeout on every request
+  - 3 retries with exponential backoff (100/200/400ms) on 5xx and network errors; never retry on 4xx
+  - Export typed `api.get/post/put/patch/delete` methods
 - **Auth flow:** If SDL declares auth: implement login page, signup page, token storage, protected route wrapper, and logout. Use the auth strategy from SDL (JWT, OAuth, etc.).
 - **UI components:** Build 6-8 reusable components that the pages actually use (not a separate component library — components created to serve the pages).
 - **Mock data:** Realistic, domain-appropriate data in `data/mock.ts`. Typed objects, not random strings. Enough data to fill tables (10+ rows) and populate dashboards.
@@ -219,6 +241,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
   - Modals: trap focus inside while open, close on Escape key, restore focus to trigger element on close
   - WCAG AA contrast: text must meet 4.5:1 against background. Verify colour palette choices against this threshold — if in doubt, darken text or lighten background.
 - **State management:** If SDL specifies (zustand, redux, etc.), set up stores for auth state and at least one domain store.
+- **CSP headers (Next.js only)** (`next.config.ts`): add security headers block per Pattern 9 in `skills/production-hardening/SKILL.md`. Include `ALLOWED_ORIGINS` in `.env.example`. For Vite-based frontends, document CSP headers to be set at the reverse proxy/CDN layer in the README.
 
 ---
 
