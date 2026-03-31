@@ -35,7 +35,8 @@ Check if `architecture-output/wireframes/_manifest.json` exists with a non-empty
 
 **First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
 - `project.name` → appName
-- `design` → brand color (`primary`), personality, and fonts — record these for the `theme` field in each spec
+- `design` → `primary`, `secondary`, `accent`, `personality`, `headingFont`, `bodyFont`, `borderRadius`, `shadow`, `componentLibrary` — use all of these in the `theme` field of each spec
+- `design.tokens_file` → if present, read that file (e.g. `architecture-output/design-system/design-tokens.json`) to get precise token values for spacing, border radius, shadows, and motion — use these values in the `theme` object for complete fidelity
 - `entities` → field names for realistic placeholder values in specs
 
 **Then** read the SDL — **only if `_state.json` is absent or missing `project.name`**; Grep for `product:` block (screens, coreFlows, auth) and `components:` block only. Do NOT read the full SDL file.
@@ -69,11 +70,19 @@ Key rules:
   ```json
   "theme": {
     "primary": "#f97316",
+    "secondary": "#0ea5e9",
+    "accent": "#fbbf24",
+    "surface": "#ffffff",
+    "text_primary": "#0f172a",
     "personality": "bold-commercial",
     "headingFont": "Clash Display",
-    "bodyFont": "Poppins"
+    "bodyFont": "Poppins",
+    "borderRadius": "8px",
+    "shadow": "0 1px 3px rgba(0,0,0,0.12)",
+    "componentLibrary": "shadcn/ui"
   }
   ```
+  Populate from `_state.json.design` first; if `design.tokens_file` exists, override `borderRadius`, `shadow`, and any extended palette values from the token file.
   If no design context exists, omit the `theme` field entirely.
 
 ### Step 5: Update Manifest

@@ -34,6 +34,23 @@ When reading any output file that has NOT been split but is large (>15KB):
 
 **Always fine to read in full:** `solution.sdl.yaml`, `_manifest.json`, `blueprint.json`, any file under 10KB.
 
+## Reading SDL — Single-File and Multi-File Format
+
+SDL can be stored in two ways. **Always check both:**
+
+1. **Single file** (default): `solution.sdl.yaml` at the project root — read this first
+2. **Multi-file** (large projects): a `sdl/` directory with module files (`sdl/core.yaml`, `sdl/services.yaml`, `sdl/data.yaml`, etc.) — if `solution.sdl.yaml` is missing or if `sdl/` exists alongside it, read `sdl/README.md` first to understand the module layout, then read the relevant module files
+
+**When reading SDL for a specific concern** (e.g., only need `data` section for data-model generation): check `sdl/data.yaml` directly if the `sdl/` directory exists — faster than reading the full merged file.
+
+**The authoritative single-file SDL is always `solution.sdl.yaml` at the project root.** The `sdl/` directory is for human readability; the merged root file is what tooling uses.
+
+## Design State — _state.json.design is Authoritative
+
+If `_state.json.design` is fully populated (has `primary`, `headingFont`, `bodyFont`, `personality`), it is the **authoritative source for all design decisions**. Commands MUST use it verbatim — never derive, re-invent, or override design direction from domain heuristics or training defaults.
+
+Only derive design from domain when `_state.json.design` is absent AND no `design-tokens.json` exists.
+
 ## _state.json — AI Context Layer
 
 `architecture-output/_state.json` is a compact machine-readable file that accumulates structured facts from every command that runs. It is the **first thing to read** when you need project context — cheaper than reading SDL or large markdown files.
@@ -111,6 +128,7 @@ Commands that generate output MUST update `_state.json` after writing their mark
 
 | Command | Fields it writes |
 |---------|-----------------|
+| `import` | `project`, `tech_stack`, `components`, `design` (from reverse-engineered SDL) |
 | `blueprint` | `project`, `tech_stack`, `components`, `design` (initial values from SDL) |
 | `design-system` | `design` (full palette, fonts, tokens — overwrites blueprint's initial values) |
 | `generate-data-model` | `entities` |
