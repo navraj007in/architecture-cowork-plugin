@@ -25,6 +25,57 @@ If it exists and contains an `intent` object with project requirements:
 
 If the file does not exist or has no `intent` field, proceed with the interactive workflow below (Steps 1 and 2).
 
+### Step 0.5: Detect Existing Blueprint
+
+After Step 0, **before** gathering any requirements, check whether this project already has a blueprint:
+
+1. Look for `sdl.yaml` in the current working directory.
+2. Look for `architecture-output/_state.json`.
+
+**If neither file exists:** this is a fresh project — proceed normally to Step 1.
+
+**If either file exists:** this project has already been blueprinted. Do the following:
+
+a) Read `architecture-output/_state.json` (if present) to get the summary. Also read the first 40 lines of `sdl.yaml` for the solution name and component list.
+
+b) Present a brief summary of what was previously designed:
+
+```
+Found an existing blueprint for: [project name]
+  Components : [list component names and types]
+  Tech stack : [frontend / backend / database summary]
+  SDL file   : sdl.yaml
+  Deliverables: architecture-output/ ([N] files present)
+```
+
+c) Ask the user ONE question with three numbered options:
+
+> "I found an existing blueprint. What would you like to do?
+> 1. **Update** — tell me what changed and I'll regenerate only the affected sections
+> 2. **Full regenerate** — re-run the complete blueprint from scratch (overwrites everything)
+> 3. **Cancel** — keep the existing blueprint unchanged"
+
+**Option 1 — Update mode:**
+- Ask: "What has changed? (e.g. added a new service, changed the tech stack for payments, updated the budget)"
+- Based on the answer, determine the minimal set of deliverables to regenerate:
+  - New / changed component → re-run Steps 3, 3.5, and the relevant deliverables: 4b, 4c, 4d, 4e, 4o (sprint backlog)
+  - Changed tech stack → re-run Steps 3, 3.5 and: 4c, 4e, 4g, 4h, 4i (cost)
+  - Changed requirements / personas → re-run Steps 2–3.5 and: 4a, 4l, 4m, 4n, 4o
+  - Changed budget / timeline → re-run: 4i, 4j, 4n
+  - Anything structural (auth, database, integrations) → re-run Steps 3, 3.5 and: 4d, 4e, 4f, 4k
+- Tell the user which deliverables will be regenerated and which will be preserved.
+- Proceed to regenerate only those deliverables.
+- For `_state.json` (Step 4.5): **merge** the updated fields — do not overwrite fields owned by other commands (`entities`, `personas`, `market_research`, `mvp_scope`, `top_risks`, `design` if design-system has already run).
+
+**Option 2 — Full regenerate:**
+- Confirm: "Understood — regenerating full blueprint and overwriting all existing files."
+- Proceed with the full workflow from Step 1 as normal.
+
+**Option 3 — Cancel:**
+- Reply: "Blueprint unchanged. Run `/architect:blueprint` again when you're ready to update it." Then stop.
+
+> **Never silently overwrite an existing `sdl.yaml` or `architecture-output/` without first asking which option the user wants.**
+
 ### Step 1: Load Intent (if available)
 
 **Before asking any questions**, check if the command argument contains a JSON object (starts with `{`). If it does, parse it as the intent. The JSON contains pre-gathered requirements with this structure:
@@ -563,9 +614,13 @@ End with: "This is a starting-point backlog. Expect to refine sprint scope after
 
 ### Step 4.5: Write _state.json
 
-After completing all deliverables, write `architecture-output/_state.json` with the compact project summary. This file gives downstream commands (scaffold, roadmap, risk-register, etc.) instant access to project facts without reading large files.
+After completing all deliverables, update `architecture-output/_state.json` with the compact project summary. This file gives downstream commands (scaffold, roadmap, risk-register, etc.) instant access to project facts without reading large files.
 
-Read `solution.sdl.yaml` to extract these fields, then write:
+Read `solution.sdl.yaml` to extract these fields. Then:
+- If `_state.json` already exists: **read it first, then merge** the blueprint fields into it — do NOT overwrite fields owned by other commands (`entities`, `personas`, `market_research`, `mvp_scope`, `top_risks`, `design` if already set by design-system).
+- If `_state.json` does not exist: write it fresh.
+
+Write or merge:
 
 ```json
 {
