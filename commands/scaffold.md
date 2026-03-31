@@ -16,16 +16,21 @@ After generating a blueprint with `/architect:blueprint`, this command creates a
 
 ### Step 0.5: Load Prior Activity Context
 
-Before anything else, check if `architecture-output/_activity.jsonl` exists in the current working directory.
+Before anything else, load two levels of activity context.
 
-If it does, read it and extract the **last 3 entries** (tail of file). These are the most recent units of work done on this project. Use them to orient yourself:
-- Which components have already been scaffolded or modified
-- Whether a previous scaffold run completed, failed, or was partial
-- What code changes were made since the last scaffold
+**Project level** — check if `architecture-output/_activity.jsonl` exists. If it does, read the last 3 entries. Use them to understand:
+- Which components have already been scaffolded and their overall outcome
+- Whether a previous scaffold run was partial or failed
+- What phase of work the project is in (blueprint done, scaffold done, active coding)
 
-Include this context silently when making decisions in subsequent steps (e.g. skip re-scaffolding a component that was completed last run unless the user specifically asks). Do not print this log to the user unless they ask.
+**Component level** — for any component that will be **augmented** (EXISTS), also read `<component-name>/_activity.jsonl` if it exists. Extract the last 3 entries to understand:
+- What was scaffolded previously and which files were created
+- What code changes have been made since scaffold
+- Which files are likely to need updating vs which are safe to leave alone
 
-If the file does not exist, this is a fresh project — proceed normally.
+Use both levels silently to inform decisions — do not print logs to the user unless asked. For example: if a component's log shows it was already scaffolded completely last run, skip its scaffold unless the user asks to re-run it.
+
+If neither file exists, this is a fresh project — proceed normally.
 
 ### Step 1: Check for Blueprint
 
@@ -221,19 +226,31 @@ For each **frontend component**, the scaffolder MUST:
 
 ### Step 5: Log Activity
 
-Before printing the summary, append one line to `architecture-output/_activity.jsonl` (create the file if it doesn't exist).
+Before printing the summary, write two levels of activity log.
 
-The entry must be a single JSON object on one line (no pretty-printing):
+**1. Project-level** — append one line to `architecture-output/_activity.jsonl`:
 
 ```json
-{"ts":"<ISO-8601 timestamp>","phase":"scaffold","outcome":"completed|partial|failed","components":[{"name":"api-server","framework":"dotnet","status":"created"},{"name":"web-app","framework":"nextjs","status":"augmented"}],"summary":"<one sentence: what was scaffolded and any notable issues>"}
+{"ts":"<ISO-8601>","phase":"scaffold","outcome":"completed|partial|failed","components":["api-server","web-app"],"summary":"Scaffolded api-server (.NET Clean Architecture) and web-app (Next.js). 25 files total."}
 ```
 
-Rules:
-- `outcome`: `completed` if all components succeeded, `partial` if some failed, `failed` if none succeeded
-- `components`: one entry per component — include `name`, `framework`, and `status` (`created` / `augmented` / `failed`)
-- `summary`: plain English, one sentence, e.g. "Scaffolded api-server (.NET Clean Architecture) and web-app (Next.js). worker-service skipped — scaffold failed." Keep it under 120 chars.
-- Append to the file — never overwrite existing entries.
+- `components`: just the names (array of strings)
+- `summary`: one sentence under 120 chars covering all components and any failures
+
+**2. Component-level** — for each component that was scaffolded or augmented, append one line to `<component-name>/_activity.jsonl` (inside the component directory):
+
+```json
+{"ts":"<ISO-8601>","phase":"scaffold","framework":"dotnet","status":"created|augmented","filesCreated":["Domain/User.cs","Application/Users/CreateUserCommand.cs","Infrastructure/Persistence/AppDbContext.cs"],"summary":"Initial scaffold: Clean Architecture with CQRS stubs for User, Product. 14 files created."}
+```
+
+- `filesCreated`: list of paths relative to the component root (not full absolute paths) — all files, no cap
+- `summary`: one sentence specific to this component — framework, pattern, what was generated
+- For failed components: write `{"ts":"...","phase":"scaffold","status":"failed","error":"<reason>","summary":"Scaffold failed: <reason>"}`
+
+Rules for both levels:
+- Append — never overwrite
+- Single JSON object per line, no pretty-printing
+- `outcome` on project entry: `completed` if all succeeded, `partial` if some failed, `failed` if none succeeded
 
 ### Step 6: Print Summary
 
