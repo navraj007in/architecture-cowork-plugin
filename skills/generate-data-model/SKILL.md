@@ -1,11 +1,16 @@
 ---
 name: generate-data-model
-description: Convert database schemas from architecture blueprints to production-ready ORM code (Prisma, Drizzle, TypeORM). Includes all tables, relationships, indexes, constraints, and Row-Level Security policies.
+description: "ORM and data model generation patterns. Core file covers Node.js (Prisma/Drizzle/TypeORM). Runtime-specific files: python.md (SQLAlchemy/Django ORM), dotnet.md (EF Core), go.md (GORM/sqlc)."
 ---
 
 # Data Model Generator
 
 Convert your architecture blueprint's **database schema** into production-ready ORM code with migrations, indexes, and security policies.
+
+**Runtime-specific implementations:** For non-Node.js backends, read the matching file:
+- Python/FastAPI/Django: `skills/generate-data-model/python.md`
+- .NET: `skills/generate-data-model/dotnet.md`
+- Go: `skills/generate-data-model/go.md`
 
 **Perfect for**: Project setup, database initialization, schema-first development, team synchronization
 

@@ -1,11 +1,16 @@
 ---
 name: setup-env
-description: Generate .env.example and .env.local files with all required environment variables extracted from the architecture blueprint. Includes comments, validation scripts, and links to obtain API keys.
+description: "Environment variable setup patterns. Core file covers Node.js (dotenv, NEXT_PUBLIC_, VITE_). Runtime files: python.md (pydantic-settings, Django settings), dotnet.md (appsettings.json, User Secrets), go.md (caarlos0/env, godotenv)."
 ---
 
 # Environment Setup Tool
 
 Generate **production-ready environment variable files** with all configuration extracted from your architecture blueprint.
+
+**Runtime-specific patterns:** For non-Node.js backends, read the matching file:
+- Python/FastAPI/Django: `skills/setup-env/python.md`
+- .NET: `skills/setup-env/dotnet.md`
+- Go: `skills/setup-env/go.md`
 
 **Perfect for**: New project setup, developer onboarding, deployment configuration, secrets management
 
