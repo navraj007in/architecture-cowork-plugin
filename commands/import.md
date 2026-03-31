@@ -122,6 +122,7 @@ top-level sections.** The only allowed root keys are:
 | Project description | `solution.description` |
 | Maturity signals (CI/CD, monitoring, tests) | `solution.stage` (MVP/Growth/Enterprise) |
 | Frontend apps (React, Vue, Angular, etc.) | `architecture.projects.frontend[]` |
+| Dev server port for frontend (vite.config, next.config, package.json scripts, .env.example) | `architecture.projects.frontend[].x-port` |
 | Backend services/APIs | `architecture.projects.backend[]` |
 | Mobile apps | `architecture.projects.mobile[]` |
 | Microservice boundaries | `architecture.services[]` (with kind + responsibilities) |
@@ -162,7 +163,8 @@ top-level sections.** The only allowed root keys are:
 | Rate limiting middleware | `deployment.security.rateLimit` |
 | Design tokens file detected | `design.tokensFile` + palette fields |
 | Component library (shadcn, MUI, Chakra) | `design.componentLibrary` |
-| Font families | `design.typography.headingFont` + `design.typography.bodyFont` |
+| Font families (heading + body) | `design.headingFont` + `design.bodyFont` |
+| Monospace font (code blocks, terminals) | `design.monoFont` |
 | Design personality inferred from palette | `design.personality` |
 | Icon library (lucide-react, heroicons) | `design.iconLibrary` |
 
@@ -348,7 +350,9 @@ design:                                 # If design tokens or component library 
   accent: "{hex}"
   headingFont: "{font family name}"
   bodyFont: "{font family name}"
+  monoFont: "{font family name — e.g. JetBrains Mono, Fira Code}"
   borderRadius: "{e.g. 8px}"
+  componentLibrary: "{shadcn/ui | @mui/material | @chakra-ui/react | daisyui | none}"
   iconLibrary: lucide-react | heroicons | phosphor | radix-icons
   tokensFile: "{relative path to design-tokens.json if found}"
   x-confidence: high | medium | low
@@ -395,6 +399,7 @@ For **small projects** (1-2 services), always use a single `solution.sdl.yaml` �
    - `pii = true` requires encryptionAtRest
    - CloudFormation requires AWS
    - MongoDB incompatible with ef-core ORM
+   - **Port consistency**: for each `environments[development].services[]` entry, the `url` port must match the component's `x-port`. For each `environments[development].url`, the port must match the frontend component's `x-port`. If they differ, correct the `environments` entry to match the detected dev port — do not leave mismatches silently.
 
 2. **Apply normalization** — let smart defaults fill gaps
 
