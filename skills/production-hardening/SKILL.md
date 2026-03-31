@@ -1,11 +1,11 @@
 ---
 name: production-hardening
-description: Nine production hardening patterns for Node.js/Express backends and React/Next.js frontends. Used by scaffold-component to generate fully production-ready code.
+description: Nine production hardening patterns for all supported runtimes: Node.js/Express, Python/FastAPI, .NET/ASP.NET Core, and Go. Used by scaffold-component to generate fully production-ready code.
 ---
 
 # Production Hardening Patterns
 
-Nine mandatory patterns applied to every scaffolded backend service and frontend web app. Each section contains the canonical implementation — copy this code exactly when scaffolding. Do not invent variations.
+Nine mandatory patterns applied to every scaffolded backend service and frontend web app. Each section contains the canonical implementation — copy this code exactly when scaffolding. Do not invent variations. Apply the section for the component's runtime — Node.js, Python, .NET, or Go.
 
 Reference: `skills/operational-patterns/SKILL.md` covers security architecture, OWASP, and observability stack selection. This file covers the concrete implementation patterns used at scaffold time.
 
@@ -1080,3 +1080,1044 @@ Pattern 9 (CSP) ─────────────────────�
 | `.env.example` | 4, 9 | Both add required env vars — `ALLOWED_ORIGINS`, `SERVICE_NAME`, `SERVICE_VERSION` |
 | `next.config.ts` (frontend) | 9 | CSP headers block; reads `ALLOWED_ORIGINS` from process.env |
 | `prisma/schema.prisma` | 8 | `deletedAt DateTime?` + index added to every model |
+
+---
+
+## Runtime Reference — Python / FastAPI
+
+Apply these patterns when the SDL specifies `runtime: python` or `framework: python-fastapi` / `django`.
+
+### Pattern 1 — Correlation ID (Python)
+
+**Dependency:** `pip install starlette-correlation-id` or implement manually.
+
+```python
+# app/middleware/correlation_id.py
+import uuid
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
+
+CORRELATION_ID_HEADER = "x-correlation-id"
+
+class CorrelationIdMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next) -> Response:
+        correlation_id = request.headers.get(CORRELATION_ID_HEADER) or str(uuid.uuid4())
+        request.state.correlation_id = correlation_id
+        response = await call_next(request)
+        response.headers[CORRELATION_ID_HEADER] = correlation_id
+        return response
+```
+
+Mount in `app/main.py`:
+```python
+app.add_middleware(CorrelationIdMiddleware)
+```
+
+In structured log calls, include `correlation_id=request.state.correlation_id`.
+
+### Pattern 2 — Graceful Shutdown (Python / FastAPI)
+
+```python
+# app/main.py
+import signal
+import asyncio
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from app.db import engine  # SQLAlchemy async engine
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    yield
+    # Shutdown — runs when SIGTERM received (uvicorn handles signal forwarding)
+    await engine.dispose()
+    # Close Redis if used:
+    # await redis_client.aclose()
+
+app = FastAPI(lifespan=lifespan)
+```
+
+Run with: `uvicorn app.main:app --host 0.0.0.0 --port 8000 --timeout-graceful-shutdown 10`
+
+### Pattern 3 — Auth Token Interceptor (Python — outbound service calls)
+
+For backend-to-backend calls using `httpx`:
+
+```python
+# app/lib/http_client.py
+import httpx
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+
+class ServiceClient:
+    def __init__(self, base_url: str, token_fn=None):
+        self.base_url = base_url
+        self.token_fn = token_fn  # callable that returns a Bearer token
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=0.1, max=1),
+        retry=retry_if_exception(lambda e: isinstance(e, httpx.HTTPStatusError) and e.response.status_code >= 500),
+    )
+    async def request(self, method: str, path: str, correlation_id: str = None, **kwargs):
+        headers = kwargs.pop("headers", {})
+        if correlation_id:
+            headers["x-correlation-id"] = correlation_id
+        if self.token_fn:
+            headers["Authorization"] = f"Bearer {await self.token_fn()}"
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.request(method, f"{self.base_url}{path}", headers=headers, **kwargs)
+            resp.raise_for_status()
+            return resp.json()
+```
+
+### Pattern 4 — Validation (Python / FastAPI)
+
+FastAPI uses **Pydantic** natively — no extra dependency needed. Define request models as Pydantic schemas:
+
+```python
+# app/schemas/user.py
+from pydantic import BaseModel, EmailStr, Field
+
+class CreateUserRequest(BaseModel):
+    email: EmailStr
+    name: str = Field(..., min_length=1, max_length=100)
+    role: str = Field(default="user")
+
+class UpdateUserRequest(BaseModel):
+    name: str | None = Field(None, min_length=1, max_length=100)
+```
+
+FastAPI auto-validates and returns 422 on failure. For env var validation:
+
+```python
+# app/config.py
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    database_url: str
+    redis_url: str = "redis://localhost:6379"
+    allowed_origins: str = "http://localhost:3000"
+    service_name: str = "api"
+    service_version: str = "0.1.0"
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()  # raises ValidationError on startup if required vars missing
+```
+
+**Dependency:** `pip install pydantic-settings`
+
+### Pattern 5 — Deep Health Check (Python / FastAPI)
+
+```python
+# app/routes/health.py
+import time
+from fastapi import APIRouter
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
+from app.db import AsyncSessionLocal
+from app.config import settings
+import redis.asyncio as aioredis
+
+router = APIRouter()
+
+@router.get("/health")
+async def health_check():
+    checks = {}
+    overall = "ok"
+
+    # Database check
+    try:
+        start = time.monotonic()
+        async with AsyncSessionLocal() as session:
+            await session.execute(text("SELECT 1"))
+        checks["db"] = {"status": "ok", "response_ms": round((time.monotonic() - start) * 1000)}
+    except Exception as e:
+        checks["db"] = {"status": "fail", "error": str(e)}
+        overall = "unhealthy"
+
+    # Redis check
+    try:
+        r = aioredis.from_url(settings.redis_url)
+        await r.ping()
+        await r.aclose()
+        checks["cache"] = {"status": "ok"}
+    except Exception as e:
+        checks["cache"] = {"status": "fail", "error": str(e)}
+        if overall == "ok":
+            overall = "degraded"
+
+    status_code = 503 if overall == "unhealthy" else 200
+    from fastapi.responses import JSONResponse
+    return JSONResponse(
+        content={"status": overall, "checks": checks, "service": settings.service_name},
+        status_code=status_code,
+    )
+```
+
+### Pattern 6 — Structured Logger (Python)
+
+**Dependency:** `pip install structlog`
+
+```python
+# app/lib/logger.py
+import logging
+import structlog
+from app.config import settings
+
+def configure_logging():
+    structlog.configure(
+        processors=[
+            structlog.contextvars.merge_contextvars,
+            structlog.processors.add_log_level,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.JSONRenderer() if settings.service_name != "local" else structlog.dev.ConsoleRenderer(),
+        ],
+        wrapper_class=structlog.make_filtering_bound_logger(logging.INFO),
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(),
+    )
+
+logger = structlog.get_logger()
+```
+
+In middleware, bind correlation ID to context:
+```python
+import structlog
+structlog.contextvars.bind_contextvars(correlation_id=request.state.correlation_id)
+```
+
+### Pattern 7 — Retry + Timeout (Python)
+
+**Dependency:** `pip install tenacity httpx`
+
+Already shown in Pattern 3's `ServiceClient`. For standalone use:
+
+```python
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import httpx
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=0.1, max=1),
+    retry=retry_if_exception_type(httpx.HTTPStatusError),
+)
+async def call_with_retry(url: str) -> dict:
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        resp = await client.get(url)
+        if resp.status_code >= 500:
+            resp.raise_for_status()  # triggers retry
+        return resp.json()
+```
+
+### Pattern 8 — Soft Delete (Python / SQLAlchemy)
+
+```python
+# In SQLAlchemy models
+from sqlalchemy import Column, DateTime, func
+from sqlalchemy.orm import DeclarativeBase
+
+class Base(DeclarativeBase):
+    pass
+
+class SoftDeleteMixin:
+    deleted_at = Column(DateTime, nullable=True, index=True)
+
+    def soft_delete(self):
+        self.deleted_at = func.now()
+
+# Usage: all models inherit SoftDeleteMixin
+class User(Base, SoftDeleteMixin):
+    __tablename__ = "users"
+    # ...
+
+# In queries, always filter:
+session.query(User).filter(User.deleted_at.is_(None)).all()
+
+# Or use a custom query class to enforce globally:
+from sqlalchemy.orm import Query
+class SoftDeleteQuery(Query):
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls)
+        return obj
+    def __iter__(self):
+        return super().__iter__()
+```
+
+For FastAPI with Alembic: add `deleted_at TIMESTAMP NULL` to migration files for all entity tables.
+
+### Pattern 9 — CSP / Security Headers (Python / FastAPI)
+
+**Dependency:** `pip install secure`
+
+```python
+# app/middleware/security.py
+import secure
+from starlette.middleware.base import BaseHTTPMiddleware
+
+secure_headers = secure.Secure(
+    csp=secure.ContentSecurityPolicy()
+        .default_src("'self'")
+        .script_src("'self'")
+        .style_src("'self'", "'unsafe-inline'")
+        .img_src("'self'", "data:", "blob:")
+        .connect_src("'self'")
+        .font_src("'self'", "https://fonts.gstatic.com")
+        .object_src("'none'"),
+    hsts=secure.StrictTransportSecurity().max_age(31536000).include_subdomains().preload(),
+    referrer=secure.ReferrerPolicy().no_referrer_when_downgrade(),
+    xfo=secure.XFrameOptions().deny(),
+)
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        secure_headers.framework.fastapi(response)
+        return response
+```
+
+CORS configuration:
+```python
+from fastapi.middleware.cors import CORSMiddleware
+from app.config import settings
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allowed_origins.split(","),
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+---
+
+## Runtime Reference — .NET / ASP.NET Core
+
+Apply these patterns when the SDL specifies `runtime: dotnet` or `framework: dotnet`.
+
+### Pattern 1 — Correlation ID (.NET)
+
+**NuGet:** `CorrelationId` package or implement via middleware.
+
+```csharp
+// Middleware/CorrelationIdMiddleware.cs
+public class CorrelationIdMiddleware
+{
+    private const string HeaderName = "x-correlation-id";
+    private readonly RequestDelegate _next;
+
+    public CorrelationIdMiddleware(RequestDelegate next) => _next = next;
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var correlationId = context.Request.Headers[HeaderName].FirstOrDefault()
+            ?? Guid.NewGuid().ToString();
+
+        context.Items["CorrelationId"] = correlationId;
+        context.Response.Headers[HeaderName] = correlationId;
+
+        using (LogContext.PushProperty("CorrelationId", correlationId))
+        {
+            await _next(context);
+        }
+    }
+}
+```
+
+Register in `Program.cs`:
+```csharp
+app.UseMiddleware<CorrelationIdMiddleware>();
+```
+
+### Pattern 2 — Graceful Shutdown (.NET)
+
+ASP.NET Core handles SIGTERM natively via `IHostApplicationLifetime`:
+
+```csharp
+// Program.cs
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<IHostedService, GracefulShutdownService>();
+
+// In appsettings.json
+// "ShutdownTimeout": "00:00:10"
+
+// GracefulShutdownService.cs
+public class GracefulShutdownService : IHostedService
+{
+    private readonly IHostApplicationLifetime _lifetime;
+    private readonly ILogger<GracefulShutdownService> _logger;
+
+    public GracefulShutdownService(IHostApplicationLifetime lifetime, ILogger<GracefulShutdownService> logger)
+    {
+        _lifetime = lifetime;
+        _logger = logger;
+    }
+
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        _lifetime.ApplicationStopping.Register(() =>
+            _logger.LogInformation("Application stopping — draining requests..."));
+        _lifetime.ApplicationStopped.Register(() =>
+            _logger.LogInformation("Application stopped."));
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+}
+```
+
+Set shutdown timeout in `Program.cs`:
+```csharp
+builder.Services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromSeconds(10));
+```
+
+### Pattern 3 — Auth Token Interceptor (.NET — outbound HTTP)
+
+Use `IHttpClientFactory` with a `DelegatingHandler`:
+
+```csharp
+// Infrastructure/TokenDelegatingHandler.cs
+public class TokenDelegatingHandler : DelegatingHandler
+{
+    private readonly ITokenProvider _tokenProvider;
+
+    public TokenDelegatingHandler(ITokenProvider tokenProvider)
+        => _tokenProvider = tokenProvider;
+
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        var token = await _tokenProvider.GetTokenAsync();
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await base.SendAsync(request, cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.Unauthorized)
+        {
+            await _tokenProvider.RefreshAsync();
+            token = await _tokenProvider.GetTokenAsync();
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            response = await base.SendAsync(request, cancellationToken);
+        }
+
+        return response;
+    }
+}
+```
+
+Register:
+```csharp
+builder.Services.AddTransient<TokenDelegatingHandler>();
+builder.Services.AddHttpClient("ServiceClient")
+    .AddHttpMessageHandler<TokenDelegatingHandler>();
+```
+
+### Pattern 4 — Validation (.NET)
+
+Use **FluentValidation** or Data Annotations. FluentValidation preferred:
+
+**NuGet:** `FluentValidation.AspNetCore`
+
+```csharp
+// Validators/CreateUserRequestValidator.cs
+using FluentValidation;
+
+public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
+{
+    public CreateUserRequestValidator()
+    {
+        RuleFor(x => x.Email).NotEmpty().EmailAddress();
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Role).IsInEnum();
+    }
+}
+```
+
+Register in `Program.cs`:
+```csharp
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateUserRequestValidator>();
+```
+
+ASP.NET Core returns 400 automatically when validation fails.
+
+For env/config validation at startup:
+```csharp
+// Configuration/AppSettings.cs
+public class AppSettings
+{
+    public string DatabaseUrl { get; set; } = null!;
+    public string RedisUrl { get; set; } = "redis://localhost:6379";
+    public string AllowedOrigins { get; set; } = "http://localhost:3000";
+}
+
+// Program.cs
+builder.Services.AddOptions<AppSettings>()
+    .Bind(builder.Configuration.GetSection("App"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+```
+
+### Pattern 5 — Deep Health Check (.NET)
+
+**NuGet:** `AspNetCore.HealthChecks.NpgSql` + `AspNetCore.HealthChecks.Redis`
+
+```csharp
+// Program.cs
+builder.Services.AddHealthChecks()
+    .AddNpgSql(connectionString, name: "database", tags: new[] { "db" })
+    .AddRedis(redisConnectionString, name: "cache", tags: new[] { "cache" })
+    .AddCheck<CustomHealthCheck>("custom");
+
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse,
+    ResultStatusCodes =
+    {
+        [HealthStatus.Healthy]   = StatusCodes.Status200OK,
+        [HealthStatus.Degraded]  = StatusCodes.Status200OK,
+        [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable,
+    }
+});
+```
+
+### Pattern 6 — Structured Logger (.NET)
+
+**NuGet:** `Serilog.AspNetCore` + `Serilog.Sinks.Console` + `Serilog.Formatting.Compact`
+
+```csharp
+// Program.cs
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithProperty("ServiceName", builder.Configuration["App:ServiceName"])
+    .WriteTo.Console(
+        builder.Environment.IsDevelopment()
+            ? new ExpressionTemplate("[{@t:HH:mm:ss} {@l:u3}] {@m}\n{@x}")
+            : (ITextFormatter)new CompactJsonFormatter()
+    )
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+```
+
+`appsettings.json`:
+```json
+{
+  "Serilog": { "MinimumLevel": { "Default": "Information" } }
+}
+```
+
+### Pattern 7 — Retry + Timeout (.NET)
+
+**NuGet:** `Microsoft.Extensions.Http.Resilience` (Polly v8 built-in)
+
+```csharp
+// Program.cs
+builder.Services.AddHttpClient("ServiceClient")
+    .AddStandardResilienceHandler(options =>
+    {
+        options.Retry.MaxRetryAttempts = 3;
+        options.Retry.Delay = TimeSpan.FromMilliseconds(100);
+        options.Retry.BackoffType = DelayBackoffType.Exponential;
+        options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+        options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
+    });
+```
+
+### Pattern 8 — Soft Delete (.NET / EF Core)
+
+```csharp
+// Models/SoftDeleteEntity.cs
+public abstract class SoftDeleteEntity
+{
+    public DateTime? DeletedAt { get; set; }
+    public bool IsDeleted => DeletedAt.HasValue;
+}
+
+// Data/AppDbContext.cs — global query filter
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+    {
+        if (typeof(SoftDeleteEntity).IsAssignableFrom(entityType.ClrType))
+        {
+            modelBuilder.Entity(entityType.ClrType)
+                .HasQueryFilter(e => EF.Property<DateTime?>(e, "DeletedAt") == null);
+        }
+    }
+}
+
+// In DELETE endpoints:
+entity.DeletedAt = DateTime.UtcNow;
+await dbContext.SaveChangesAsync();
+```
+
+### Pattern 9 — CSP / Security Headers (.NET)
+
+**NuGet:** `NWebsec.AspNetCore.Middleware`
+
+```csharp
+// Program.cs
+app.UseHsts();
+app.UseHttpsRedirection();
+
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["Content-Security-Policy"] =
+        "default-src 'self'; " +
+        "script-src 'self'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: blob:; " +
+        "connect-src 'self'; " +
+        "font-src 'self' https://fonts.gstatic.com; " +
+        "object-src 'none'";
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["Referrer-Policy"] = "no-referrer-when-downgrade";
+    await next();
+});
+
+// CORS
+app.UseCors(policy => policy
+    .WithOrigins(builder.Configuration["App:AllowedOrigins"]!.Split(","))
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
+```
+
+---
+
+## Runtime Reference — Go
+
+Apply these patterns when the SDL specifies `runtime: go` or `framework: go`.
+
+### Pattern 1 — Correlation ID (Go)
+
+```go
+// middleware/correlation_id.go
+package middleware
+
+import (
+    "context"
+    "github.com/google/uuid"
+    "net/http"
+)
+
+type contextKey string
+const CorrelationIDKey contextKey = "correlationID"
+const CorrelationIDHeader = "X-Correlation-ID"
+
+func CorrelationID(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+        id := r.Header.Get(CorrelationIDHeader)
+        if id == "" {
+            id = uuid.NewString()
+        }
+        ctx := context.WithValue(r.Context(), CorrelationIDKey, id)
+        w.Header().Set(CorrelationIDHeader, id)
+        next.ServeHTTP(w, r.WithContext(ctx))
+    })
+}
+
+func GetCorrelationID(ctx context.Context) string {
+    if id, ok := ctx.Value(CorrelationIDKey).(string); ok {
+        return id
+    }
+    return ""
+}
+```
+
+### Pattern 2 — Graceful Shutdown (Go)
+
+```go
+// main.go
+package main
+
+import (
+    "context"
+    "log/slog"
+    "net/http"
+    "os"
+    "os/signal"
+    "syscall"
+    "time"
+)
+
+func main() {
+    srv := &http.Server{Addr: ":8080", Handler: router}
+
+    go func() {
+        if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+            slog.Error("server error", "err", err)
+            os.Exit(1)
+        }
+    }()
+
+    quit := make(chan os.Signal, 1)
+    signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+    <-quit
+
+    slog.Info("shutting down gracefully")
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+
+    if err := srv.Shutdown(ctx); err != nil {
+        slog.Error("forced shutdown", "err", err)
+    }
+
+    db.Close()   // close DB pool
+    slog.Info("server stopped")
+}
+```
+
+### Pattern 3 — Auth Token Interceptor (Go — outbound HTTP)
+
+```go
+// lib/http_client.go
+package lib
+
+import (
+    "context"
+    "fmt"
+    "net/http"
+    "time"
+)
+
+type TokenProvider interface {
+    GetToken(ctx context.Context) (string, error)
+}
+
+type ServiceClient struct {
+    base     string
+    client   *http.Client
+    tokens   TokenProvider
+}
+
+func NewServiceClient(base string, tokens TokenProvider) *ServiceClient {
+    return &ServiceClient{
+        base:   base,
+        client: &http.Client{Timeout: 10 * time.Second},
+        tokens: tokens,
+    }
+}
+
+func (c *ServiceClient) Get(ctx context.Context, path string) (*http.Response, error) {
+    token, err := c.tokens.GetToken(ctx)
+    if err != nil {
+        return nil, err
+    }
+    req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.base+path, nil)
+    if err != nil {
+        return nil, err
+    }
+    req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+    req.Header.Set("X-Correlation-ID", middleware.GetCorrelationID(ctx))
+    return c.client.Do(req)
+}
+```
+
+### Pattern 4 — Validation (Go)
+
+**Module:** `github.com/go-playground/validator/v10`
+
+```go
+// schemas/user.go
+package schemas
+
+type CreateUserRequest struct {
+    Email string `json:"email" validate:"required,email"`
+    Name  string `json:"name"  validate:"required,min=1,max=100"`
+    Role  string `json:"role"  validate:"omitempty,oneof=user admin"`
+}
+
+// middleware/validate.go
+package middleware
+
+import (
+    "encoding/json"
+    "net/http"
+    "github.com/go-playground/validator/v10"
+)
+
+var validate = validator.New()
+
+func ValidateBody[T any](next func(http.ResponseWriter, *http.Request, T)) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        var body T
+        if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+            http.Error(w, `{"error":"invalid JSON"}`, http.StatusBadRequest)
+            return
+        }
+        if err := validate.Struct(body); err != nil {
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusBadRequest)
+            json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
+            return
+        }
+        next(w, r, body)
+    }
+}
+```
+
+Env var validation using `envconfig` or `github.com/caarlos0/env`:
+```go
+// config/config.go
+package config
+
+import "github.com/caarlos0/env/v11"
+
+type Config struct {
+    DatabaseURL    string `env:"DATABASE_URL,required"`
+    RedisURL       string `env:"REDIS_URL" envDefault:"redis://localhost:6379"`
+    AllowedOrigins string `env:"ALLOWED_ORIGINS" envDefault:"http://localhost:3000"`
+    ServiceName    string `env:"SERVICE_NAME" envDefault:"api"`
+}
+
+func Load() (*Config, error) {
+    cfg := &Config{}
+    return cfg, env.Parse(cfg)
+}
+```
+
+### Pattern 5 — Deep Health Check (Go)
+
+```go
+// handlers/health.go
+package handlers
+
+import (
+    "database/sql"
+    "encoding/json"
+    "net/http"
+    "runtime"
+    "time"
+)
+
+type HealthStatus struct {
+    Status  string            `json:"status"`
+    Checks  map[string]Check  `json:"checks"`
+    Uptime  float64           `json:"uptime_seconds"`
+    Memory  uint64            `json:"heap_alloc_bytes"`
+}
+
+type Check struct {
+    Status     string `json:"status"`
+    ResponseMs int64  `json:"response_ms,omitempty"`
+    Error      string `json:"error,omitempty"`
+}
+
+var startTime = time.Now()
+
+func HealthCheck(db *sql.DB) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        checks := map[string]Check{}
+        overall := "ok"
+
+        // DB check
+        start := time.Now()
+        if err := db.PingContext(r.Context()); err != nil {
+            checks["db"] = Check{Status: "fail", Error: err.Error()}
+            overall = "unhealthy"
+        } else {
+            checks["db"] = Check{Status: "ok", ResponseMs: time.Since(start).Milliseconds()}
+        }
+
+        var m runtime.MemStats
+        runtime.ReadMemStats(&m)
+
+        resp := HealthStatus{
+            Status: overall,
+            Checks: checks,
+            Uptime: time.Since(startTime).Seconds(),
+            Memory: m.HeapAlloc,
+        }
+
+        w.Header().Set("Content-Type", "application/json")
+        if overall == "unhealthy" {
+            w.WriteHeader(http.StatusServiceUnavailable)
+        }
+        json.NewEncoder(w).Encode(resp)
+    }
+}
+```
+
+### Pattern 6 — Structured Logger (Go)
+
+Go 1.21+ includes `log/slog` natively — no extra dependency:
+
+```go
+// lib/logger.go
+package lib
+
+import (
+    "log/slog"
+    "os"
+)
+
+func NewLogger(env string) *slog.Logger {
+    if env == "production" || env == "staging" {
+        return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+            Level: slog.LevelInfo,
+        }))
+    }
+    return slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+        Level: slog.LevelDebug,
+    }))
+}
+```
+
+Usage:
+```go
+logger.InfoContext(ctx, "request received",
+    slog.String("correlation_id", middleware.GetCorrelationID(ctx)),
+    slog.String("method", r.Method),
+    slog.String("path", r.URL.Path),
+)
+```
+
+### Pattern 7 — Retry + Timeout (Go)
+
+**Module:** `github.com/avast/retry-go` or manual:
+
+```go
+// lib/retry.go
+package lib
+
+import (
+    "context"
+    "errors"
+    "net/http"
+    "time"
+)
+
+func WithRetry(ctx context.Context, maxAttempts int, fn func() (*http.Response, error)) (*http.Response, error) {
+    delays := []time.Duration{100 * time.Millisecond, 200 * time.Millisecond, 400 * time.Millisecond}
+    var lastErr error
+    for i := 0; i < maxAttempts; i++ {
+        resp, err := fn()
+        if err == nil && resp.StatusCode < 500 {
+            return resp, nil
+        }
+        if err == nil {
+            lastErr = errors.New("server error: " + resp.Status)
+        } else {
+            lastErr = err
+        }
+        if i < len(delays) {
+            select {
+            case <-ctx.Done():
+                return nil, ctx.Err()
+            case <-time.After(delays[i]):
+            }
+        }
+    }
+    return nil, lastErr
+}
+```
+
+### Pattern 8 — Soft Delete (Go / GORM)
+
+```go
+// models/base.go
+package models
+
+import (
+    "gorm.io/gorm"
+    "time"
+)
+
+type Base struct {
+    ID        uint           `gorm:"primarykey"`
+    CreatedAt time.Time
+    UpdatedAt time.Time
+    DeletedAt gorm.DeletedAt `gorm:"index"`  // GORM soft-delete built-in
+}
+
+// Usage — all models embedding Base get soft delete for free:
+type User struct {
+    Base
+    Email string `gorm:"uniqueIndex"`
+    Name  string
+}
+
+// GORM automatically filters deleted_at IS NULL on all queries
+// db.Delete(&user) sets deleted_at instead of DELETE FROM
+// db.Unscoped().Find(&users) bypasses the filter (admin use)
+```
+
+### Pattern 9 — CSP / Security Headers (Go)
+
+**Module:** `github.com/unrolled/secure`
+
+```go
+// middleware/security.go
+package middleware
+
+import (
+    "net/http"
+    "os"
+    "strings"
+    "github.com/unrolled/secure"
+    "github.com/rs/cors"
+)
+
+func SecurityHeaders() func(http.Handler) http.Handler {
+    isDev := os.Getenv("APP_ENV") == "local"
+    scriptSrc := "'self'"
+    if isDev {
+        scriptSrc = "'self' 'unsafe-eval'"
+    }
+
+    sm := secure.New(secure.Options{
+        ContentSecurityPolicy: strings.Join([]string{
+            "default-src 'self'",
+            "script-src " + scriptSrc,
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: blob:",
+            "connect-src 'self'",
+            "font-src 'self' https://fonts.gstatic.com",
+            "object-src 'none'",
+        }, "; "),
+        STSSeconds:            31536000,
+        STSIncludeSubdomains:  true,
+        STSPreload:            true,
+        FrameDeny:             true,
+        ContentTypeNosniff:    true,
+        IsDevelopment:         isDev,
+    })
+
+    return sm.Handler
+}
+
+func CORS() func(http.Handler) http.Handler {
+    origins := strings.Split(os.Getenv("ALLOWED_ORIGINS"), ",")
+    return cors.New(cors.Options{
+        AllowedOrigins:   origins,
+        AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+        AllowedHeaders:   []string{"*"},
+        AllowCredentials: true,
+    }).Handler
+}
+```
+
+---
+
+## Runtime Selection Quick Reference
+
+When scaffolding, determine the runtime from the SDL component's `runtime` or `framework` field, then apply the matching section:
+
+| SDL `runtime` / `framework` value | Apply section |
+|---|---|
+| `node`, `nodejs`, `express`, `fastify`, `nestjs` | Patterns 1–9 (main body above) |
+| `python`, `python-fastapi`, `fastapi`, `django` | Runtime Reference — Python |
+| `dotnet`, `aspnet`, `csharp` | Runtime Reference — .NET |
+| `go`, `golang` | Runtime Reference — Go |
+| `java-spring`, `spring` | Use Spring equivalents: Micrometer (logging), Spring Retry (retry), Spring Boot Actuator (health), Hibernate soft delete, Spring Security headers |
+| `ruby-rails` | Use Rails equivalents: Lograge (logging), ActiveRecord `discarded` gem (soft delete), Rack::Attack (rate limit), SecureHeaders gem (CSP) |
+
+For runtimes not listed above, use the **Node.js patterns as a template** and translate library names to the closest ecosystem equivalent.
