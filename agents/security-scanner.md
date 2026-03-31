@@ -19,6 +19,8 @@ You will receive:
 - The security architecture from the blueprint (auth strategy, API security checklist, data protection, OWASP mitigations)
 - The scaffolded project directory path(s)
 - The tech stack (framework, language)
+- `auth.identityProvider` from SDL (e.g. `clerk`, `auth0`, `cognito`, `firebase`, `custom-jwt`) — used to verify the correct provider SDK is wired in auth middleware
+- `auth.serviceTokenModel` from SDL (`jwt` | `session` | `api-key`) — used to verify the correct token validation mechanism is in place
 
 ## Process
 
@@ -58,6 +60,11 @@ Verify:
 - [ ] Auth middleware file exists
 - [ ] Middleware is imported in the main app or router
 - [ ] Protected routes use the middleware
+- [ ] Token validation mechanism matches `auth.serviceTokenModel`:
+  - `jwt`: look for JWT decode/verify call (e.g. `jsonwebtoken.verify`, `jose.jwtVerify`, `python-jose`)
+  - `session`: look for session cookie parsing (e.g. `express-session`, `Starlette SessionMiddleware`)
+  - `api-key`: look for API key header extraction (e.g. `req.headers['x-api-key']`)
+- [ ] If `auth.identityProvider` is `clerk`, `auth0`, `cognito`, or `firebase`: verify the correct provider SDK is used (not a generic custom JWT implementation)
 
 #### CORS Check
 
@@ -205,6 +212,16 @@ Cross-reference the blueprint's OWASP section with actual code:
 | Broken Access Control | Role-based middleware | [PASS] — requireAuth middleware exists |
 | Injection | Parameterized queries | [PASS] — Prisma ORM |
 | SSRF | No user-provided URL fetching | [PASS] — No external URL fetching found |
+
+### 6. Write Output and Log Activity
+
+Write the full scan report to `architecture-output/security-scan.md`.
+
+Then append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"security-scan","outcome":"completed","files":["architecture-output/security-scan.md"],"summary":"Security scan: <X>/<Y> checks passed. <N> must-have items missing, <N> risks flagged."}
+```
 
 ## Error Handling
 

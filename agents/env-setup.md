@@ -24,6 +24,18 @@ You will receive:
 
 ## Process
 
+### 0.5. Resolve Per-Service Dependencies
+
+Before reading `.env.example` files, read `architecture.services[].dependsOn[]` from `solution.sdl.yaml` to build a per-service dependency map. This determines which third-party env vars belong in which service's `.env`:
+
+- A service that `dependsOn: [stripe]` needs `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`
+- A service that `dependsOn: [sendgrid]` needs `SENDGRID_API_KEY`
+- A service that `dependsOn: [another-service]` needs a `<SERVICE>_URL` pointing to that sibling
+
+Use this map in Step 7 (Handle Multi-Component Projects) to avoid writing Stripe keys into a service that doesn't call Stripe, and to correctly generate service-to-service URL vars for each consumer.
+
+If `dependsOn[]` is absent from SDL, fall back to inferring dependencies from the `.env.example` variables.
+
 ### 1. Read Existing .env.example
 
 ```bash

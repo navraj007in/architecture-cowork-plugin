@@ -31,6 +31,12 @@ You will receive:
 - The full manifest context including: shared types, application patterns, security, observability, devops, and environments sections
 - Per-frontend config: build_tool, rendering, state_management, data_fetching, component_library, form_handling, validation, animation, api_client, backend_connections, client_auth, realtime, monitoring, deploy_target, dev_port
 - Per-mobile config: build_platform, navigation, push_notifications, deep_linking, permissions, ota_updates, realtime, bundle_id, client_auth, monitoring
+- **`scaffold_depth`** (`"mvp"` | `"growth"` | `"enterprise"`) — controls which production hardening patterns are required vs. stubbed. See the depth table in the scaffold command (Step 3.6). Always check this value before applying patterns 7–9 and optional features. Patterns 1–7 are always required regardless of depth.
+- **Contract files** (pre-generated in Step 3.7 of the scaffold command):
+  - `architecture-output/contracts/<service>.openapi.yaml` per backend service — **use these as the authoritative route list**; generate route handlers that implement exactly the operations declared in the spec. Do not invent additional routes from SDL inference.
+  - `architecture-output/contracts/<caller>-calls-<dependency>.client.ts` — pre-generated typed client files; place each at `src/lib/clients/<dependency>-client.ts` in the caller's project instead of writing ad-hoc clients.
+  - `architecture-output/contracts/_index.md` — index of all contracts and their callers.
+  - If contracts are absent (no Step 3.7 run): fall back to inferring routes from the manifest's `interfaces[]`.
 
 ## Credential Awareness
 
@@ -53,8 +59,20 @@ If a git provider token is available, use it directly for repo creation instead 
 
 ## Process
 
+### Step 0.5: Load Prior Activity Context
+
+Before scaffolding any component, read two levels of activity context to detect prior runs.
+
+**Project level** — check if `architecture-output/_activity.jsonl` exists. If it does, read the last 3 entries. Look for any `"phase":"scaffold"` entries that list a component in `components[]` — if a component was already scaffolded successfully in a prior run, skip it unless the caller has explicitly asked to re-run.
+
+**Component level** — for any component that will be augmented (`mode: "augment"`), also read `<component-name>/_activity.jsonl` if it exists. The last 3 entries reveal what was previously scaffolded (`filesCreated`) and what has changed since. Use this to refine the `existing_state` map and avoid redundant writes.
+
+If no activity files exist, proceed normally — this is a fresh project.
+
+---
+
 Check the component's `mode` field first:
-- **`mode: "new"`** → execute steps 1–13 below (fresh scaffold)
+- **`mode: "new"`** → execute steps 1–15 below (fresh scaffold)
 - **`mode: "augment"`** → follow the Augment Path instead
 
 ### Augment Path (existing components)
@@ -284,6 +302,10 @@ Use the manifest's `application_patterns.folder_convention` to organize the proj
 | `module-based` | Create `src/modules/` with a subdirectory per responsibility |
 | `flat` | Keep files directly in `src/` |
 
+**Entity source:** Use `domain.entities[]` from `solution.sdl.yaml` as the entity inventory for creating model/entity placeholder files. If `domain.entities[]` is absent, fall back to `_state.json.entities`, then to the manifest's shared types.
+
+**Route source:** If a contract file (`architecture-output/contracts/<service>.openapi.yaml`) exists for this service, generate route handler stubs for every `operationId` declared in the spec. The spec is the authoritative route list — do not add routes that are not in it.
+
 For each responsibility listed in the manifest's `services[].responsibilities`, create placeholder files in the correct location. For example, with `feature-based` convention and responsibilities `[auth, orders, payments]`:
 
 ```
@@ -299,20 +321,27 @@ Each file should have a minimal skeleton (exported function/class stub with a TO
 
 ### 4. Add Security Config
 
-For backend services, add security middleware based on the manifest's `security` section:
+For backend services, add security middleware based on the manifest's `security` section.
+
+**Auth field resolution:** Read `auth.identityProvider` from SDL (e.g. `clerk`, `auth0`, `cognito`, `firebase`, `custom-jwt`) and `auth.serviceTokenModel` (e.g. `jwt`, `session`, `api-key`) to determine the correct token validation mechanism. The `auth.ts` stub must match the declared model — do NOT default to generic JWT if `serviceTokenModel` says `session` or `api-key`.
+
+**Rate limiting depth:** At `scaffold_depth: "mvp"`, add a `// TODO (growth): configure rate limiting` comment at the exact mount point instead of a full implementation. At `growth` or `enterprise`, add `express-rate-limit` (or equivalent) with configuration.
 
 **Node.js/Express:**
 - Add `helmet` to dependencies and wire it in `src/index.ts` or `src/middleware/security.ts`
-- Add `cors` config with placeholder origins from `security.api_security`
-- Create `src/middleware/auth.ts` with a placeholder JWT verification middleware
-- Add `express-rate-limit` or a comment referencing the manifest's rate-limit strategy
+- Add `cors` config with placeholder origins from `ALLOWED_ORIGINS` env var (never hardcoded)
+- Create `src/middleware/auth.ts` with a token verification stub matching `auth.serviceTokenModel`:
+  - `jwt`: verify Bearer token with the correct library for `auth.identityProvider`
+  - `session`: session cookie validation stub
+  - `api-key`: API key header extraction and validation stub
+- Rate limiting: full implementation at `growth`/`enterprise`; stub + TODO comment at `mvp`
 
 **Python/FastAPI:**
-- Add `CORSMiddleware` to `main.py` with placeholder origins
-- Create `app/middleware/auth.py` with a placeholder dependency for JWT verification
-- Add a comment referencing the rate-limit strategy from the manifest
+- Add `CORSMiddleware` to `main.py` with origins from `ALLOWED_ORIGINS` env var
+- Create `app/middleware/auth.py` with a dependency stub matching `auth.serviceTokenModel`
+- Rate limiting: `slowapi` at `growth`/`enterprise`; stub + TODO comment at `mvp`
 
-Keep it minimal — stubs with TODOs, not full implementations.
+Keep auth stubs minimal at mvp — placeholder with TODO, not full implementations.
 
 ### 5. Apply Frontend Configuration (for web frontends)
 
@@ -320,7 +349,7 @@ If the component is a web frontend, apply configuration from the manifest's fron
 
 **API client setup** — Based on `api_client` (e.g., axios, fetch), create `src/lib/api.ts` with a configured HTTP client instance. Include base URL placeholder from the environment config and interceptors for auth token injection.
 
-**Backend connection stubs** — For each entry in `backend_connections[]`, create a service client file under `src/services/` (e.g., `src/services/auth-service.ts`, `src/services/billing-service.ts`) with typed API method stubs:
+**Backend connection stubs** — For each entry in `backend_connections[]`, check whether a pre-generated contract client exists at `architecture-output/contracts/<frontend-name>-calls-<service>.client.ts`. If it does, copy it to `src/lib/clients/<service>-client.ts` — do not write a new client from scratch. If no contract client exists, create `src/services/<service>-client.ts` with typed API method stubs:
 
 ```ts
 // src/services/auth-service.ts
@@ -504,7 +533,51 @@ If the user opted for dependency installation:
 | Node.js / TypeScript | `npm install` |
 | Python | `pip install -r requirements.txt` or `pip install -e .` |
 
-### 13. Report Results
+### 13. Write Activity Log
+
+After completing each component, append one line to `<component-name>/_activity.jsonl` (inside the component directory):
+
+```json
+{"ts":"<ISO-8601>","phase":"scaffold","framework":"<framework>","status":"created|augmented","filesCreated":["src/index.ts","src/middleware/auth.ts","Dockerfile"],"summary":"Initial scaffold: <framework>, <pattern>. <N> files created."}
+```
+
+- `filesCreated`: all file paths relative to the component root — list every file, no cap
+- For failures: `{"ts":"...","phase":"scaffold","status":"failed","error":"<reason>","summary":"Scaffold failed: <reason>"}`
+- Append only — never overwrite
+
+Also append one line to `architecture-output/_activity.jsonl` at the project level (after ALL components are done):
+
+```json
+{"ts":"<ISO-8601>","phase":"scaffold","outcome":"completed|partial|failed","components":["api-server","web-app"],"summary":"Scaffolded <N> components: <list>. <total> files created."}
+```
+
+### 14. Build Verification
+
+After writing all files and activity logs, run a build check per component to surface errors before the user touches the code.
+
+| Runtime | Command | When to run |
+|---------|---------|-------------|
+| Node.js / TypeScript | `npx tsc --noEmit` | Always (if TypeScript) |
+| Next.js | `npx tsc --noEmit` | Always |
+| Python | `python -m py_compile $(find . -name "*.py" -not -path "*/node_modules/*")` | Always |
+| Go | `go build ./...` | Always |
+| .NET | `dotnet build --no-restore` | Always |
+| Flutter | `flutter analyze` | Always |
+
+Rules:
+- Only run if the runtime is available (check with `--version` first)
+- Only run if dependencies were installed (Step 12)
+- For augment mode: run `tsc --noEmit` only, don't do a full build
+- 0 errors → ✅; errors → capture first 5 lines; can't run → ⏭ skipped
+- A build failure does NOT mark the scaffold as failed — it's reported separately
+
+Append verification result to `<component-name>/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"build-verify","status":"pass|fail|skipped","errors":[],"summary":"tsc --noEmit: 0 errors"}
+```
+
+### 15. Report Results
 
 After completing each component, report:
 
@@ -514,6 +587,8 @@ After completing each component, report:
   Framework: <framework>
   Folder convention: <convention>
   Files created: <count>
+  Depth: <scaffold_depth>
+  Build: ✅ 0 errors | ⚠ 2 errors | ⏭ skipped
   Includes: Dockerfile, docker-compose.yml, security middleware, health checks, structured logging, CI workflow
   Dependencies installed: yes/no
 ```

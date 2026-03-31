@@ -26,6 +26,16 @@ You will receive:
 
 ## Process
 
+### 0. Resolve Entity List
+
+Before doing anything else, establish the authoritative entity inventory:
+
+1. Read `domain.entities[]` from `solution.sdl.yaml` — this is the **primary source**. It lists PascalCase entity names (e.g. `User`, `Appointment`, `Payment`). Every entity here MUST get a schema.
+2. If `domain.entities[]` is absent, fall back to `_state.json.entities` (array of `{name, fields, owner}`).
+3. If neither exists, fall back to shared types from the manifest.
+
+**Do NOT read the SDL `data:` section for entity names** — `data:` describes database infrastructure (type, hosting, indexes), not entity names. Entity names live in `domain:`.
+
 ### 1. Determine ORM
 
 Select ORM based on tech stack:
@@ -71,7 +81,27 @@ From the manifest's service connections and shared types, infer relationships:
   - `orderId` → Order has many X, X belongs to Order
   - Many-to-many: infer from domain (e.g., Product ↔ Category)
 
+### 3.5. Schema Splitting (multi-service projects)
+
+If the manifest defines multiple backend services with distinct data ownership (different `dataOwnership` sets), split schemas by service domain:
+
+- Create one schema file per service: `schema-<domain>.prisma`, `app/models/<domain>/`, etc.
+- Write `architecture-output/data-model-index.md` listing which entities are in which file.
+- Cross-service foreign keys become string IDs with a comment (no cross-schema Prisma relations).
+
+For single-service projects, one unified schema file is correct regardless of entity count.
+
 ### 4. Generate Schema Files
+
+**Soft delete is required on every model, regardless of `scaffold_depth`.**
+
+Add to every model:
+- **Prisma**: `deletedAt DateTime?` field + `@@index([deletedAt])`. Also add transparent Prisma middleware in `src/lib/prisma.ts` that appends `where: { deletedAt: null }` to all `findMany`/`findFirst`/`findUnique` calls and sets `deletedAt: new Date()` on `delete`/`deleteMany`.
+- **SQLAlchemy**: `deleted_at: Mapped[Optional[datetime]]` column. Add a `SoftDeleteMixin` and configure a `@listens_for(Session, "after_flush")` event or use a custom query class that filters `deleted_at IS NULL`.
+- **Mongoose**: `deletedAt: { type: Date, default: null }` field. Add a global pre-find hook to inject `{ deletedAt: null }` into all queries.
+- **Drizzle**: `deletedAt: timestamp('deleted_at')` column. Add a helper `withSoftDelete(query)` that appends `.where(isNull(table.deletedAt))`.
+
+Never generate a hard-delete handler. All delete operations set `deletedAt` and filter it in reads.
 
 #### Prisma (TypeScript / Node.js)
 
@@ -373,6 +403,28 @@ Next steps:
 3. Import PrismaClient in your routes: `import { PrismaClient } from '@prisma/client'`
 ```
 
+### 10. Update _state.json
+
+After generating all schemas, merge entity data into `architecture-output/_state.json`:
+
+1. Read existing `architecture-output/_state.json` (or start with `{}`)
+2. Build the `entities` array — one entry per generated model:
+   ```json
+   { "name": "User", "fields": ["id", "email", "displayName", "role", "deletedAt", "createdAt", "updatedAt"], "owner": "<component-name>" }
+   ```
+3. Merge into `_state.json` under the `entities` key — replace the array entirely (this command owns it)
+4. Write back to `architecture-output/_state.json` without overwriting other fields
+
+### 11. Log Activity
+
+Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"generate-data-model","outcome":"completed","files":["prisma/schema.prisma","prisma/seed.ts"],"summary":"Data model generated: <N> entities, <ORM>, <database>. Soft delete applied to all models."}
+```
+
+List all generated schema and migration files in the `files` array.
+
 ## Error Handling
 
 - If the ORM is not installed, install it (add to dependencies and run install)
@@ -383,7 +435,9 @@ Next steps:
 
 ## Rules
 
-- Generate models for ALL shared types in the manifest
+- **Entity source**: use `domain.entities[]` from SDL as the primary entity list. Never infer entity names from the `data:` section.
+- Generate models for ALL entities in the inventory — none may be skipped
+- **Always apply soft delete** (`deletedAt` field + transparent ORM filter) on every model — no exceptions
 - Always add `createdAt` and `updatedAt` timestamps
 - Always add indexes on foreign keys and commonly queried fields
 - Always generate a seed file with realistic test data
@@ -393,3 +447,5 @@ Next steps:
 - Generate enum types for status fields and role fields
 - Infer relationships from field names and the manifest's `used_by` lists
 - If the manifest's type has no fields listed, generate a minimal model with id + timestamps and a TODO
+- Always update `_state.json.entities` after generation
+- Always append to `_activity.jsonl` after generation

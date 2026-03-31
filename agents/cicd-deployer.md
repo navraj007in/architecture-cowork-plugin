@@ -48,6 +48,31 @@ The following environment variables may be pre-set by Archon from the user's con
 
 ## Process
 
+### 0.5. Resolve Service Dependency Order
+
+Before generating any pipeline config, read `architecture.services[].dependsOn[]` from `solution.sdl.yaml` to determine service build and deploy ordering.
+
+Build a dependency graph:
+- Services with no `dependsOn` entries (or only external integrations like `stripe`, `sendgrid`) can build and deploy in parallel
+- Services that `dependsOn` a sibling service must build/deploy AFTER that sibling
+
+Use this graph to wire `needs:` in GitHub Actions, `dependsOn:` in Azure Pipelines, and `needs:` in GitLab CI:
+
+```yaml
+# Example: api-server depends on shared-types
+jobs:
+  build-shared-types:
+    ...
+  build-api-server:
+    needs: build-shared-types   # ← from dependsOn[]
+    ...
+  build-web-app:
+    needs: build-api-server     # ← from dependsOn[]
+    ...
+```
+
+If `dependsOn[]` is absent from SDL, default to parallel builds for all services.
+
 ### 1. Read Existing CI Config
 
 Check if any CI config already exists:
