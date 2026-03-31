@@ -49,7 +49,18 @@ If no blueprint exists (neither local files nor conversation), respond:
 
 For each component, check whether `<parent-dir>/<component-name>` already exists on disk:
 - If it exists and contains source files (package.json, requirements.txt, go.mod, pubspec.yaml, .csproj, or any `src/` / `app/` / `lib/` directory), mark it **EXISTS**.
+- If it contains a `.git` directory, it is an independent repository — always mark **EXISTS** regardless of what other files are present, and treat it as an existing codebase to augment rather than scaffold from scratch.
 - If it does not exist or is empty, mark it **NEW**.
+
+**Also scan for unmatched sub-repos:** After processing components from the manifest, check if the parent directory has any subdirectory with a `.git` folder that is NOT listed as a component in the manifest. If found, alert the user:
+
+```
+⚠ Found independent git repos not in the manifest:
+  - ./legacy-admin (Git repo, React — not in blueprint)
+  - ./shared-utils (Git repo, TypeScript — not in blueprint)
+
+These will not be scaffolded. If they should be components, add them to your SDL and re-run /architect:blueprint first.
+```
 
 Present the components with status:
 

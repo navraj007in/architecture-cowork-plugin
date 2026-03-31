@@ -34,6 +34,21 @@ Also check for an existing `sdl/` directory — if it exists, this is a
 **multi-file SDL project** (see Step 3.2a). Read `sdl/README.md` if present
 to understand the module organization before proceeding.
 
+**Check for independent sub-repositories:**
+
+If the scan context includes `structure.subRepos` with one or more entries, this
+folder is a **multi-repo workspace** — each sub-directory is an independent git
+repository representing a separate component (frontend, backend, agent, etc.).
+
+In this case:
+- Treat each sub-repo as a distinct component/service in the SDL
+- Map each to the correct `architecture.projects` section based on its detected framework
+- Generate one unified `solution.sdl.yaml` covering all repos as a multi-component architecture
+- In the import analysis, include a "Component Map" table listing each repo, its detected stack, and its role
+
+If no scan context is provided, scan the immediate subdirectories manually:
+check each subdirectory for a `.git` folder — any that have one are independent repos.
+
 ### Step 2: Deep Source Analysis
 
 Using the scan results as a guide, read the actual source code to understand
@@ -394,6 +409,17 @@ Write a comprehensive analysis to `architecture-output/import-analysis.md`:
 
 ```markdown
 # Import Analysis: {Project Name}
+
+## 0. Component Map
+*(Include this section only when multiple independent git repos were detected)*
+
+| Repo | Path | Framework | Role | Has Docker | Entry Point |
+|------|------|-----------|------|------------|-------------|
+| api-server | ./api-server | Node.js/Express | Backend API | yes | src/index.ts |
+| web-app | ./web-app | Next.js | Frontend | no | src/app/page.tsx |
+| worker | ./worker | Python/FastAPI | Background worker | yes | main.py |
+
+Each repo is analysed independently below and mapped to a component in the SDL.
 
 ## 1. Project Overview
 What the project is, its purpose, and target users. Derived from README,
