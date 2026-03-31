@@ -16,7 +16,9 @@ After generating a blueprint with `/architect:blueprint`, this command renders a
 
 ### Step 1: Read Context & Check for Diagrams
 
-**First**, check for `architecture-output/_state.json`. If it exists, read it and extract:
+**First**, check `architecture-output/_state.json`. If it exists, read it in full — it provides instant access to `project`, `tech_stack`, `components`, `design`, `entities`, and `personas` without reading larger files. Use its values directly where available; fall back to SDL only for detail not in `_state.json`.
+
+Then, check for `architecture-output/_state.json` and extract:
 - `project.name` → used in diagram titles and output folder naming
 
 **Then**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does, read the Mermaid diagram files from that local directory:

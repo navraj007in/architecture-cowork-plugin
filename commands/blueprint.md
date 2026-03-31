@@ -183,6 +183,7 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
    - Map project metadata → `solution` (name, description, stage)
    - Map user roles → `product.personas` (each with name and goals)
    - Map frontends/services → `architecture.projects` (frontend, backend, mobile)
+   - Map shared types and domain objects from the manifest → `domain.entities[]` (PascalCase entity names only — e.g. User, Order, Product. No fields here, just names)
    - Infer `architecture.style`: single backend → `modular-monolith`, 2+ → `microservices`, functions → `serverless`
    - Map databases → `data` (primary + secondary)
    - Map integrations → `integrations` and `auth` sections
@@ -243,7 +244,7 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
 - 4j: Complexity Assessment (from `constraints` + architecture complexity)
 - 4k: Well-Architected Review (from `nonFunctional` + `deployment`)
 - 4l: Plain English Specs (from `product.personas` + `coreFlows`)
-- 4m: Required Accounts (from `integrations` + `auth.provider` + `deployment.cloud`)
+- 4m: Required Accounts (from `integrations` + `auth.identityProvider` + `deployment.cloud`)
 - 4n: Next Steps Guide (from `constraints.team` + `budget` + `timeline`)
 
 ### Step 4: Generate Deliverables
@@ -337,7 +338,7 @@ Include a note explaining how to use each artifact:
 
 Using the **operational-patterns** skill:
 
-- **Auth strategy** — Which auth provider and approach (JWT, session, API keys) based on the project type and user roles. Explain in plain English.
+- **Auth strategy** — Read `auth.identityProvider` for the external IdP (Cognito, Auth0, Clerk) and `auth.serviceTokenModel` for how services validate tokens (jwt, session, api-key). Explain both in plain English — they are often different (e.g. Cognito issues tokens, services validate them as JWTs).
 - **API security checklist** — Table of security measures each service must implement (rate limiting, input validation, CORS, helmet headers, etc.) with priority level (must-have / should-have).
 - **Data protection** — Encryption at rest and in transit, PII field identification, secrets management approach, data retention policy.
 - **OWASP considerations** — Top threats relevant to this specific architecture and how each is mitigated. Don't list all 10 — focus on the ones that actually apply.
@@ -548,6 +549,8 @@ Provide 3 paths forward:
 
 #### 4o. Sprint Backlog
 
+**Output file:** Write the sprint backlog to `architecture-output/sprint-backlog.md`. If the file exceeds ~15KB, split into `architecture-output/sprint-backlog-1.md`, `sprint-backlog-2.md`, etc. This path is required — `sprint-status` reads from this exact location.
+
 Using the manifest, complexity score, and deliverables above, break the build into time-boxed sprints:
 
 **Sprint parameters:**
@@ -671,7 +674,7 @@ Write or merge:
   ],
   "design": {
     "personality": "<personality from SDL design section or derived from domain>",
-    "primary_color": "<hex>",
+    "primary": "<hex>",
     "heading_font": "<font name>",
     "body_font": "<font name>"
   },
@@ -686,6 +689,16 @@ Rules:
 - `entities`, `personas`, `market_research`, `mvp_scope`, `top_risks` are written by other commands — do NOT add them here
 - If the SDL has a `design` section, use those values; otherwise derive from the product domain using the personality table in `/architect:prototype`
 - `blueprint.deepen_passes` starts at `0` on first run; increment by 1 each time deepen mode completes
+
+### Step 4.6: Log Activity
+
+Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"blueprint","outcome":"completed","files":["architecture-output/executive-summary.md","architecture-output/architecture-diagrams.md","architecture-output/sprint-backlog.md","solution.sdl.yaml","architecture-output/_state.json"],"summary":"Blueprint generated: <style> architecture, <N> components, complexity <score>/10, <sprint-count> sprints."}
+```
+
+List every file actually written in the `files` array.
 
 ### Step 5: CTA Footer
 

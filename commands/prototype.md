@@ -46,7 +46,7 @@ Read (use what's available, don't error if missing):
    - `auth:` block → which auth screens to generate (login, register, MFA, SSO)
    - `components:` block → component types (web/mobile/api) to determine layout and screen scope
    - `design:` block → palette, fonts, personality if not in `_state.json`
-   - `data:` block → entity names and field lists for mock data shape — **only if `_state.json.entities` is absent**
+   - `domain:` block → entity names for mock data shape — **only if `_state.json.entities` is absent** (e.g. `domain.entities: [User, Order, Product]`)
 
    **Skip entirely:** infrastructure, deployment, integrations, environment, security policies, cost — none of these affect the prototype UI.
 
@@ -323,6 +323,16 @@ Run: cd prototype && npm install && npm run dev
 ```
 
 Emit: `[PROTOTYPE_DONE]`
+
+### Final Step: Log Activity
+
+Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"prototype","outcome":"completed","files":["src/App.tsx","src/pages/"],"summary":"Prototype generated: <N> screens, <personality> design, <component-library> components."}
+```
+
+List all generated React files in the `files` array.
 
 ## Layout Variety Reference
 

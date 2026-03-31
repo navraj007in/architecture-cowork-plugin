@@ -98,6 +98,16 @@ After generating ORM schemas, update `architecture-output/_state.json` with a co
 
 This allows `scaffold-component` to know entity shapes without parsing ORM schema files.
 
+### Final Step: Log Activity
+
+Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"generate-data-model","outcome":"completed","files":["architecture-output/data-model.md"],"summary":"Data model generated: <N> entities, <orm> ORM, <database> database."}
+```
+
+If the data model was split across multiple files, list all generated files in the `files` array.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone
@@ -106,7 +116,7 @@ This allows `scaffold-component` to know entity shapes without parsing ORM schem
 - Always add indexes on foreign keys
 - **Always apply soft-delete to every model** (Production Hardening Pattern 8): add `deletedAt DateTime?` field + `@@index([deletedAt])` index; for Prisma include transparent middleware in `src/lib/prisma.ts` that filters `deletedAt: null` on all queries and converts `delete` to `update { deletedAt: new Date() }`; for SQLAlchemy use a `deleted_at` column with a query filter mixin; for EF Core use a global query filter in `OnModelCreating`; for Mongoose add a `deletedAt` field and a pre-find hook
 - Infer relationships from field names and manifest context
-- Derive entity and field information from `solution.sdl.yaml` data section — `architecture-output/data-model.md` is a previously generated artifact, not an authoritative source
+- Derive entity names from `domain.entities[]` in `solution.sdl.yaml` — this is the authoritative entity inventory. The `data:` section defines storage infrastructure (database types, cache, queues), not entity names. For field details, cross-reference the manifest, README, and any existing migration files
 - If the SDL defines multiple services with distinct data domains, split schemas by domain: one `schema-{domain}.prisma` per service (e.g. `schema-auth.prisma`, `schema-orders.prisma`, `schema-inventory.prisma`). Write `schema-index.md` listing which entities are in each file and which service owns them. For single-service projects, one `schema.prisma` is fine regardless of size
 - If a single schema file exceeds ~15KB (unusual for a domain-split schema), split further into numbered parts and write a `*-index.md`
 - Use tables instead of prose for structured data (entities, endpoints, config)

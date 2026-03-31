@@ -35,9 +35,11 @@ Check if `architecture-output/wireframes/_manifest.json` exists with a non-empty
 
 **First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
 - `project.name` → appName
-- `design` → `primary`, `secondary`, `accent`, `personality`, `headingFont`, `bodyFont`, `borderRadius`, `shadow`, `componentLibrary` — use all of these in the `theme` field of each spec
+- `design` → `primary`, `secondary`, `accent`, `personality`, `heading_font`, `body_font`, `mono_font`, `borderRadius`, `shadow`, `componentLibrary` — use all of these in the `theme` field of each spec
 - `design.tokens_file` → if present, read that file (e.g. `architecture-output/design-system/design-tokens.json`) to get precise token values for spacing, border radius, shadows, and motion — use these values in the `theme` object for complete fidelity
 - `entities` → field names for realistic placeholder values in specs
+
+If `_state.json.entities` is absent, read `domain.entities[]` from `solution.sdl.yaml` as the entity list fallback. This provides entity names for generating data-display wireframe screens.
 
 **Then** read the SDL — **only if `_state.json` is absent or missing `project.name`**; Grep for `product:` block (screens, coreFlows, auth) and `components:` block only. Do NOT read the full SDL file.
 
@@ -75,8 +77,9 @@ Key rules:
     "surface": "#ffffff",
     "text_primary": "#0f172a",
     "personality": "bold-commercial",
-    "headingFont": "Clash Display",
-    "bodyFont": "Poppins",
+    "heading_font": "Clash Display",
+    "body_font": "Poppins",
+    "mono_font": "JetBrains Mono",
     "borderRadius": "8px",
     "shadow": "0 1px 3px rgba(0,0,0,0.12)",
     "componentLibrary": "shadcn/ui"
@@ -92,3 +95,13 @@ Rewrite `_manifest.json` with all screen ids in `generated`.
 ### Step 6: Signal
 
 Output: `[WIREFRAMES_DONE] All {N} screens generated.`
+
+### Final Step: Log Activity
+
+Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"wireframes","outcome":"completed","files":["architecture-output/wireframes/_manifest.json"],"summary":"Wireframes generated: <N> screens across <N> flows."}
+```
+
+List all generated wireframe JSON files in the `files` array.

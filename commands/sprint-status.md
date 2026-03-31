@@ -29,7 +29,7 @@ Extract all checklist items from the backlog:
 
 ### Step 3: Read activity logs
 
-Read `architecture-output/_activity.jsonl` and all `<component>/_activity.jsonl` files. Collect all `filesChanged` entries.
+Read `architecture-output/_activity.jsonl` and all `<component>/_activity.jsonl` files. Collect all `filesCreated` entries (scaffold writes `filesCreated`, not `filesChanged`).
 
 ### Step 4: Keyword matching
 

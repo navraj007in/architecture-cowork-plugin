@@ -19,7 +19,7 @@ Create a realistic, dependency-aware technical roadmap that sequences work into 
 Read in this order:
 1. `architecture-output/_state.json` — read first if it exists; use `project`, `tech_stack`, `components`, `entities`, `personas`, `mvp_scope`, `top_risks` directly — these replace intent.json and SDL for most roadmap decisions
 2. `intent.json` — **only if `_state.json.project` is absent**; extract vision, constraints, timeline expectations
-3. `solution.sdl.yaml` or `sdl.yaml` — **only if `_state.json.tech_stack` or `_state.json.components` is absent**; Grep for `components:`, `tech:`, and `product:` blocks only — do NOT read the full file
+3. `solution.sdl.yaml` — **only if `_state.json.tech_stack` or `_state.json.components` is absent**; Grep for `components:`, `tech:`, and `product:` blocks only — do NOT read the full file
 4. `architecture-output/problem-validation.md` — risk assessment (read in full, typically small)
 5. `architecture-output/cost-estimate.md` — budget constraints (read in full, typically small)
 6. `architecture-output/data-model.md` — **only if `_state.json.entities` is absent**; if reading, Grep for the header/summary section only to get entity count and domain groupings

@@ -132,7 +132,7 @@ If GitHub:
 Check if the design-system phase has been completed:
 
 1. Look for `architecture-output/design-system/design-tokens.json` in the blueprint directory
-2. Look for a `design` section in `sdl.yaml`
+2. Look for a `design` section in `solution.sdl.yaml`
 
 **If design tokens exist**, load them — the scaffolder will use these to configure frontend projects with the correct palette, typography, shape, and motion settings.
 
@@ -189,6 +189,7 @@ Pass the following to the **scaffolder** agent:
   - `design-tokens.json` — full token set for Tailwind config generation
   - `tailwind.config.patch.ts` — ready-to-merge Tailwind extensions
   - SDL `design` section — preset, personality, palette, typography, shape, motion, layout, icons, accessibility
+- **Production hardening requirements** — all 9 patterns from `skills/production-hardening/SKILL.md` must be applied to every backend and frontend component regardless of SDL values: correlation ID, graceful shutdown, structured logging, health checks (with real DB probe), auth token interceptor, rate limiting, CORS from `ALLOWED_ORIGINS`, input validation, retry+timeout on all outbound HTTP
 
 #### Frontend Design Integration (when design tokens are available)
 

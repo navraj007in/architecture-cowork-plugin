@@ -23,7 +23,7 @@ After generating a blueprint with `/architect:blueprint`, this command creates a
 - `personas` → target audience context; use instead of reading `user-personas.md`
 
 **Then**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does:
-- Read `sdl.yaml` for the SDL document
+- Read `solution.sdl.yaml` for the SDL document
 - Read `blueprint.json` for the full blueprint
 - Extract product domain, target audience, and frontend components
 
@@ -110,7 +110,7 @@ Generate and write the following files to `architecture-output/design-system/`:
 
 ### Step 7: Update SDL
 
-Write the complete `design` section back into `sdl.yaml`:
+Write the complete `design` section back into `solution.sdl.yaml`:
 
 ```yaml
 design:
@@ -126,7 +126,7 @@ design:
   accessibility: ...
 ```
 
-If `sdl.yaml` already exists, update only the `design` section — preserve everything else.
+If `solution.sdl.yaml` already exists, update only the `design` section — preserve everything else.
 
 ### Step 7.5: Update _state.json
 
@@ -161,6 +161,14 @@ After updating SDL and writing design-tokens.json, merge the design summary into
 ```
 
 This lets `prototype` and `scaffold-component` get the full palette and font config from `_state.json` without reading `design-tokens.json` or re-deriving the design direction.
+
+### Step 7.6: Log Activity
+
+Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"design-system","outcome":"completed","files":["architecture-output/design-system/design-tokens.json","architecture-output/design-system/design-brief.md","architecture-output/design-system/tailwind.config.patch.ts","architecture-output/design-system/component-inventory.md","architecture-output/_state.json"],"summary":"Design system generated: <personality> personality, <primary> primary, <heading>/<body> fonts."}
+```
 
 ### Step 8: Print Summary
 

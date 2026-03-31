@@ -139,7 +139,7 @@ top-level sections.** The only allowed root keys are:
 | Blob/file storage (S3, Azure Blob) | `data.storage` (blobs/files + provider) |
 | Message queues (RabbitMQ, SQS, Kafka) | `data.queues` (provider + useCase) |
 | Search engines (Elasticsearch, Algolia) | `data.search` (provider) |
-| Auth strategy (JWT, OAuth, session) | `auth.strategy` + `auth.provider` |
+| Auth strategy (JWT, OAuth, session) | `auth.strategy` |
 | User roles from RBAC code | `auth.roles[]` and `product.personas[]` |
 | Routes/pages/flows | `product.coreFlows[]` |
 | Payment provider (Stripe, etc.) | `integrations.payments` |
@@ -636,6 +636,10 @@ Write `intent.json` using the standard intent schema:
   and key findings — including the production hardening score (x/9)
 - If the codebase is too large to fully analyze, state assumptions explicitly
   and focus on the most architecturally significant parts
+- **Append to `architecture-output/_activity.jsonl`** after all files are written:
+  ```json
+  {"ts":"<ISO-8601>","phase":"import","outcome":"completed","files":["solution.sdl.yaml","intent.json","architecture-output/import-analysis.md","architecture-output/_state.json"],"summary":"Import complete: <N> components detected, <style> architecture, hardening <x>/9."}
+  ```
 
 ## Output Rules
 

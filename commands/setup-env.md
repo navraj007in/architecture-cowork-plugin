@@ -21,6 +21,9 @@ After generating a blueprint and scaffolding projects, this command walks throug
 - `tech_stack` → list of integrations (Stripe, SendGrid, etc.) to cross-reference against the accounts list
 - `components` → component directory names + ports for `.env.example` discovery
 
+**Then**, read `solution.sdl.yaml` and extract:
+- Read `architecture.services[].dependsOn[]` for each service — this lists the external providers and sibling services each service calls, which maps directly to which third-party credentials and service URLs each service needs in its `.env.example`
+
 **Then**, check if a blueprint with a Required Accounts list (deliverable 4m) or scaffolded projects with `.env.example` files exist.
 
 If neither exists, respond:
@@ -50,6 +53,8 @@ Ready to start? (yes / skip to specific service)
 ```
 
 ### Step 3: Delegate to Env Setup Agent
+
+When generating per-service environment variables: use `dependsOn[]` to ensure every external provider a service depends on has its corresponding env vars included (e.g. if a service depends on `stripe`, include `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`; if it depends on another service, include that service's `BASE_URL` variable).
 
 Pass the following to the **env-setup** agent:
 
@@ -82,6 +87,16 @@ Remaining TODOs:
 
 Run `/architect:setup-env` again anytime to configure skipped services.
 ```
+
+### Final Step: Log Activity
+
+Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"setup-env","outcome":"completed","files":[".env.example"],"summary":"Environment config generated: <N> services, <N> variables total."}
+```
+
+List all `.env.example` files generated (one per service if multi-service) in the `files` array.
 
 ## Output Rules
 

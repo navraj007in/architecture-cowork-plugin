@@ -45,9 +45,15 @@ SDL can be stored in two ways. **Always check both:**
 
 **The authoritative single-file SDL is always `solution.sdl.yaml` at the project root.** The `sdl/` directory is for human readability; the merged root file is what tooling uses.
 
+**Global SDL reading procedure** (all commands follow this):
+1. Check for `solution.sdl.yaml` in the project root — if it exists, use it
+2. If `solution.sdl.yaml` is missing, check for an `sdl/` directory — if it exists, read `sdl/README.md` first, then read the relevant module files
+3. Never read a file named `sdl.yaml` — this is a legacy filename. If found, treat it as `solution.sdl.yaml`
+4. When reading SDL for a specific concern (e.g., only `auth` section), use Grep on `solution.sdl.yaml` rather than reading the full file
+
 ## Design State — _state.json.design is Authoritative
 
-If `_state.json.design` is fully populated (has `primary`, `headingFont`, `bodyFont`, `personality`), it is the **authoritative source for all design decisions**. Commands MUST use it verbatim — never derive, re-invent, or override design direction from domain heuristics or training defaults.
+If `_state.json.design` is fully populated (has `primary`, `heading_font`, `body_font`, `personality`), it is the **authoritative source for all design decisions**. Commands MUST use it verbatim — never derive, re-invent, or override design direction from domain heuristics or training defaults.
 
 Only derive design from domain when `_state.json.design` is absent AND no `design-tokens.json` exists.
 

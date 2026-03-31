@@ -16,6 +16,8 @@ Assess how hard a product is to build using a structured 10-factor methodology. 
 
 ### Step 1: Understand the Product
 
+**First**, check `architecture-output/_state.json`. If it exists, read it in full — it provides instant access to `project`, `tech_stack`, `components`, `design`, `entities`, and `personas` without reading larger files. Use its values directly where available; fall back to SDL only for detail not in `_state.json`.
+
 If a description is provided, use it directly. If not, ask:
 
 > "What are you building? Describe the product and its key features so I can assess the build complexity."

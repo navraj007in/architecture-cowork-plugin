@@ -65,7 +65,7 @@ Also read these cross-cutting SDL sections for context:
 - `data` — database type, ORM, migrations
 
 Also read these deliverables if they exist for richer context:
-- `architecture-output/data-model.md` — entity schemas, relationships, indexes. **Only read this if the entity you need is NOT in `_state.json.entities`.** If reading, use Grep to find only the relevant entity/model section rather than reading the entire file.
+- `architecture-output/data-model.md` — entity schemas, relationships, indexes. **Only read this if the entity you need is NOT in `_state.json.entities`.** If reading, use Grep to find only the relevant entity/model section rather than reading the entire file. If `architecture-output/data-model.md` does not exist, fall back to `domain.entities[]` in `solution.sdl.yaml` for the entity name list. Field details will need to be inferred from context.
 - `architecture-output/mvp-scope.md` — prioritized features and user stories (if split, read the index file first)
 - `architecture-output/user-journeys.md` — core user flows
 - `architecture-output/user-personas.md` — who we're building for
@@ -145,7 +145,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 - **Routes/Controllers:** Implement ALL endpoints declared in SDL `interfaces`. Each route handler should: parse request params/body, call service layer, return typed response with correct HTTP status codes. Include input validation using zod or joi schemas.
 - **Models/Entities:** Generate complete schema definitions from SDL `dataModels` and the `solution.sdl.yaml` data section. Include all columns, types, constraints, relationships, indexes. Use the ORM specified in SDL (Prisma, Drizzle, TypeORM, Sequelize, SQLAlchemy, etc.).
 - **Services:** Implement actual CRUD logic (create, read, update, delete, list with pagination) for each resource. Include error handling (not found, duplicate, validation errors).
-- **Auth middleware:** Implement the strategy from SDL (JWT verification, API key check, OAuth token validation). Include role-based access control stubs if SDL declares roles.
+- **Auth middleware:** Implement the strategy from SDL (JWT verification, API key check, OAuth token validation). Include role-based access control stubs if SDL declares roles. Read `auth.serviceTokenModel` from SDL (jwt | session | api-key) to determine the correct token validation mechanism for backend middleware and the correct injection strategy for the frontend API client.
 - **Health check:** Check DB connectivity, cache connectivity, and any external service dependencies. Return structured JSON: `{ status, checks: { db: "ok", cache: "ok" }, uptime, version }`.
 - **Production hardening — REQUIRED on all backends:** Apply all 9 patterns for the component's runtime.
 
@@ -213,7 +213,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 - **Navigation:** Working sidebar/topbar navigation that routes between all pages. Active state highlighting. **Mobile responsive** — sidebar hidden on mobile (`hidden md:flex`) with hamburger button + slide-in drawer overlay. Bottom tab bar for mobile-first products.
 - **API client** (`src/lib/api.ts`): Typed functions for every backend endpoint. Read `skills/production-hardening/SKILL.md` Pattern 3 (Auth Token Interceptor) and Pattern 7 (Retry + Timeout) and implement both in `api.ts`:
   - Send `x-correlation-id: crypto.randomUUID()` on every request (Pattern 1 frontend integration)
-  - Inject Bearer token from the auth provider declared in SDL `auth.provider` (see provider matrix in skill)
+  - Inject Bearer token from the auth provider declared in SDL `auth.identityProvider` (see provider matrix in skill)
   - On 401: attempt token refresh once using the provider-appropriate refresh call, retry original request; redirect to `/login` on refresh failure
   - `AbortController` with 10s timeout on every request
   - 3 retries with exponential backoff (100/200/400ms) on 5xx and network errors; never retry on 4xx
@@ -323,6 +323,8 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 ### Step 4: Cross-Component Wiring
 
 After generating all files for the component:
+
+Read `architecture.services[].dependsOn[]` from the SDL for the component being scaffolded — this lists the other services and external providers it calls, which directly maps to the API client stubs and environment variables to generate.
 
 1. **API URLs:** If this component consumes another component's API, add the URL to `.env.example` as `{OTHER_SERVICE}_URL=http://localhost:{port}`
 2. **CORS / ALLOWED_ORIGINS (backends only):** For every backend/agent component, read the SDL to find all frontend components that list this backend as a dependency. Set `ALLOWED_ORIGINS` in `.env.example` to a comma-separated list of their `dev_port` URLs (e.g. `ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173`). For staging/production, use the frontend's environment domain from the SDL `environments` section. Never hardcode `http://localhost:3000` — always derive from the manifest.

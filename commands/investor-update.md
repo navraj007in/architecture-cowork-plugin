@@ -19,7 +19,7 @@ Generate a professional investor or stakeholder update template, pre-filled with
 Read in this order:
 
 1. `architecture-output/_state.json` — read first if it exists; provides compact `project` (name, description, stage), `tech_stack` (components and integrations), `mvp_scope` (must_have / wont_have), and `top_risks` (top 5 risks with scores and levels). Use these directly for sections 1, 3, 4, and 6 without reading full markdown files.
-2. **SDL file** (`solution.sdl.yaml` or `sdl.yaml`) — **only if `_state.json` is absent or lacks `project`/`tech_stack`**; read only the `solution` and `architecture.projects` sections (Grep for these) to get project name, description, stage, and component list
+2. **SDL file** (`solution.sdl.yaml`) — **only if `_state.json` is absent or lacks `project`/`tech_stack`**; read only the `solution` and `architecture.projects` sections (Grep for these) to get project name, description, stage, and component list
 3. **Cost estimate** — `architecture-output/cost-estimate.md` (if exists, typically small) — monthly infra costs
 4. **Scaffold report** — `.archon/scaffold-report.json` (if exists) — component build status, timestamps
 5. **Change requests** — `.archon/change-requests/cr-index.json` (if exists) — applied CRs with dates

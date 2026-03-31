@@ -51,9 +51,9 @@ Using the **sdl-knowledge** skill:
    - Validate against the 5 conditional rules
 
 4. **Save the SDL file to the project root directory:**
-   - Write the file as `sdl.yaml` in the project root (current working directory)
+   - Write the file as `solution.sdl.yaml` in the project root (current working directory)
    - Do NOT place it inside any `architecture/`, `artifacts/`, or `.arch0/` subfolder
-   - If an `sdl.yaml` already exists, confirm before overwriting
+   - If a `solution.sdl.yaml` already exists, confirm before overwriting
    - Also display the SDL as a YAML code block in the conversation:
 
 ```yaml
@@ -62,7 +62,7 @@ sdlVersion: "0.1"
 # ... complete SDL document
 ```
 
-   - Confirm: "SDL saved to `./sdl.yaml`"
+   - Confirm: "SDL saved to `./solution.sdl.yaml`"
 
 5. **Report validation summary:**
 
@@ -84,6 +84,24 @@ sdlVersion: "0.1"
 7. **Offer next steps:**
    - "Run `/architect:blueprint` to generate a full architecture blueprint from this SDL"
    - "Edit the SDL above and run `/architect:sdl validate` to re-check"
+
+8. **Update `architecture-output/_state.json`** — after saving the SDL file, merge project context into the state:
+   - Read existing `architecture-output/_state.json` (or start with `{}` if missing)
+   - Extract `solution`, `architecture`, `data`, `auth`, `deployment` sections from the SDL
+   - Write back merging only `project` and `tech_stack` fields:
+     ```json
+     {
+       "project": { "name": "...", "description": "...", "stage": "..." },
+       "tech_stack": {
+         "frontend": ["<framework>"],
+         "backend": ["<framework>"],
+         "database": "<primary db>",
+         "auth": "<identityProvider>",
+         "deployment": "<cloud>"
+       }
+     }
+     ```
+   - Follow the write rules in CLAUDE.md — do NOT overwrite fields owned by other commands
 
 ---
 
@@ -190,10 +208,10 @@ sdlVersion: "0.1"
 
 ## File Output Location
 
-- **Always save generated SDL to the project root directory** as `sdl.yaml`
+- **Always save generated SDL to the project root directory** as `solution.sdl.yaml`
 - The project root is the current working directory (where the user ran the command)
 - Never nest the SDL file inside `architecture/`, `artifacts/`, `output/`, or any other subfolder
-- For templates: save as `sdl.yaml` in the project root when the user confirms a template selection
+- For templates: save as `solution.sdl.yaml` in the project root when the user confirms a template selection
 - For validate/diff modes: no file output needed (read-only operations)
 
 ## Output Rules

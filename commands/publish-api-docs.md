@@ -16,6 +16,8 @@ After generating a blueprint with `/architect:blueprint`, this command takes the
 
 ### Step 1: Check for API Artifacts
 
+**First**, check `architecture-output/_state.json`. If it exists, read it in full — it provides instant access to `project`, `tech_stack`, `components`, `design`, `entities`, and `personas` without reading larger files. Use its values directly where available; fall back to SDL only for detail not in `_state.json`.
+
 Check if a blueprint with API artifacts (deliverable 4e) exists earlier in the conversation.
 
 If no blueprint or no API artifacts exist, respond:

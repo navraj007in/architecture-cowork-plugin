@@ -16,6 +16,8 @@ Generate rich visual representations of the architecture that go beyond static d
 
 ### Step 1: Read Architecture
 
+**First**, check `architecture-output/_state.json`. If it exists, read it in full — it provides instant access to `project`, `tech_stack`, `components`, `design`, `entities`, and `personas` without reading larger files. Use its values directly where available; fall back to SDL only for detail not in `_state.json`.
+
 Read the SDL file and extract:
 - All components with their type, runtime, framework, port, dependencies
 - Data section (databases, cache, queues)
