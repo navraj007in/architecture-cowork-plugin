@@ -5,11 +5,50 @@ description: Core Node.js patterns + cross-runtime reference. For Python see pyt
 
 # Production Hardening Patterns
 
-Nine mandatory patterns applied to every scaffolded backend service and frontend web app. Each section contains the canonical implementation — copy this code exactly when scaffolding. Do not invent variations. Apply the section for the component's runtime — Node.js, Python, .NET, or Go.
+Nine patterns applied to every scaffolded backend service and frontend web app. Each section contains the canonical implementation — copy this code exactly when scaffolding. Do not invent variations. Apply the section for the component's runtime — Node.js, Python, .NET, or Go.
 
 Reference: `skills/operational-patterns/SKILL.md` covers security architecture, OWASP, and observability stack selection. This file covers the concrete implementation patterns used at scaffold time.
 
 For runtime-specific implementations, read `skills/production-hardening/{runtime}.md` (Python: `python.md`, .NET: `dotnet.md`, Go: `go.md`). Claude CLI loads these automatically via --plugin-dir.
+
+---
+
+## scaffold_depth Gating
+
+Before applying patterns, resolve `scaffold_depth` from `solution.stage` in `solution.sdl.yaml`:
+
+| `solution.stage` | `scaffold_depth` |
+|---|---|
+| `concept` or `mvp` | `mvp` |
+| `growth` | `growth` |
+| `enterprise` | `enterprise` |
+
+Apply each pattern according to depth:
+
+| Pattern | MVP | Growth | Enterprise |
+|---|---|---|---|
+| 1 — Correlation ID | Required | Required | Required |
+| 2 — Graceful Shutdown | Required | Required | Required |
+| 3 — Auth Token Interceptor | Required | Required | Required |
+| 4 — Zod Validation | Required | Required | Required |
+| 5 — Deep Health Check | Required | Required | Required |
+| 6 — Structured Logger | Required | Required | Required |
+| 7 — Retry + Timeout | Timeout-only stub (TODO comment for backoff) | Full exponential backoff | Full exponential backoff + circuit breaker |
+| 8 — Soft Delete | Recommended — apply if entities exist, add TODO if skipping | Required on all models | Required on all models |
+| 9 — CSP | Required | Required | Required |
+
+**MVP stub pattern for Pattern 7** — when `scaffold_depth = mvp`, replace full backoff implementation with:
+```typescript
+// TODO: upgrade to exponential backoff at Growth stage
+const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 10_000);
+try {
+  const res = await fetch(url, { ...options, signal: controller.signal });
+  return res;
+} finally {
+  clearTimeout(timeout);
+}
+```
 
 ---
 

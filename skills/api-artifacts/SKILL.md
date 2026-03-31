@@ -538,12 +538,26 @@ scalar DateTime
 
 ## Artifact Output Format
 
-When generating artifacts in the blueprint, present each one in a fenced code block with the appropriate language tag:
+### Output Paths (canonical)
 
-- OpenAPI → ` ```yaml ` with filename comment `# {{service-name}}-openapi.yaml`
+Always write generated artifacts to these paths — the scaffolder reads from here for contract-first generation:
+
+| Artifact | Path |
+|---|---|
+| OpenAPI spec (REST) | `architecture-output/contracts/<service-name>.openapi.yaml` |
+| AsyncAPI spec (events) | `architecture-output/contracts/<service-name>.asyncapi.yaml` |
+| GraphQL schema | `architecture-output/contracts/<service-name>.graphql` |
+| Postman collection | `architecture-output/contracts/<service-name>.postman.json` |
+| Index of all contracts | `architecture-output/contracts/_index.md` |
+
+The `_index.md` file must list every generated contract file, its service name, and its type. The scaffolder reads this index to discover all contracts before generating route handlers.
+
+When generating artifacts in the blueprint, present each one in a fenced code block with the appropriate language tag alongside the canonical path:
+
+- OpenAPI → ` ```yaml ` with filename comment `# architecture-output/contracts/{{service-name}}.openapi.yaml`
 - Postman → ` ```json ` with filename comment at top
-- AsyncAPI → ` ```yaml ` with filename comment `# {{project-name}}-asyncapi.yaml`
-- GraphQL → ` ```graphql ` with filename comment `# {{service-name}}-schema.graphql`
+- AsyncAPI → ` ```yaml ` with filename comment `# architecture-output/contracts/{{service-name}}.asyncapi.yaml`
+- GraphQL → ` ```graphql ` with filename comment `# architecture-output/contracts/{{service-name}}.graphql`
 
 Always include a usage note after each artifact explaining how to import it into the relevant tool.
 

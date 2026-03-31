@@ -176,6 +176,59 @@ SENTRY_DSN="<SENTRY_DSN>"
 
 ---
 
+## Multi-Service Projects — Per-Service .env Scoping
+
+For projects with multiple backend services, each service gets its own `.env` containing **only the variables it actually uses**, derived from `architecture.services[].dependsOn[]` in `solution.sdl.yaml`.
+
+### Step 0: Read dependsOn[] from SDL
+
+Before generating any `.env` files, read `architecture.services[]` from `solution.sdl.yaml`:
+
+```yaml
+architecture:
+  services:
+    - name: api-server
+      dependsOn: [stripe, sendgrid, postgres]
+    - name: worker
+      dependsOn: [postgres, redis, sendgrid]
+    - name: web-app
+      dependsOn: [api-server]
+```
+
+Build a per-service variable map:
+
+| Service | Gets these variable groups |
+|---|---|
+| `api-server` | DATABASE_URL, STRIPE_*, SENDGRID_* |
+| `worker` | DATABASE_URL, REDIS_URL, SENDGRID_* |
+| `web-app` | NEXT_PUBLIC_API_URL (pointing to api-server) |
+
+**Rules:**
+- A service that `dependsOn: [stripe]` gets `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- A service that `dependsOn: [another-service]` gets `<SERVICE_NAME>_URL` pointing to that sibling
+- Shared infrastructure vars (`DATABASE_URL`, `REDIS_URL`) only go to services that declare that dependency
+- Never write Stripe keys into a service that doesn't call Stripe
+- If `dependsOn[]` is absent from SDL, fall back to a single shared `.env` for all services
+
+### Per-Service Output Structure
+
+```
+<project-root>/
+├── api-server/
+│   ├── .env.example    ← only api-server vars
+│   └── .env.local
+├── worker/
+│   ├── .env.example    ← only worker vars
+│   └── .env.local
+└── web-app/
+    ├── .env.example    ← only web-app vars (NEXT_PUBLIC_*)
+    └── .env.local
+```
+
+Shared secrets (e.g. `DATABASE_URL`) appear in each service that needs them — ask the user for the value once and replicate to all relevant `.env` files.
+
+---
+
 ## How It Works
 
 ### Step 1: Extract Variables from Blueprint

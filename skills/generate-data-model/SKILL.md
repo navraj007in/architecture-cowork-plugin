@@ -136,6 +136,50 @@ enum Priority {
 }
 ```
 
+### Prisma — Soft Delete (required on every model)
+
+Add `deletedAt` to every model and a transparent Prisma middleware that filters deleted records automatically:
+
+```prisma
+model Tenant {
+  // ... existing fields ...
+  deletedAt DateTime?           // ← add to every model
+  @@index([deletedAt])          // ← index for filter performance
+}
+```
+
+```typescript
+// src/lib/prisma.ts
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+// Transparent soft-delete filter — applies to all findMany/findFirst/findUnique
+prisma.$use(async (params, next) => {
+  const modelsWithSoftDelete = ['Tenant', 'User', 'Ticket']; // list all models
+  if (modelsWithSoftDelete.includes(params.model ?? '')) {
+    if (['findMany', 'findFirst', 'findUnique', 'count'].includes(params.action)) {
+      params.args.where = { ...params.args.where, deletedAt: null };
+    }
+    if (['delete'].includes(params.action)) {
+      params.action = 'update';
+      params.args.data = { deletedAt: new Date() };
+    }
+    if (['deleteMany'].includes(params.action)) {
+      params.action = 'updateMany';
+      params.args.data = { deletedAt: new Date() };
+    }
+  }
+  return next(params);
+});
+
+export default prisma;
+```
+
+See `skills/production-hardening/SKILL.md` Pattern 8 for the full implementation including unique constraint handling.
+
+---
+
 ### 2. Drizzle ORM (Recommended for Edge, Serverless)
 
 **Output**: `db/schema.ts`, `db/migrations/`
@@ -214,6 +258,34 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
   comments: many(comments),
 }));
 ```
+
+### Drizzle — Soft Delete (required on every table)
+
+Add `deletedAt` to every table and a `withSoftDelete` query helper:
+
+```typescript
+// db/schema.ts — add to every table
+export const tenants = pgTable('tenants', {
+  // ... existing columns ...
+  deletedAt: timestamp('deleted_at'),           // ← add to every table
+}, (table) => ({
+  // ... existing indexes ...
+  deletedAtIdx: index('tenants_deleted_at_idx').on(table.deletedAt),
+}));
+
+// db/helpers.ts
+import { isNull } from 'drizzle-orm';
+
+export function withSoftDelete<T extends { deletedAt: unknown }>(table: T) {
+  return isNull(table.deletedAt);
+}
+
+// Usage in queries:
+// db.select().from(tenants).where(withSoftDelete(tenants))
+// Never call .delete() — use: db.update(tenants).set({ deletedAt: new Date() }).where(eq(tenants.id, id))
+```
+
+---
 
 ### 3. TypeORM (For Enterprise, Java-like patterns)
 
