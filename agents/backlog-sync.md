@@ -224,7 +224,34 @@ curl -s -X POST \
   }'
 ```
 
-### 7. Report Results
+### 7. Update _state.json
+
+After all items are created, merge into `architecture-output/_state.json`:
+
+1. Read existing `architecture-output/_state.json` (or start with `{}`)
+2. Set the `backlog_sync` key:
+   ```json
+   {
+     "backlog_sync": {
+       "platform": "azure-devops|jira",
+       "synced_at": "<ISO-8601>",
+       "sprints": <total-sprint-count>,
+       "stories": <total-story-count>,
+       "board_url": "<board-url-if-available>"
+     }
+   }
+   ```
+3. Write back without overwriting other fields
+
+### 7.5. Log Activity
+
+Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"backlog-sync","outcome":"completed","files":[],"summary":"Backlog synced to <platform>: <N> sprints, <N> stories, <N> epics created."}
+```
+
+### 8. Report Results
 
 After syncing, report:
 

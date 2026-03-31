@@ -27,7 +27,7 @@ Use this skill when you need to:
 - Share schema with frontend/backend teams
 - Initialize database for new project
 
-**Input**: Architecture blueprint (Section 4: Database Schema)
+**Input**: `domain.entities[]` from `solution.sdl.yaml` (primary), with fallback to manifest shared types and blueprint Section 4
 **Output**: ORM schema files, migration files, seed data
 
 ---
@@ -239,9 +239,18 @@ export const ticketsRelations = relations(tickets, ({ one, many }) => ({
 
 ## How It Works
 
-### Step 1: Parse Database Schema from Blueprint
+### Step 1: Resolve Entity Inventory
 
-Extract from **Section 4: Database Schema**:
+**Primary source**: Read `domain.entities[]` from `solution.sdl.yaml` — this is the authoritative entity list. Each entry is a PascalCase entity name (e.g. `User`, `Order`, `Product`).
+
+**Fallback order** (if `domain.entities[]` is absent):
+1. `_state.json.entities` — already-extracted entity summaries
+2. Shared types from the manifest (`shared.types[]`)
+3. Blueprint Section 4 markdown (legacy format, shown below for reference)
+
+**The `data:` section of SDL describes database infrastructure (type, hosting, indexes) — never extract entity names from it.**
+
+When using blueprint markdown as fallback, extract from **Section 4: Database Schema**:
 
 ```markdown
 ## Database Schema

@@ -83,7 +83,7 @@ architecture:
 
 auth:
   strategy: "oidc"
-  provider: "auth0"
+  identityProvider: "auth0"
   roles:
     - "user"
     - "admin"
@@ -236,7 +236,7 @@ architecture:
 
 auth:
   strategy: "oidc"
-  provider: "cognito"
+  identityProvider: "cognito"
   roles:
     - "shopper"
     - "seller"
@@ -349,7 +349,7 @@ architecture:
 
 auth:
   strategy: "oidc"
-  provider: "firebase"
+  identityProvider: "firebase"
   socialProviders:
     - "google"
     - "apple"
@@ -434,7 +434,7 @@ architecture:
 
 auth:
   strategy: "oidc"
-  provider: "entra-id"
+  identityProvider: "entra-id"
   roles:
     - "staff"
     - "manager"
@@ -617,7 +617,7 @@ architecture:
 
 auth:
   strategy: "oidc"
-  provider: "auth0"
+  identityProvider: "auth0"
   roles:
     - "developer"
     - "admin"
@@ -706,7 +706,7 @@ architecture:
 
 auth:
   strategy: "oidc"
-  provider: "auth0"
+  identityProvider: "auth0"
   roles:
     - "buyer"
     - "seller"
@@ -811,7 +811,7 @@ architecture:
 
 auth:
   strategy: "oidc"
-  provider: "auth0"
+  identityProvider: "auth0"
   roles:
     - "operator"
     - "manager"
@@ -891,7 +891,7 @@ architecture:
 
 auth:
   strategy: "oidc"
-  provider: "auth0"
+  identityProvider: "auth0"
   roles:
     - "user"
     - "admin"
@@ -1010,7 +1010,7 @@ architecture:
 
 auth:
   strategy: "oidc"
-  provider: "clerk"
+  identityProvider: "clerk"
   roles:
     - "viewer"
     - "editor"

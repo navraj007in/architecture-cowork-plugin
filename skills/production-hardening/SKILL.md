@@ -383,7 +383,7 @@ export const ListQuerySchema = z.object({
 export const CreateResourceSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().max(2000).optional(),
-  // Add fields from SDL dataModels
+  // Add fields from domain.entities[] in solution.sdl.yaml
 });
 
 // Update body — all fields optional

@@ -102,7 +102,7 @@ architecture:
 ```yaml
 auth:
   strategy: enum             # Required. oidc | passwordless | magic-link | api-key | none
-  provider: enum             # Optional. cognito | auth0 | entra-id | entra-id-b2c | firebase | supabase | clerk | custom
+  identityProvider: enum     # Optional. cognito | auth0 | entra-id | entra-id-b2c | firebase | supabase | clerk | custom
   roles: string[]            # Optional
   sessions:                  # Optional
     accessToken: enum        # Optional. jwt | opaque

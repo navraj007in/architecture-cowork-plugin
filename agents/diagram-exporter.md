@@ -130,6 +130,16 @@ To edit diagrams: modify the .mmd source files and re-render with:
   npx mmdc -i <file>.mmd -o <file>.png
 ```
 
+### 7. Log Activity
+
+Append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"export-diagrams","outcome":"completed","files":["diagrams/light/solution-architecture.png","diagrams/dark/solution-architecture.png"],"summary":"Diagrams exported: <N> diagrams, <N> files (PNG + SVG, light + dark variants)."}
+```
+
+List all generated image files (both light and dark variants) in the `files` array.
+
 ## Error Handling
 
 - If `mmdc` CLI is not available and can't be installed, use mermaid.ink API
