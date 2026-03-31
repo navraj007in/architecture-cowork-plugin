@@ -117,6 +117,38 @@ Only derive design from domain when `_state.json.design` is absent AND no `desig
 }
 ```
 
+### Schema Enforcement Rules
+
+These field names are canonical. Commands MUST use exactly these names — no aliases, no camelCase variants:
+
+| Field path | Type | Notes |
+|------------|------|-------|
+| `project.name` | string | |
+| `project.description` | string | |
+| `project.type` | `"app"\|"agent"\|"hybrid"` | |
+| `project.stage` | `"concept"\|"mvp"\|"growth"\|"enterprise"` | |
+| `tech_stack.frontend` | string[] | |
+| `tech_stack.backend` | string[] | |
+| `tech_stack.database` | string | |
+| `tech_stack.auth` | string | identity provider name |
+| `tech_stack.deployment` | string | |
+| `tech_stack.integrations` | string[] | |
+| `components[].name` | string | |
+| `components[].type` | string | |
+| `components[].port` | number | |
+| `components[].framework` | string | |
+| `design.personality` | string | |
+| `design.primary` | string | hex — NOT `primary_color` |
+| `design.heading_font` | string | snake_case — NOT `headingFont` |
+| `design.body_font` | string | snake_case — NOT `bodyFont` |
+| `design.mono_font` | string | snake_case — NOT `monoFont` |
+| `design.icon_library` | string | snake_case — NOT `iconLibrary` |
+| `design.component_library` | string | snake_case — NOT `componentLibrary` |
+| `design.tokens_file` | string | relative path |
+| `blueprint.deepen_passes` | number | starts at 0 |
+
+Any command that reads a field must use the exact name above. Any command that writes a field must use the exact name above. There are no acceptable aliases.
+
 ### Read rules
 
 - **Always check `_state.json` first** before reading large markdown files
@@ -135,13 +167,25 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | Command | Fields it writes |
 |---------|-----------------|
 | `import` | `project`, `tech_stack`, `components`, `design` (from reverse-engineered SDL) |
-| `blueprint` | `project`, `tech_stack`, `components`, `design` (initial values from SDL) |
+| `blueprint` | `project`, `tech_stack`, `components`, `design` (initial values from SDL), `blueprint.deepen_passes` |
+| `sdl` | `project`, `tech_stack` (Mode 1 generate only) |
 | `design-system` | `design` (full palette, fonts, tokens — overwrites blueprint's initial values) |
 | `generate-data-model` | `entities` |
 | `user-personas` | `personas` |
 | `deep-research` | `market_research` |
 | `mvp-scope` | `mvp_scope` |
 | `risk-register` | `top_risks` |
+| `prototype` | `prototype` (`screens`, `personality`, `component_library`, `complete`) |
+| `prototype-iterate` | `prototype.screens` (updates screen count only) |
+| `sync-backlog` | `backlog_sync` (`platform`, `synced_at`, `sprints`, `stories`, `board_url`) |
+| `technical-roadmap` | `roadmap` (`generated_at`, `phases`) |
+| `problem-validation` | `problem_validation` (`generated_at`, `validated`) |
+| `user-journeys` | `user_journeys` (`generated_at`, `journey_count`) |
+| `launch-checklist` | `launch_checklist` (`generated_at`, `item_count`) |
+| `pitch-deck` | `pitch_deck` (`generated_at`) |
+| `investor-update` | `investor_update` (`generated_at`) |
+| `onboarding-pack` | `onboarding_pack` (`generated_at`) |
+| `hiring-brief` | `hiring_brief` (`generated_at`) |
 
 ## Format Constraints by Command
 
