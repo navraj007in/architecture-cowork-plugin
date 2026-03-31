@@ -68,7 +68,7 @@ try
     {
         options.AddDefaultPolicy(policy =>
         {
-            var origins = builder.Configuration["CorsOrigins"]?.Split(",")
+            var origins = builder.Configuration["AllowedOrigins"]?.Split(",")
                 ?? ["http://localhost:3000"];
             policy.WithOrigins(origins)
                   .AllowAnyHeader()
@@ -245,7 +245,7 @@ public abstract class BaseEntity
   "ConnectionStrings": {
     "Default": ""
   },
-  "CorsOrigins": "http://localhost:3000"
+  "AllowedOrigins": "http://localhost:3000"
 }
 ```
 
@@ -261,7 +261,7 @@ public abstract class BaseEntity
 Environment variable override (double-underscore notation):
 ```bash
 ConnectionStrings__Default=Host=...
-CorsOrigins=https://app.example.com
+AllowedOrigins=https://app.example.com
 ```
 
 ---
@@ -489,7 +489,7 @@ secrets.json
 ```bash
 ASPNETCORE_ENVIRONMENT=Development
 ConnectionStrings__Default=Host=localhost;Port=5432;Database={{component-name}}_dev;Username=postgres;Password=postgres
-CorsOrigins=http://localhost:3000
+AllowedOrigins=http://localhost:3000
 
 # STAGING: {{staging-url}}
 # PRODUCTION: {{production-url}}

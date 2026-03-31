@@ -51,7 +51,7 @@ func main() {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{os.Getenv("CORS_ORIGINS")},
+		AllowOrigins:     []string{os.Getenv("ALLOWED_ORIGINS")},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -151,7 +151,7 @@ func Load() (*Config, error) {
 	return &Config{
 		Port:        getEnv("PORT", "8080"),
 		DatabaseURL: dbURL,
-		CorsOrigins: getEnv("CORS_ORIGINS", "http://localhost:3000"),
+		CorsOrigins: getEnv("ALLOWED_ORIGINS", "http://localhost:3000"),
 		Env:         getEnv("APP_ENV", "development"),
 	}, nil
 }
@@ -455,7 +455,7 @@ vendor/
 PORT=8080
 APP_ENV=development
 DATABASE_URL=postgres://user:password@localhost:5432/{{component-name}}_dev?sslmode=disable
-CORS_ORIGINS=http://localhost:3000
+ALLOWED_ORIGINS=http://localhost:3000
 
 # STAGING: {{staging-url}}
 # PRODUCTION: {{production-url}}

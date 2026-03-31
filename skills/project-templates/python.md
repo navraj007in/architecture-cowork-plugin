@@ -62,7 +62,7 @@ app = FastAPI(title="{{component-name}}", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -106,9 +106,9 @@ class Settings(BaseSettings):
     port: int = 8000
     app_env: str = "development"
     database_url: str = ""
-    cors_origins: list[str] = ["http://localhost:3000"]
+    allowed_origins: list[str] = ["http://localhost:3000"]
 
-    @field_validator("cors_origins", mode="before")
+    @field_validator("allowed_origins", mode="before")
     @classmethod
     def parse_cors(cls, v: str | list[str]) -> list[str]:
         if isinstance(v, str):

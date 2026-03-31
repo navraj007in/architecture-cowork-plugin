@@ -325,9 +325,10 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 After generating all files for the component:
 
 1. **API URLs:** If this component consumes another component's API, add the URL to `.env.example` as `{OTHER_SERVICE}_URL=http://localhost:{port}`
-2. **Shared types:** If SDL has a `shared` section, import types from the shared package (use relative paths or package name)
-3. **Auth tokens:** If this component authenticates against another service, include token passing in the API client
-4. **Docker networking:** In `docker-compose.yml`, reference other services by name for inter-service communication
+2. **CORS / ALLOWED_ORIGINS (backends only):** For every backend/agent component, read the SDL to find all frontend components that list this backend as a dependency. Set `ALLOWED_ORIGINS` in `.env.example` to a comma-separated list of their `dev_port` URLs (e.g. `ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173`). For staging/production, use the frontend's environment domain from the SDL `environments` section. Never hardcode `http://localhost:3000` — always derive from the manifest.
+3. **Shared types:** If SDL has a `shared` section, import types from the shared package (use relative paths or package name)
+4. **Auth tokens:** If this component authenticates against another service, include token passing in the API client
+5. **Docker networking:** In `docker-compose.yml`, reference other services by name for inter-service communication
 
 ### Step 5: Verify — Install, Build, and Fix
 

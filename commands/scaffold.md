@@ -271,7 +271,7 @@ Scaffold complete! Here's what was created:
 
 Each project has:
 - Framework starter code with folder structure matching the architecture pattern
-- Security middleware: CORS from `ALLOWED_ORIGINS`, helmet with environment-specific CSP directives, rate limiting
+- Security middleware: CORS from `ALLOWED_ORIGINS` (set to sibling frontend `dev_port` URLs derived from SDL — never hardcoded), helmet with environment-specific CSP directives, rate limiting
 - Auth token interceptor in frontend API client: Bearer token injection, 401 → refresh → retry, redirect on refresh failure
 - Health check endpoints: actual DB (`SELECT 1`) and cache (`PING`) checks, `{ status, uptime, version, memory, checks }` JSON, 503 on critical failure
 - Structured logging: pino JSON in prod, pino-pretty in dev; correlationId on every log line; zero console.log
