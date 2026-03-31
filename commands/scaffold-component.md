@@ -147,7 +147,15 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 - **Services:** Implement actual CRUD logic (create, read, update, delete, list with pagination) for each resource. Include error handling (not found, duplicate, validation errors).
 - **Auth middleware:** Implement the strategy from SDL (JWT verification, API key check, OAuth token validation). Include role-based access control stubs if SDL declares roles.
 - **Health check:** Check DB connectivity, cache connectivity, and any external service dependencies. Return structured JSON: `{ status, checks: { db: "ok", cache: "ok" }, uptime, version }`.
-- **Production hardening — REQUIRED on all Node.js backends:** Read `skills/production-hardening/SKILL.md` and apply all 9 patterns. Specifically:
+- **Production hardening — REQUIRED on all backends:** Apply all 9 patterns for the component's runtime.
+
+  **Runtime-specific implementations:** When scaffolding a non-Node.js component, read the matching file before generating hardening code:
+  - Python/FastAPI: `skills/production-hardening/python.md`
+  - .NET: `skills/production-hardening/dotnet.md`
+  - Go: `skills/production-hardening/go.md`
+  - Node.js: patterns in `skills/production-hardening/SKILL.md` (already loaded)
+
+  Specifically:
   - **Correlation ID** (`src/middleware/correlation-id.ts`): generate/forward `x-correlation-id` on every request. Mount BEFORE logger middleware.
   - **Graceful shutdown** (`src/index.ts`): handle SIGTERM/SIGINT, drain HTTP server, disconnect Prisma, quit Redis, force-exit after 10s. Set `app.locals.isShuttingDown = true` on shutdown start.
   - **Validation** (`src/schemas/`, `src/middleware/validate.ts`): Validate all request inputs using the runtime-appropriate schema library: `zod` (Node.js), Pydantic (Python — built into FastAPI), FluentValidation (.NET), `go-playground/validator` (Go). Return 400 with structured error details on failure. Also validate env vars at startup — fail fast with a clear error if required vars are missing.
