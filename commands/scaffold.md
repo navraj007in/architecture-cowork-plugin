@@ -140,12 +140,106 @@ Check if the design-system phase has been completed:
 
 **If neither exists**, note this in the scaffolder handoff — the scaffolder should infer domain-appropriate defaults from `design-systems.md` (NEVER default to indigo/purple).
 
-Also load `skills/production-hardening/SKILL.md` — the scaffolder applies all 9 production hardening patterns to every Node.js backend and React/Next.js frontend during scaffold generation.
+Also load `skills/production-hardening/SKILL.md` — the scaffolder applies production hardening patterns to every Node.js backend and React/Next.js frontend during scaffold generation. Which patterns are required vs deferred depends on `solution.stage` (resolved in Step 3.6 below).
 
 Inform the user:
 
 - If design tokens found: `"Design system detected — your scaffolded frontends will use your design tokens."`
 - If no design system: `"Tip: Run /architect:design-system first to get a custom design language. Scaffolding will use domain defaults for now."`
+
+### Step 3.6: Stage-Aware Depth Resolution
+
+Read `solution.stage` from `architecture-output/_state.json` (field `project.stage`) or directly from `solution.sdl.yaml` if `_state.json` is absent.
+
+Map stage to `scaffold_depth`:
+
+| `solution.stage` | `scaffold_depth` |
+|-----------------|-----------------|
+| `concept` | `mvp` |
+| `mvp` | `mvp` |
+| `growth` | `growth` |
+| `enterprise` | `enterprise` |
+
+**Hardening pattern depth by stage:**
+
+| Pattern | MVP | Growth | Enterprise |
+|---------|-----|--------|------------|
+| Correlation ID propagation | ✓ Required | ✓ Required | ✓ Required |
+| Graceful shutdown | ✓ Required | ✓ Required | ✓ Required |
+| Structured logging (pino/zerolog/serilog) | ✓ Required | ✓ Required | ✓ Required |
+| Health check endpoint (with real DB probe) | ✓ Required | ✓ Required | ✓ Required |
+| CORS + Helmet/security headers | ✓ Required | ✓ Required | ✓ Required |
+| Input validation (Zod/FluentValidation) | ✓ Required | ✓ Required | ✓ Required |
+| Auth token interceptor (frontend) | ✓ Required | ✓ Required | ✓ Required |
+| Rate limiting | `// TODO: configure rate limits` stub only | ✓ Required | ✓ Required |
+| Retry + timeout on outbound HTTP | Timeout only (AbortController, no backoff) | ✓ Full (timeout + 3-attempt exponential backoff) | ✓ Full |
+| Soft delete (`deletedAt` + ORM middleware) | Recommended — generate only if SDL has `softDelete: true` | ✓ Required | ✓ Required |
+| Queue consumers (BullMQ/Celery) | Generate only if SDL explicitly declares `data.queues` | ✓ Required if SDL has queues | ✓ Required |
+| Prometheus metrics endpoint | Omit | Recommended — generate `/metrics` stub | ✓ Required |
+| CI/CD pipeline | Single environment (dev → build → test) | Two environments (+ staging deploy) | Full matrix (dev → staging → production, matrix runners) |
+| Docker Compose | Dev databases + services only | Dev stack + monitoring (Prometheus/Grafana) | Full stack including load balancer stub |
+| Error tracking (Sentry SDK) | Optional — add `SENTRY_DSN` to `.env.example` with comment | ✓ Required — wire SDK at app startup | ✓ Required |
+
+**Rules:**
+- Pass `scaffold_depth` to the scaffolder agent in Step 4
+- For MVP, wherever a pattern is deferred, leave a `// TODO (growth): add X` comment at the exact location where it would be wired in
+- Never omit patterns 1–7 regardless of stage — these are always required
+- If `solution.stage` is absent, default to `mvp`
+
+Print one line to the user:
+```
+Stage: MVP → using lean scaffold (patterns 1–7 required, rate limiting and retry stubbed for later)
+```
+
+### Step 3.7: Contract Generation (Pre-Scaffold)
+
+Before scaffolding any code, generate an OpenAPI 3.1 contract for every backend service. These contracts become the source of truth for route definitions and cross-service clients — the scaffolder generates code FROM these specs, not the other way around.
+
+**For each service with `type: rest-api` or `type: graphql`:**
+
+1. Extract from SDL / manifest:
+   - `interfaces[]` — endpoint definitions (method, path, auth, request/response shapes)
+   - `product.personas[]` — to infer access levels (public / authenticated / admin)
+   - `dependsOn[]` — which other services call this one (affects security scheme)
+   - Entity names from `domain.entities[]` — to build schema objects
+
+2. Generate an OpenAPI 3.1 YAML spec with:
+   - `info`: service name, description, version `"0.1.0"`, contact from SDL
+   - `servers`: `[{ url: "http://localhost:{port}", description: "Local" }]`
+   - `security`: bearer JWT if auth is enabled; API key if `serviceTokenModel: api-key`
+   - `paths`: one entry per interface endpoint — include request body schema (JSON Schema inlined), response schemas (200, 400, 401, 404, 500), and `operationId`
+   - `components.schemas`: one schema per domain entity owned by this service — fields inferred from entity name and context (not detailed ORM schemas; those come from generate-data-model)
+   - `components.securitySchemes`: based on `auth.serviceTokenModel`
+
+3. Write to `architecture-output/contracts/<service-name>.openapi.yaml`
+
+4. For each inter-service dependency in `dependsOn[]`:
+   - Read the dependency's generated OpenAPI spec
+   - Generate a typed client interface file: `architecture-output/contracts/<caller>-calls-<dependency>.client.ts` (TypeScript) or equivalent for the caller's language
+   - Client interface contains one typed function per endpoint the caller actually needs (based on SDL flow analysis)
+   - These client files are passed to the scaffolder and placed at `src/lib/clients/<dependency>-client.ts` in the caller's scaffold
+
+5. Write `architecture-output/contracts/_index.md` listing all generated contracts:
+   ```markdown
+   # Service Contracts
+   | Service | Contract File | Endpoints | Callers |
+   |---------|--------------|-----------|---------|
+   | api-server | contracts/api-server.openapi.yaml | 12 | web-app, worker-service |
+   ```
+
+**Rules:**
+- If a service has no `interfaces[]` defined in SDL: generate a minimal OpenAPI with a single `GET /health` path and a `// TODO: add endpoints` comment in the paths section
+- For GraphQL services: generate a GraphQL SDL schema file instead (`<service>.graphql`) — not OpenAPI
+- Do NOT generate contracts for non-API services (workers, agents, databases, mobile apps)
+- If contracts already exist in `architecture-output/contracts/` from a prior run, diff them against what would be generated — only overwrite if SDL has changed since last generation; otherwise skip and reuse
+
+Inform the user:
+```
+Contracts generated:
+  ✓ api-server.openapi.yaml — 12 endpoints
+  ✓ worker-service.openapi.yaml — 3 endpoints (health + 2 worker triggers)
+  ✓ web-app-calls-api-server.client.ts — typed client (8 operations)
+```
 
 ### Step 4: Delegate to Scaffolder Agent
 
@@ -185,11 +279,16 @@ Pass the following to the **scaffolder** agent:
 - Per-frontend config: build_tool, rendering, state_management, data_fetching, component_library, form_handling, validation, animation, api_client, backend_connections, client_auth, realtime, monitoring, deploy_target, dev_port
 - Per-mobile config: build_platform, navigation, push_notifications, deep_linking, permissions, ota_updates, realtime (protocol + provider), bundle_id, client_auth (token_storage, device_binding, biometric)
 - `environments` section — for generating `.env.example` files with per-environment URL placeholders
+- **`scaffold_depth`** (`"mvp"` | `"growth"` | `"enterprise"`) — resolved in Step 3.6. The scaffolder MUST consult the depth table to determine which patterns are required, stubbed, or omitted for this stage.
+- **Contract files** from Step 3.7:
+  - Per-service OpenAPI specs: `architecture-output/contracts/<service>.openapi.yaml` — scaffolder generates route handlers and type definitions FROM these specs (routes declared in the spec are the authoritative list; don't invent additional routes from SDL inference alone)
+  - Cross-service client files: `architecture-output/contracts/<caller>-calls-<dependency>.client.ts` — place these at `src/lib/clients/<dependency>-client.ts` in the caller's directory instead of generating ad-hoc clients
+  - Contract index: `architecture-output/contracts/_index.md`
 - **Design system artifacts** (if available):
   - `design-tokens.json` — full token set for Tailwind config generation
   - `tailwind.config.patch.ts` — ready-to-merge Tailwind extensions
   - SDL `design` section — preset, personality, palette, typography, shape, motion, layout, icons, accessibility
-- **Production hardening requirements** — all 9 patterns from `skills/production-hardening/SKILL.md` must be applied to every backend and frontend component regardless of SDL values: correlation ID, graceful shutdown, structured logging, health checks (with real DB probe), auth token interceptor, rate limiting, CORS from `ALLOWED_ORIGINS`, input validation, retry+timeout on all outbound HTTP
+- **Production hardening requirements** — apply patterns from `skills/production-hardening/SKILL.md` at the depth specified by `scaffold_depth`. Patterns 1–7 (correlation ID, graceful shutdown, structured logging, health checks, CORS/Helmet, input validation, auth token interceptor) are always required. Patterns 8–9 and optional features follow the depth table in Step 3.6.
 
 #### Frontend Design Integration (when design tokens are available)
 
@@ -266,6 +365,48 @@ Rules for both levels:
 - Single JSON object per line, no pretty-printing
 - `outcome` on project entry: `completed` if all succeeded, `partial` if some failed, `failed` if none succeeded
 
+### Step 5.5: Build Verification
+
+After all files are written and activity logs are recorded, run a build verification pass for each scaffolded component. The goal is to surface TypeScript errors, missing imports, and config issues immediately — not after the user tries to run the project.
+
+**Verification command by runtime:**
+
+| Runtime | Verification Command | What it checks |
+|---------|---------------------|----------------|
+| Node.js / TypeScript | `npx tsc --noEmit` in component root | Type errors, missing imports, tsconfig issues |
+| Next.js | `npx next build --dry-run` or `npx tsc --noEmit` | Same as above |
+| Python / FastAPI | `python -m py_compile $(find src -name "*.py")` | Syntax errors |
+| Go | `go build ./...` in component root | Compilation errors |
+| .NET | `dotnet build --no-restore` in component root | Build errors |
+| React Native | `npx tsc --noEmit` | Type errors |
+| Flutter | `flutter analyze` | Analysis issues |
+
+**For each component:**
+
+1. Check whether the runtime is installed (`node --version`, `python3 --version`, `go version`, `dotnet --version`)
+2. If the runtime is available AND dependencies were installed (Step 3 config): run the verification command
+3. If the runtime is not available or dependencies were not installed: skip and note it in the report
+
+**Parse the output:**
+- 0 errors → ✅ pass
+- Errors found → capture the first 5 error lines (truncate the rest with "and N more errors")
+
+**Update the component-level activity log entry** with the verification result — append a new line (don't modify the scaffold entry):
+
+```json
+{"ts":"<ISO-8601>","phase":"build-verify","status":"pass|fail|skipped","errors":[],"summary":"tsc --noEmit: 0 errors"}
+```
+
+For failures:
+```json
+{"ts":"<ISO-8601>","phase":"build-verify","status":"fail","errors":["src/index.ts(12,5): error TS2304: Cannot find name 'X'"],"summary":"tsc --noEmit: 3 errors — review src/index.ts"}
+```
+
+**Rules:**
+- Verification is best-effort — a failure does NOT block the scaffold summary or mark the scaffold as failed
+- If verification cannot run (missing runtime, skipped deps install), note it clearly but don't treat it as a failure
+- For augment-mode components: only verify files that were ADDED, not the whole project (too slow and would surface pre-existing errors the user owns)
+
 ### Step 6: Print Summary
 
 After logging activity, print a summary:
@@ -273,44 +414,58 @@ After logging activity, print a summary:
 ```
 Scaffold complete! Here's what was created:
 
-| # | Component | Framework | Path | Status |
-|---|-----------|-----------|------|--------|
-| 1 | web-app | Next.js | ./web-app | Created |
-| 2 | api-server | .NET | ./api-server | Augmented (existing code preserved) |
-| 3 | worker-service | BullMQ | ./worker-service | Created |
-| 4 | mobile-app | Expo | ./mobile-app | Created |
-| 5 | support-agent | FastAPI | ./support-agent | Created |
+Stage: MVP — lean scaffold applied (patterns 1–7 required; rate limiting and retry stubbed)
+
+| # | Component | Framework | Path | Status | Build |
+|---|-----------|-----------|------|--------|-------|
+| 1 | web-app | Next.js | ./web-app | Created | ✅ tsc: 0 errors |
+| 2 | api-server | .NET | ./api-server | Augmented | ✅ dotnet build: 0 errors |
+| 3 | worker-service | BullMQ | ./worker-service | Created | ⚠ tsc: 2 errors (see below) |
+| 4 | mobile-app | Expo | ./mobile-app | Created | ⏭ skipped (deps not installed) |
+| 5 | support-agent | FastAPI | ./support-agent | Created | ✅ py_compile: 0 errors |
+
+Contracts generated:
+  architecture-output/contracts/api-server.openapi.yaml — 12 endpoints
+  architecture-output/contracts/worker-service.openapi.yaml — 3 endpoints
+  architecture-output/contracts/web-app-calls-api-server.client.ts — typed client (8 operations)
+
+Build errors to fix:
+  worker-service/src/jobs/email.ts(14,3): error TS2304: Cannot find name 'EmailPayload'
+  worker-service/src/jobs/email.ts(28,7): error TS2345: Argument of type ...
 
 Each project has:
 - Framework starter code with folder structure matching the architecture pattern
-- Security middleware: CORS from `ALLOWED_ORIGINS` (set to sibling frontend `dev_port` URLs derived from SDL — never hardcoded), helmet with environment-specific CSP directives, rate limiting
+- Security middleware: CORS from `ALLOWED_ORIGINS` (set to sibling frontend `dev_port` URLs derived from SDL — never hardcoded), helmet with environment-specific CSP directives
 - Auth token interceptor in frontend API client: Bearer token injection, 401 → refresh → retry, redirect on refresh failure
 - Health check endpoints: actual DB (`SELECT 1`) and cache (`PING`) checks, `{ status, uptime, version, memory, checks }` JSON, 503 on critical failure
 - Structured logging: pino JSON in prod, pino-pretty in dev; correlationId on every log line; zero console.log
 - Correlation ID propagation: `x-correlation-id` generated/forwarded by backend middleware; sent by frontend API client
 - Graceful shutdown: SIGTERM/SIGINT handling, connection draining, clean exit
 - Zod validation: env vars validated at startup; request body/params/query validated before every handler
-- Retry + timeout: 10s AbortController timeout + 3-attempt exponential backoff on all outbound HTTP calls
-- Soft delete: `deletedAt` on all Prisma models, transparent Prisma middleware, no hard deletes
+- Rate limiting: stub with TODO comment (add at growth stage) [MVP only]
+- Retry + timeout: AbortController timeout only — backoff retry stubbed with TODO [MVP only]
+- OpenAPI contracts in `architecture-output/contracts/` — route definitions are the source of truth
+- Cross-service clients generated from contracts (not ad-hoc SDL inference)
 - Dockerfile (all backends and agents; web frontends where applicable)
-- docker-compose.yml (all backends with data dependencies; web frontends where applicable)
-- CI/CD workflow (.github/workflows/ci.yml)
+- docker-compose.yml (dev databases + services) [expanded at growth stage]
+- CI/CD workflow (.github/workflows/ci.yml) — single environment [multi-env at growth stage]
 - .env.example with per-environment URL placeholders
 - .gitignore
 - README.md with setup instructions
 - Git initialized with initial commit
 - Shared type packages (if applicable)
-- Frontend: API client config, backend connection stubs, client auth setup, monitoring SDK init
+- Frontend: typed API client from contract, backend connection stubs, client auth setup
 - Frontend: Design tokens integrated — custom palette, typography, layout shell, and sample page (when design-system phase was completed)
 - Mobile: push notification config, deep linking setup, permission declarations, OTA update config
 
 Next steps:
-1. Copy .env.example to .env in each project and fill in your credentials
-2. Review `src/config/index.ts` in each backend service — fill in any auth-provider-specific env vars
-3. Update `ALLOWED_ORIGINS` in `.env` for each backend and frontend to match your actual domain(s)
-4. Follow the README in each project to start the dev server
-5. Open the sample page to see your design system in action
-6. Start building features!
+1. Fix any build errors listed above before writing feature code
+2. Copy .env.example to .env in each project and fill in your credentials
+3. Review `src/config/index.ts` in each backend service — fill in any auth-provider-specific env vars
+4. Update `ALLOWED_ORIGINS` in `.env` for each backend and frontend to match your actual domain(s)
+5. Follow the README in each project to start the dev server
+6. Open the sample page to see your design system in action
+7. Start building features!
 ```
 
 If GitHub repos were created, include repo URLs in the Path column.
