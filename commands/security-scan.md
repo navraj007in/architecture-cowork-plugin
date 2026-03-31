@@ -21,6 +21,10 @@ After scaffolding projects with `/architect:scaffold`, this command validates th
 - `tech_stack` → auth provider (Clerk, Auth0, JWT, etc.), framework, ORM — used to tailor checklist items (e.g. Prisma → parameterized queries, Clerk → session token strategy)
 - `components` → which components to scan (names + types)
 
+**Also read from `solution.sdl.yaml`** (Grep for `auth:` section):
+- `auth.identityProvider` — the external identity provider (Cognito, Auth0, Clerk, custom) — used to tailor auth middleware checks (e.g. Cognito → JWKS validation, Clerk → session token, custom → JWT verify)
+- `auth.serviceTokenModel` — how backend services validate tokens (jwt | session | api-key) — used to verify the correct validation mechanism is implemented in each service's middleware
+
 **Then**, check if a blueprint with a security architecture (deliverable 4f) exists earlier in the conversation.
 
 If no security checklist exists, respond:
@@ -40,6 +44,8 @@ Pass the following to the **security-scanner** agent:
 - Security architecture from the blueprint (auth strategy, API security checklist, OWASP mitigations)
 - Project directory path(s)
 - Tech stack (framework, language)
+- `auth.identityProvider` from SDL (e.g. Cognito, Auth0, Clerk, custom)
+- `auth.serviceTokenModel` from SDL (e.g. jwt, session, api-key)
 
 ### Step 4: Print Summary
 
@@ -59,11 +65,22 @@ Score: 7/8 checks passed (87%)
 | 6 | SQL injection | [PASS] | Prisma ORM (parameterized) |
 | 7 | .gitignore | [PASS] | .env excluded |
 | 8 | Hardcoded secrets | [PASS] | None found |
+| N | Token validation mechanism | [PASS/STUB/MISSING] | Matches auth.serviceTokenModel from SDL |
 
 Recommendations:
 1. [HIGH] Add Zod schemas for request body validation
 2. [MEDIUM] Uncomment rate limiting in security middleware
 ```
+
+### Final Step: Log Activity
+
+If the security scan results were written to `architecture-output/security-scan.md`, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"security-scan","outcome":"completed","files":["architecture-output/security-scan.md"],"summary":"Security scan completed: <X>/<N> checks passed across <component> with <M> recommendations."}
+```
+
+Replace the placeholders with actual counts. If no file was written (scan was display-only), skip this step. Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
 
 ## Output Rules
 

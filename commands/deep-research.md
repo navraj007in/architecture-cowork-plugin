@@ -153,7 +153,17 @@ Include header:
 **Confidence**: [High — web-verified / Medium — partially verified / Low — training data only]
 ```
 
-### Step 7: Update _state.json
+### Step 7: Log Activity
+
+After writing `deep-research.md`, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"deep-research","outcome":"completed","files":["architecture-output/deep-research.md"],"summary":"Completed deep market research with competitor landscape, market sizing, and opportunity gaps."}
+```
+
+Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
+### Step 8: Update _state.json
 
 After writing `deep-research.md`, update `architecture-output/_state.json` with compact market intelligence:
 

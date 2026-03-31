@@ -101,7 +101,17 @@ A section mapping personas to product decisions:
 - **Communication tone** — technical vs. friendly vs. enterprise
 - **Platform priority** — mobile-first vs. desktop-first based on persona devices
 
-### Step 6: Update _state.json
+### Step 6: Log Activity
+
+After writing `user-personas.md`, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"user-personas","outcome":"completed","files":["architecture-output/user-personas.md"],"summary":"Generated user personas with prioritization matrix and design implications."}
+```
+
+Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
+### Step 7: Update _state.json
 
 After writing `user-personas.md`, update `architecture-output/_state.json` with compact persona summaries:
 

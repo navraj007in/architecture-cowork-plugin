@@ -130,3 +130,4 @@ Add correlation ID, graceful shutdown, structured logging, rate limiting, and re
 - Use the **founder-communication** skill for tone
 - Do NOT include the CTA footer
 - Be direct about what's missing and why it matters for production
+- For a comprehensive generated checklist document (not a file-system scan), direct users to `/architect:launch-checklist` — it produces a full `architecture-output/launch-checklist.md` document with actionable items tailored to the project's SDL

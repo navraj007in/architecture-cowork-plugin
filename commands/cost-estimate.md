@@ -124,6 +124,16 @@ These cost estimates are planning tools, not guarantees. They help you budget an
 **These estimates can drift 10-30% from actual costs.** Use for planning, not contracts.
 ```
 
+### Final Step: Log Activity
+
+After writing `architecture-output/cost-estimate.md`, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"cost-estimate","outcome":"completed","files":["architecture-output/cost-estimate.md"],"summary":"Generated cost estimate with low/medium/high scenarios for infrastructure, third-party, and LLM costs."}
+```
+
+Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
 ## Output Rules
 
 - Use the **cost-knowledge** skill for all pricing data

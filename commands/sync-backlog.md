@@ -124,6 +124,30 @@ Next steps:
 
 If any items failed, report them individually and suggest manual creation.
 
+### Step 7: Update _state.json
+
+After a successful sync, update `architecture-output/_state.json`:
+
+1. Read existing `architecture-output/_state.json` (or start with `{}`)
+2. Merge only the `backlog_sync` key:
+```json
+{
+  "backlog_sync": {
+    "platform": "<azure-devops or jira>",
+    "synced_at": "<ISO-8601>",
+    "sprints": <sprint count>,
+    "stories": <total story count>,
+    "board_url": "<board URL if available>"
+  }
+}
+```
+3. Write back — do NOT overwrite other fields
+
+Also append to `architecture-output/_activity.jsonl`:
+```json
+{"ts":"<ISO-8601>","phase":"sync-backlog","outcome":"completed|partial|failed","files":[],"summary":"Backlog synced to <platform>: <N> sprints, <N> stories created."}
+```
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

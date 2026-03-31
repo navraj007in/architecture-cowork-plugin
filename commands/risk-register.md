@@ -174,7 +174,17 @@ Define the project's risk tolerance:
 | Full risk review | Biweekly | Full team | All risks, update scores |
 | Risk retrospective | Monthly | Full team + advisors | Re-score, add new risks, retire resolved |
 
-### Step 9: Update _state.json
+### Step 9: Log Activity
+
+After writing `risk-register.md`, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"risk-register","outcome":"completed","files":["architecture-output/risk-register.md"],"summary":"Generated risk register with quantified risks, mitigations, and top 5 actions."}
+```
+
+Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
+### Step 10: Update _state.json
 
 After writing `risk-register.md`, update `architecture-output/_state.json` with the top risks summary:
 

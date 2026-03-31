@@ -121,7 +121,17 @@ Define how to measure if the MVP succeeded:
 | Retention (D7) | X% | Cohort analysis | Day 7-14 |
 | NPS / satisfaction | X | Survey | Day 14-30 |
 
-### Step 9: Update _state.json
+### Step 9: Log Activity
+
+After writing `mvp-scope.md`, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"mvp-scope","outcome":"completed","files":["architecture-output/mvp-scope.md"],"summary":"Defined MVP scope with MoSCoW prioritization, critical path, and cut criteria."}
+```
+
+Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
+### Step 10: Update _state.json
 
 After writing `mvp-scope.md`, update `architecture-output/_state.json` with compact scope decisions:
 

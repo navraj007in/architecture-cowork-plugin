@@ -132,6 +132,31 @@ Generated: [date]
 **Launch readiness**: [Ready / Needs attention / Not ready]
 ```
 
+### Final Step: Log Activity
+
+After writing `architecture-output/launch-checklist.md`, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"launch-checklist","outcome":"completed","files":["architecture-output/launch-checklist.md"],"summary":"Generated pre-launch checklist with <N> required, <Y> recommended, and <Z> optional items."}
+```
+
+Replace `<N>`, `<Y>`, `<Z>` with actual item counts. Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
+### Final Step: Update _state.json
+
+After writing all output files, merge a completion marker into `architecture-output/_state.json`:
+1. Read existing `_state.json` (or start with `{}`)
+2. Merge the `launch_checklist` field shown below — do NOT overwrite other fields
+3. Write back to `architecture-output/_state.json`
+
+```json
+{
+  "launch_checklist": { "generated_at": "<ISO-8601>", "item_count": <N> }
+}
+```
+
+(Replace `<N>` with the total number of checklist items generated.)
+
 ## Output Rules
 
 - Use **founder-communication** skill for all descriptions — plain English, no jargon
@@ -139,3 +164,4 @@ Generated: [date]
 - Include links to recommended services where applicable (e.g., "Configure Sentry (sentry.io) for error tracking")
 - Do NOT include a CTA footer
 - Do NOT ask questions — make reasonable assumptions based on SDL
+- For a quick automated scan without generating a full document, direct users to `/architect:launch-check` — it scores the project against a checklist in seconds by scanning the file system directly

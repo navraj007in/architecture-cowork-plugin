@@ -324,6 +324,24 @@ Run: cd prototype && npm install && npm run dev
 
 Emit: `[PROTOTYPE_DONE]`
 
+### Final Step (Pre-log): Update _state.json
+
+After writing all prototype files, merge prototype metadata into `architecture-output/_state.json`:
+
+1. Read existing `architecture-output/_state.json` (or start with `{}`)
+2. Merge only the `prototype` key — do NOT overwrite other fields:
+```json
+{
+  "prototype": {
+    "screens": <number of screens generated>,
+    "personality": "<personality used>",
+    "component_library": "<component library used>",
+    "complete": true
+  }
+}
+```
+3. Write back to `architecture-output/_state.json`
+
 ### Final Step: Log Activity
 
 Append one line to `architecture-output/_activity.jsonl`:

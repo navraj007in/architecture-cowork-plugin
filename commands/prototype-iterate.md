@@ -122,7 +122,22 @@ Read `prototype/_manifest.json` and apply these updates:
 
 ---
 
-## Output
+## Step 6: Update _state.json
+
+After updating the manifest, update `architecture-output/_state.json`:
+
+1. Read existing `architecture-output/_state.json`
+2. Update only `prototype.screens` to the new total screen count (from the updated manifest `screens` array length)
+3. Write back — do NOT overwrite other fields
+
+Also append to `architecture-output/_activity.jsonl`:
+```json
+{"ts":"<ISO-8601>","phase":"prototype-iterate","outcome":"completed","files":["<list of modified files>"],"summary":"Prototype updated: <brief description of change, e.g. added invoice-detail screen>."}
+```
+
+---
+
+## Step 7: Output
 
 Print a concise summary of what changed:
 

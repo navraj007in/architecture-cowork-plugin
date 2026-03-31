@@ -133,6 +133,19 @@ Generate TWO files:
    - Include source URLs in speaker notes
    - After generating the .pptx, delete the generator script
 
+### Final Step: Update _state.json
+
+After writing all output files, merge a completion marker into `architecture-output/_state.json`:
+1. Read existing `_state.json` (or start with `{}`)
+2. Merge the `pitch_deck` field shown below — do NOT overwrite other fields
+3. Write back to `architecture-output/_state.json`
+
+```json
+{
+  "pitch_deck": { "generated_at": "<ISO-8601>" }
+}
+```
+
 ## Output Rules
 
 - Write BOTH files to the project root

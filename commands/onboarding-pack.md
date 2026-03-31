@@ -141,6 +141,29 @@ Generated: [date]
 Architecture style: [style] | Components: [count] | Stage: [stage]
 ```
 
+### Final Step: Log Activity
+
+After writing `architecture-output/onboarding-pack.md`, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"onboarding-pack","outcome":"completed","files":["architecture-output/onboarding-pack.md"],"summary":"Generated developer onboarding pack with architecture overview, codebase map, and setup instructions."}
+```
+
+Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
+### Final Step: Update _state.json
+
+After writing all output files, merge a completion marker into `architecture-output/_state.json`:
+1. Read existing `_state.json` (or start with `{}`)
+2. Merge the `onboarding_pack` field shown below — do NOT overwrite other fields
+3. Write back to `architecture-output/_state.json`
+
+```json
+{
+  "onboarding_pack": { "generated_at": "<ISO-8601>" }
+}
+```
+
 ## Output Rules
 
 - Use **founder-communication** skill — write for a developer who is smart but has zero context about this project

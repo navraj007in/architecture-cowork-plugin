@@ -78,6 +78,16 @@ Files created:
   .github/workflows/deploy.yml
 ```
 
+### Final Step: Log Activity
+
+After writing all CI/CD workflow files, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"setup-cicd","outcome":"completed","files":[".github/workflows/ci.yml"],"summary":"Configured CI/CD pipelines for all components with lint, test, build, and deploy stages."}
+```
+
+Adjust the `files` array to list all workflow files actually created. Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

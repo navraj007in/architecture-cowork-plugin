@@ -23,9 +23,15 @@ Look for sprint backlog files in `architecture-output/`:
 
 ### Step 2: Parse stories
 
-Extract all checklist items from the backlog:
-- `- [ ] Story title` → pending
-- `- [x] Story title` → check against activity for confirmation
+Extract story titles from the backlog. Look for two formats:
+
+**Format A — Status tracking section (preferred):** Lines matching `- [ ] Story N.N: Title` or `- [x] Story N.N: Title` in "Stories — Status Tracking" sections. Extract the title after the colon.
+
+**Format B — Inline checklist (fallback):** Any `- [ ] Title` or `- [x] Title` line that appears under a `### Sprint N` heading. Extract the full line text as the story title.
+
+For each extracted story:
+- `- [ ] ...` → pending
+- `- [x] ...` → check against activity logs for confirmation
 
 ### Step 3: Read activity logs
 

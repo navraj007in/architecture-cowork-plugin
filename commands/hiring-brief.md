@@ -147,6 +147,19 @@ Evaluation criteria:
 - Communication process
 ```
 
+### Final Step: Update _state.json
+
+After writing all output files, merge a completion marker into `architecture-output/_state.json`:
+1. Read existing `_state.json` (or start with `{}`)
+2. Merge the `hiring_brief` field shown below — do NOT overwrite other fields
+3. Write back to `architecture-output/_state.json`
+
+```json
+{
+  "hiring_brief": { "generated_at": "<ISO-8601>" }
+}
+```
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone — this is for non-technical founders hiring developers

@@ -147,6 +147,19 @@ Template section for the founder to fill in:
 
 Write to `architecture-output/investor-update.md`.
 
+### Final Step: Update _state.json
+
+After writing all output files, merge a completion marker into `architecture-output/_state.json`:
+1. Read existing `_state.json` (or start with `{}`)
+2. Merge the `investor_update` field shown below — do NOT overwrite other fields
+3. Write back to `architecture-output/_state.json`
+
+```json
+{
+  "investor_update": { "generated_at": "<ISO-8601>" }
+}
+```
+
 ## Output Rules
 
 - Use **founder-communication** skill for ALL text — investors are not engineers

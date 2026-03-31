@@ -118,6 +118,19 @@ Summarize the overall validation status:
 
 **Recommended next step:** One specific action to take before writing code.
 
+### Final Step: Update _state.json
+
+After writing all output files, merge a completion marker into `architecture-output/_state.json`:
+1. Read existing `_state.json` (or start with `{}`)
+2. Merge the `problem_validation` field shown below — do NOT overwrite other fields
+3. Write back to `architecture-output/_state.json`
+
+```json
+{
+  "problem_validation": { "generated_at": "<ISO-8601>", "validated": true }
+}
+```
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/problem-validation.md`

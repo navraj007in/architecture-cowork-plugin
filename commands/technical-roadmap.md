@@ -173,6 +173,31 @@ Brief look at what comes after launch:
 | v1.5 | +1-2 months | First Could Haves, analytics-driven features | Growth features |
 | v2.0 | +3-6 months | Major new capabilities, platform expansion | Market expansion |
 
+### Final Step: Log Activity
+
+After writing all output files, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"technical-roadmap","outcome":"completed","files":["architecture-output/technical-roadmap.md"],"summary":"Generated phased technical roadmap with milestones, dependency graph, and contingency plans."}
+```
+
+Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
+### Final Step: Update _state.json
+
+After writing all output files, merge a completion marker into `architecture-output/_state.json`:
+1. Read existing `_state.json` (or start with `{}`)
+2. Merge the `roadmap` field shown below — do NOT overwrite other fields
+3. Write back to `architecture-output/_state.json`
+
+```json
+{
+  "roadmap": { "generated_at": "<ISO-8601>", "phases": <N> }
+}
+```
+
+(Replace `<N>` with the actual number of phases generated.)
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/technical-roadmap.md`

@@ -138,6 +138,21 @@ Prioritized list of 8-10 UX/product recommendations derived from the journey ana
 
 1. **[Recommendation]** — Because [journey insight]. Impact: [High/Med]. Effort: [S/M/L].
 
+### Final Step: Update _state.json
+
+After writing all output files, merge a completion marker into `architecture-output/_state.json`:
+1. Read existing `_state.json` (or start with `{}`)
+2. Merge the `user_journeys` field shown below — do NOT overwrite other fields
+3. Write back to `architecture-output/_state.json`
+
+```json
+{
+  "user_journeys": { "generated_at": "<ISO-8601>", "journey_count": <N> }
+}
+```
+
+(Replace `<N>` with the actual number of journey maps generated.)
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/user-journeys.md`

@@ -399,6 +399,16 @@ Test: npm test (or equivalent)
 Start: npm run dev (or equivalent)
 ```
 
+### Final Step: Log Activity
+
+After the verification step passes and all files are written, append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"scaffold-component","outcome":"completed","files":["<component-name>/src/index.ts","<component-name>/package.json"],"summary":"Scaffolded <component-name> (<type>, <framework>). <N> files created, build and tests pass."}
+```
+
+Replace `<component-name>`, `<type>`, `<framework>`, and `<N>` with actual values. List all files created in the `files` array (paths relative to the project root). Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
 ## Output Rules
 
 - Scaffold ONLY the named component — do NOT create or modify other component directories

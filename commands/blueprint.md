@@ -598,6 +598,17 @@ Estimate: [S/M/L or story points 1-8]
 Dependencies: [Sprint X, Story Y]
 ```
 
+**Parseable story index (required):** After ALL story cards for each sprint, add a compact checklist section that sprint-status can parse:
+
+```
+### Sprint N Stories — Status Tracking
+- [ ] Story N.1: [Short title]
+- [ ] Story N.2: [Short title]
+- [ ] Story N.3: [Short title]
+```
+
+This section must use the exact `- [ ] Story N.N: Title` format so `/architect:sprint-status` can track completion. The full story cards above are for human reading; this section is for tooling.
+
 **Example Sprint 1 stories:**
 ```
 Story 1.1: User Registration
