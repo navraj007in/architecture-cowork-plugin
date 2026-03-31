@@ -1,13 +1,17 @@
 ---
 name: project-templates
-description: Starter file templates and boilerplate for scaffolding projects across frontend, backend, mobile, and AI agent frameworks
+description: Starter file templates and boilerplate for scaffolding projects across frontend, backend, mobile, and AI agent frameworks. Runtime sub-files: go.md (Go/Gin), dotnet.md (.NET/ASP.NET Core)
 ---
 
 # Project Templates
 
 Starter templates for each supported framework. Used by the scaffolder agent to create real, working project scaffolds.
 
-> **Framework coverage:** This skill provides predefined templates for the most common frameworks (Next.js, React, Express, FastAPI, Expo, etc.). For frameworks not listed here (Angular, .NET, Spring Boot, Django, Go, Flutter, SvelteKit, Rails, Laravel, etc.), the scaffolder agent generates appropriate starter files dynamically using its LLM capabilities. The predefined templates below serve as the quality benchmark — dynamically generated scaffolds should match the same structure and completeness.
+> **Runtime-specific sub-files:** Full predefined templates for Go and .NET are in separate files loaded automatically:
+> - **Go / Gin:** `skills/project-templates/go.md`
+> - **.NET / ASP.NET Core:** `skills/project-templates/dotnet.md`
+>
+> **Framework coverage:** This skill (plus the runtime sub-files above) covers: Next.js, React, Express, FastAPI, Go/Gin, ASP.NET Core, Expo, and AI agents. For other runtimes (Angular, Spring Boot, Django, Flutter, Rails, Laravel, etc.), the scaffolder generates appropriate starter files dynamically using its LLM capabilities — the predefined templates serve as the quality benchmark.
 
 ## Frontend Templates
 
@@ -367,207 +371,11 @@ export const useAppStore = create<AppState>()((set) => ({
 
 ## Backend Templates
 
-### Node.js / Express
-
-**package.json:**
-```json
-{
-  "name": "{{component-name}}",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
-  },
-  "dependencies": {
-    "express": "^5.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.0"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/cors": "^2.8.0",
-    "@types/node": "^22.0.0",
-    "typescript": "^5.7.0",
-    "tsx": "^4.0.0"
-  }
-}
-```
-
-**tsconfig.json:**
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
-}
-```
-
-**src/index.ts:**
-```ts
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import { healthRouter } from "./routes/health.js";
-
-const app = express();
-const port = process.env.PORT || 3000;
-
-app.use(cors());
-app.use(express.json());
-
-app.use("/health", healthRouter);
-
-app.listen(port, () => {
-  console.log(`{{component-name}} listening on port ${port}`);
-});
-```
-
-**src/routes/health.ts:**
-```ts
-import { Router } from "express";
-
-export const healthRouter = Router();
-
-healthRouter.get("/", (_req, res) => {
-  res.json({ status: "ok", service: "{{component-name}}" });
-});
-```
-
----
-
-### Python / FastAPI
-
-**pyproject.toml:**
-```toml
-[project]
-name = "{{component-name}}"
-version = "0.1.0"
-requires-python = ">=3.11"
-dependencies = [
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.34.0",
-    "python-dotenv>=1.0.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.0.0",
-    "httpx>=0.28.0",
-]
-```
-
-**requirements.txt:**
-```
-fastapi>=0.115.0
-uvicorn[standard]>=0.34.0
-python-dotenv>=1.0.0
-```
-
-**main.py:**
-```python
-from fastapi import FastAPI
-from dotenv import load_dotenv
-
-load_dotenv()
-
-app = FastAPI(title="{{component-name}}")
-
-
-@app.get("/health")
-async def health():
-    return {"status": "ok", "service": "{{component-name}}"}
-```
-
-**app/routes/__init__.py:**
-```python
-# Route modules
-```
-
-Run with: `uvicorn main:app --reload`
-
----
-
-### Node.js Worker (BullMQ)
-
-**package.json:**
-```json
-{
-  "name": "{{component-name}}",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "tsx watch src/worker.ts",
-    "build": "tsc",
-    "start": "node dist/worker.js"
-  },
-  "dependencies": {
-    "bullmq": "^5.0.0",
-    "ioredis": "^5.0.0",
-    "dotenv": "^16.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "typescript": "^5.7.0",
-    "tsx": "^4.0.0"
-  }
-}
-```
-
-**src/worker.ts:**
-```ts
-import "dotenv/config";
-import { Worker } from "bullmq";
-import IORedis from "ioredis";
-
-const connection = new IORedis(process.env.REDIS_URL || "redis://localhost:6379");
-
-const worker = new Worker(
-  "{{component-name}}",
-  async (job) => {
-    console.log(`Processing job ${job.id}: ${job.name}`);
-    // Add job processing logic here
-  },
-  { connection }
-);
-
-worker.on("completed", (job) => {
-  console.log(`Job ${job.id} completed`);
-});
-
-worker.on("failed", (job, err) => {
-  console.error(`Job ${job?.id} failed:`, err);
-});
-
-console.log(`{{component-name}} worker started`);
-```
-
-**src/jobs/example.ts:**
-```ts
-import { Queue } from "bullmq";
-import IORedis from "ioredis";
-
-const connection = new IORedis(process.env.REDIS_URL || "redis://localhost:6379");
-
-export const exampleQueue = new Queue("{{component-name}}", { connection });
-
-export async function addExampleJob(data: Record<string, unknown>) {
-  return exampleQueue.add("example", data);
-}
-```
+> **Runtime-specific backend templates** are in dedicated sub-files loaded automatically:
+> - **Node.js / Express, BullMQ worker, Node.js agent:** `skills/project-templates/nodejs.md`
+> - **Python / FastAPI, Python agent:** `skills/project-templates/python.md`
+> - **Go / Gin:** `skills/project-templates/go.md`
+> - **.NET / ASP.NET Core:** `skills/project-templates/dotnet.md`
 
 ---
 
@@ -772,385 +580,29 @@ export function trackEvent(name: string, properties?: Record<string, unknown>): 
 
 ## Agent Templates
 
-### Python Agent (Claude SDK)
-
-**pyproject.toml:**
-```toml
-[project]
-name = "{{component-name}}"
-version = "0.1.0"
-requires-python = ">=3.11"
-dependencies = [
-    "anthropic>=0.42.0",
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.34.0",
-    "python-dotenv>=1.0.0",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.0.0",
-    "httpx>=0.28.0",
-]
-```
-
-**requirements.txt:**
-```
-anthropic>=0.42.0
-fastapi>=0.115.0
-uvicorn[standard]>=0.34.0
-python-dotenv>=1.0.0
-```
-
-**agent.py:**
-```python
-import anthropic
-from dotenv import load_dotenv
-
-load_dotenv()
-
-client = anthropic.Anthropic()
-
-SYSTEM_PROMPT = open("prompts/system.md").read()
-
-
-def run_agent(user_message: str) -> str:
-    """Run a single turn of the agent."""
-    response = client.messages.create(
-        model="claude-sonnet-4-5-20250929",
-        max_tokens=4096,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": user_message}],
-    )
-    return response.content[0].text
-```
-
-**main.py:**
-```python
-from fastapi import FastAPI
-from pydantic import BaseModel
-from dotenv import load_dotenv
-from agent import run_agent
-
-load_dotenv()
-
-app = FastAPI(title="{{component-name}}")
-
-
-class AgentRequest(BaseModel):
-    message: str
-
-
-@app.post("/chat")
-async def chat(request: AgentRequest):
-    response = run_agent(request.message)
-    return {"response": response}
-
-
-@app.get("/health")
-async def health():
-    return {"status": "ok", "service": "{{component-name}}"}
-```
-
-**prompts/system.md:**
-```markdown
-You are {{component-name}}, an AI assistant that {{component-description}}.
-
-## What You Do
-- [Capability 1]
-- [Capability 2]
-
-## What You Don't Do
-- [Limitation 1]
-- [Limitation 2]
-
-## Communication Style
-Be helpful, concise, and professional.
-```
-
-**tools/__init__.py:**
-```python
-# Agent tools
-```
-
----
-
-### Node.js Agent
-
-**package.json:**
-```json
-{
-  "name": "{{component-name}}",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.37.0",
-    "express": "^5.0.0",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.0"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/cors": "^2.8.0",
-    "@types/node": "^22.0.0",
-    "typescript": "^5.7.0",
-    "tsx": "^4.0.0"
-  }
-}
-```
-
-**src/agent.ts:**
-```ts
-import Anthropic from "@anthropic-ai/sdk";
-import { readFileSync } from "fs";
-
-const client = new Anthropic();
-
-const systemPrompt = readFileSync("prompts/system.md", "utf-8");
-
-export async function runAgent(userMessage: string): Promise<string> {
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-5-20250929",
-    max_tokens: 4096,
-    system: systemPrompt,
-    messages: [{ role: "user", content: userMessage }],
-  });
-
-  const block = response.content[0];
-  if (block.type === "text") return block.text;
-  return JSON.stringify(block);
-}
-```
-
-**src/server.ts:**
-```ts
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import { runAgent } from "./agent.js";
-
-const app = express();
-const port = process.env.PORT || 3000;
-
-app.use(cors());
-app.use(express.json());
-
-app.post("/chat", async (req, res) => {
-  const { message } = req.body;
-  const response = await runAgent(message);
-  res.json({ response });
-});
-
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "{{component-name}}" });
-});
-
-app.listen(port, () => {
-  console.log(`{{component-name}} agent listening on port ${port}`);
-});
-```
-
-**prompts/system.md:**
-```markdown
-You are {{component-name}}, an AI assistant that {{component-description}}.
-
-## What You Do
-- [Capability 1]
-- [Capability 2]
-
-## What You Don't Do
-- [Limitation 1]
-- [Limitation 2]
-
-## Communication Style
-Be helpful, concise, and professional.
-```
-
-**src/tools/index.ts:**
-```ts
-// Agent tools
-export {};
-```
+> Agent templates are included in the runtime sub-files:
+> - **Node.js agent:** `skills/project-templates/nodejs.md`
+> - **Python agent:** `skills/project-templates/python.md`
 
 ---
 
 ## Security Middleware Templates
 
-### Node.js / Express — Auth Middleware
-
-**src/middleware/auth.ts:**
-```ts
-import { Request, Response, NextFunction } from "express";
-
-/**
- * JWT verification middleware.
- * TODO: Replace with actual auth provider SDK (Clerk, Auth0, etc.)
- * based on the architecture's auth_strategy.
- */
-export function requireAuth(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ code: "UNAUTHORIZED", message: "Missing authentication token" });
-  }
-  // TODO: Verify JWT with auth provider
-  // const user = await verifyToken(token);
-  // req.user = user;
-  next();
-}
-```
-
-### Node.js / Express — Security Middleware
-
-**src/middleware/security.ts:**
-```ts
-import helmet from "helmet";
-import cors from "cors";
-import { Express } from "express";
-
-export function applySecurityMiddleware(app: Express) {
-  // Security headers (CSP, HSTS, X-Frame-Options)
-  app.use(helmet());
-
-  // CORS — update origins from .env or manifest
-  app.use(cors({
-    origin: process.env.CORS_ORIGINS?.split(",") || ["http://localhost:3000"],
-    credentials: true,
-  }));
-
-  // TODO: Add rate limiting per manifest security.api_security
-  // import rateLimit from "express-rate-limit";
-  // app.use(rateLimit({ windowMs: 60000, max: 100 }));
-}
-```
-
-### Python / FastAPI — Auth Dependency
-
-**app/middleware/auth.py:**
-```python
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-
-security = HTTPBearer()
-
-
-async def require_auth(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-) -> dict:
-    """
-    JWT verification dependency.
-    TODO: Replace with actual auth provider SDK based on the architecture's auth_strategy.
-    """
-    token = credentials.credentials
-    if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authentication token",
-        )
-    # TODO: Verify JWT with auth provider
-    # user = await verify_token(token)
-    # return user
-    return {"token": token}
-```
+> Security middleware templates are included in the runtime sub-files:
+> - **Node.js** (auth, security headers, correlation ID): `skills/project-templates/nodejs.md`
+> - **Python** (FastAPI auth dependency, correlation middleware): `skills/project-templates/python.md`
+> - **Go** (Gin auth + correlation middleware): `skills/project-templates/go.md`
+> - **.NET** (auth middleware, correlation ID middleware): `skills/project-templates/dotnet.md`
 
 ---
 
 ## Observability Templates
 
-### Node.js — Structured Logger
-
-**src/lib/logger.ts:**
-```ts
-import pino from "pino";
-
-export const logger = pino({
-  level: process.env.LOG_LEVEL || "info",
-  transport:
-    process.env.NODE_ENV === "development"
-      ? { target: "pino-pretty", options: { colorize: true } }
-      : undefined,
-});
-```
-
-Add `pino` and `pino-pretty` to package.json dependencies:
-```json
-"pino": "^9.0.0",
-"pino-pretty": "^11.0.0"
-```
-
-### Python — Structured Logger
-
-**app/lib/logger.py:**
-```python
-import logging
-import json
-import sys
-
-
-class JSONFormatter(logging.Formatter):
-    def format(self, record: logging.LogRecord) -> str:
-        log_data = {
-            "timestamp": self.formatTime(record),
-            "level": record.levelname,
-            "message": record.getMessage(),
-            "service": "{{component-name}}",
-        }
-        if record.exc_info:
-            log_data["exception"] = self.formatException(record.exc_info)
-        return json.dumps(log_data)
-
-
-def get_logger(name: str = "{{component-name}}") -> logging.Logger:
-    logger = logging.getLogger(name)
-    if not logger.handlers:
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setFormatter(JSONFormatter())
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-    return logger
-```
-
-### Enhanced Health Check — Node.js
-
-**src/routes/health.ts (enhanced):**
-```ts
-import { Router } from "express";
-
-export const healthRouter = Router();
-
-healthRouter.get("/", (_req, res) => {
-  res.json({
-    status: "ok",
-    service: "{{component-name}}",
-    timestamp: new Date().toISOString(),
-  });
-});
-
-healthRouter.get("/ready", async (_req, res) => {
-  const checks: Record<string, string> = {};
-
-  // TODO: Add dependency checks from manifest observability.health_checks
-  // try {
-  //   await db.query("SELECT 1");
-  //   checks.database = "ok";
-  // } catch {
-  //   checks.database = "fail";
-  // }
-
-  const allOk = Object.values(checks).every((v) => v === "ok");
-  res.status(allOk ? 200 : 503).json({
-    status: allOk ? "ok" : "degraded",
-    service: "{{component-name}}",
-    checks,
-    timestamp: new Date().toISOString(),
-  });
-});
-```
+> Structured logger, health check, and observability templates are included in the runtime sub-files:
+> - **Node.js** (pino logger, `/health` + `/health/ready`): `skills/project-templates/nodejs.md`
+> - **Python** (structlog): `skills/project-templates/python.md`
+> - **Go** (slog, health handlers): `skills/project-templates/go.md`
+> - **.NET** (Serilog, health endpoint): `skills/project-templates/dotnet.md`
 
 ---
 
@@ -1158,67 +610,7 @@ healthRouter.get("/ready", async (_req, res) => {
 
 ### GitHub Actions CI Workflow
 
-**.github/workflows/ci.yml (Node.js):**
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test
-
-      - name: Build
-        run: npm run build
-```
-
-**.github/workflows/ci.yml (Python):**
-```yaml
-name: CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  ci:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - run: pip install -r requirements.txt
-
-      - name: Lint
-        run: ruff check .
-
-      - name: Test
-        run: pytest
-```
+> Runtime-specific CI workflows are in the runtime sub-files (nodejs.md, python.md, go.md, dotnet.md).
 
 ### docker-compose.yml — MANDATORY for all backend services
 
@@ -1272,96 +664,11 @@ This prevents port collisions when running multiple services locally at the same
 
 ## Shared Package Templates
 
-### TypeScript Shared Types Package
+### Shared Types Package
 
-**packages/shared-types/package.json:**
-```json
-{
-  "name": "{{shared-library-name}}",
-  "version": "0.1.0",
-  "private": true,
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
-  },
-  "devDependencies": {
-    "typescript": "^5.7.0"
-  }
-}
-```
-
-**packages/shared-types/tsconfig.json:**
-```json
-{
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
-}
-```
-
-**packages/shared-types/src/index.ts:**
-```ts
-// Re-export all shared types
-// Generated from manifest shared.types[]
-
-{{#each shared-types}}
-export type { {{name}} } from "./types/{{kebab-name}}.js";
-{{/each}}
-```
-
-**packages/shared-types/src/types/[type-name].ts (per type):**
-```ts
-/**
- * {{description}}
- * Used by: {{used_by}}
- */
-export interface {{Name}} {
-  {{#each fields}}
-  {{field}}: string; // TODO: Set correct type
-  {{/each}}
-}
-```
-
-### Python Shared Types Package
-
-**packages/shared-types/pyproject.toml:**
-```toml
-[project]
-name = "{{shared-library-name}}"
-version = "0.1.0"
-requires-python = ">=3.11"
-dependencies = [
-    "pydantic>=2.0.0",
-]
-```
-
-**packages/shared-types/src/types.py:**
-```python
-from pydantic import BaseModel
-
-
-# Generated from manifest shared.types[]
-
-class User(BaseModel):
-    """Core user type. TODO: Add proper field types."""
-    id: str
-    email: str
-    # TODO: Add remaining fields from manifest
-```
+> Runtime-specific shared types packages are in the runtime sub-files:
+> - **TypeScript** (package.json, tsconfig, index.ts): `skills/project-templates/nodejs.md`
+> - **Python** (pyproject.toml, pydantic models): `skills/project-templates/python.md`
 
 ---
 
@@ -1369,31 +676,9 @@ class User(BaseModel):
 
 These files are added to every project regardless of framework.
 
-### .gitignore (Node.js / TypeScript)
+### .gitignore
 
-```
-node_modules/
-dist/
-.env
-.env.local
-.DS_Store
-*.log
-.next/
-.expo/
-```
-
-### .gitignore (Python)
-
-```
-__pycache__/
-*.pyc
-.env
-.venv/
-venv/
-dist/
-*.egg-info/
-.DS_Store
-```
+> Runtime-specific .gitignore files are in the runtime sub-files (nodejs.md, python.md, go.md, dotnet.md). Always add one per component.
 
 ### .env.example
 
@@ -1494,34 +779,11 @@ Other components:
 
 Every backend service, worker, and agent MUST include a Dockerfile. This is not optional.
 
-**Node.js (Express / BullMQ / Agent):**
-```dockerfile
-FROM node:22-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM node:22-alpine
-WORKDIR /app
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
-EXPOSE {{dev-port}}
-CMD ["node", "dist/index.js"]
-```
-
-**Python (FastAPI / Agent):**
-```dockerfile
-FROM python:3.13-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-EXPOSE {{dev-port}}
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "{{dev-port}}"]
-```
+> Runtime-specific Dockerfiles are in the runtime sub-files:
+> - **Node.js:** `skills/project-templates/nodejs.md`
+> - **Python:** `skills/project-templates/python.md`
+> - **Go:** `skills/project-templates/go.md` (distroless static image)
+> - **.NET:** `skills/project-templates/dotnet.md` (Alpine + aspnet runtime)
 
 ### Dockerfile — for web frontends (include where applicable)
 
