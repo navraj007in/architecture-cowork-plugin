@@ -77,6 +77,12 @@ app.use(express.json());
 
 app.use("/health", healthRouter);
 
+// Global error handler — must be last middleware
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  logger.error({ err }, "Unhandled error");
+  res.status(500).json({ code: "INTERNAL_ERROR", message: "An unexpected error occurred" });
+});
+
 const server = app.listen(port, () => {
   logger.info({ port }, "{{component-name}} started");
 });
@@ -419,6 +425,106 @@ export const logger = pino({
 
 ---
 
+## Linting & Formatting
+
+**eslint.config.js:**
+```js
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+
+export default tseslint.config(
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  }
+);
+```
+
+**.prettierrc:**
+```json
+{
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "es5",
+  "printWidth": 100,
+  "tabWidth": 2
+}
+```
+
+Add to `package.json` scripts:
+```json
+"lint": "eslint src --ext .ts",
+"format": "prettier --write src"
+```
+
+Add to `package.json` devDependencies:
+```json
+"eslint": "^9.0.0",
+"@eslint/js": "^9.0.0",
+"typescript-eslint": "^8.0.0",
+"prettier": "^3.0.0"
+```
+
+---
+
+## Testing
+
+**vitest.config.ts:**
+```ts
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: "node",
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "lcov"],
+    },
+  },
+});
+```
+
+Add to `package.json`:
+```json
+"test": "vitest run",
+"test:watch": "vitest",
+"test:coverage": "vitest run --coverage"
+```
+
+Add to devDependencies:
+```json
+"vitest": "^2.0.0",
+"@vitest/coverage-v8": "^2.0.0",
+"supertest": "^7.0.0",
+"@types/supertest": "^6.0.0"
+```
+
+**src/__tests__/health.test.ts:**
+```ts
+import { describe, it, expect } from "vitest";
+import request from "supertest";
+import express from "express";
+import { healthRouter } from "../routes/health.js";
+
+const app = express();
+app.use("/health", healthRouter);
+
+describe("GET /health", () => {
+  it("returns ok", async () => {
+    const res = await request(app).get("/health");
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe("ok");
+  });
+});
+```
+
+---
+
 ## CI Workflow
 
 **.github/workflows/ci.yml:**
@@ -452,6 +558,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
 ```
 
 ---
@@ -472,6 +581,8 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 EXPOSE {{dev-port}}
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:{{dev-port}}/health || exit 1
 CMD ["node", "dist/index.js"]
 ```
 

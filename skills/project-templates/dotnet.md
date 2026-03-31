@@ -318,6 +318,81 @@ public class CorrelationIdMiddleware(RequestDelegate next)
 
 ---
 
+## .NET — Linting
+
+**.editorconfig (C# specific):**
+```ini
+[*.cs]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+```
+
+**.globalconfig (Roslyn analysers):**
+```ini
+is_global = true
+dotnet_diagnostic.CA1852.severity = warning   # seal internal types
+dotnet_diagnostic.CA2007.severity = none       # ConfigureAwait (not needed in ASP.NET Core)
+dotnet_diagnostic.CS8600.severity = error      # nullable assignment
+```
+
+Add to `{{component-name}}.csproj` for strict nullable + warnings as errors:
+```xml
+<PropertyGroup>
+  <Nullable>enable</Nullable>
+  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
+</PropertyGroup>
+```
+
+---
+
+## .NET — Testing
+
+Initialize test project:
+```bash
+dotnet new xunit -n {{component-name}}.Tests
+cd {{component-name}}.Tests
+dotnet add reference ../{{component-name}}/{{component-name}}.csproj
+dotnet add package Microsoft.AspNetCore.Mvc.Testing
+```
+
+**{{component-name}}.Tests/HealthTests.cs:**
+```csharp
+using System.Net;
+using Microsoft.AspNetCore.Mvc.Testing;
+
+namespace {{PascalCaseName}}.Tests;
+
+public class HealthTests(WebApplicationFactory<Program> factory)
+    : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client = factory.CreateClient();
+
+    [Fact]
+    public async Task Health_ReturnsOk()
+    {
+        var response = await _client.GetAsync("/health");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Contains("\"status\":\"ok\"", body.Replace(" ", ""));
+    }
+}
+```
+
+Add to `Program.cs` to make the assembly accessible to the test project:
+```csharp
+// At the bottom of Program.cs
+public partial class Program { } // needed for WebApplicationFactory
+```
+
+---
+
 ## .NET — CI Workflow
 
 **.github/workflows/ci.yml (.NET):**
@@ -347,7 +422,10 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test --no-build --configuration Release --verbosity normal
+        run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage"
+
+      - name: Audit dependencies
+        run: dotnet list package --vulnerable --include-transitive
 ```
 
 ---
@@ -370,6 +448,8 @@ WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget -qO- http://localhost:8080/health || exit 1
 ENTRYPOINT ["dotnet", "{{component-name}}.dll"]
 ```
 

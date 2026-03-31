@@ -676,6 +676,86 @@ This prevents port collisions when running multiple services locally at the same
 
 These files are added to every project regardless of framework.
 
+### .editorconfig
+
+Add to the repo root — enforces consistent formatting across editors and runtimes:
+
+```ini
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{ts,tsx,js,jsx,json,yaml,yml,css,html}]
+indent_style = space
+indent_size = 2
+
+[*.{py}]
+indent_style = space
+indent_size = 4
+
+[*.{cs}]
+indent_style = space
+indent_size = 4
+
+[*.go]
+indent_style = tab
+indent_size = 4
+
+[Makefile]
+indent_style = tab
+```
+
+### dependabot.yml
+
+Add to `.github/dependabot.yml` in the repo root:
+
+```yaml
+version: 2
+updates:
+  # Node.js / npm
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        dependency-type: development
+
+  # Python / pip
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # Go modules
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # .NET / NuGet
+  - package-ecosystem: nuget
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+```
+
+> Generate one block per package ecosystem present in the project. Always include the `github-actions` block.
+
 ### .gitignore
 
 > Runtime-specific .gitignore files are in the runtime sub-files (nodejs.md, python.md, go.md, dotnet.md). Always add one per component.

@@ -328,6 +328,81 @@ def get_logger(name: str = "{{component-name}}") -> structlog.BoundLogger:
 
 ---
 
+## Linting & Formatting
+
+Add to `pyproject.toml`:
+```toml
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S"]
+ignore = ["S101"]  # allow assert in tests
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+```
+
+Run: `ruff check . && ruff format .`
+
+---
+
+## Testing
+
+Add to `pyproject.toml`:
+```toml
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+    "ruff>=0.6.0",
+    "pip-audit>=2.7.0",
+]
+```
+
+**tests/conftest.py:**
+```python
+import pytest
+from httpx import AsyncClient, ASGITransport
+from main import app
+
+
+@pytest.fixture
+async def client():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        yield ac
+```
+
+**tests/test_health.py:**
+```python
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_health(client):
+    response = await client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+
+
+@pytest.mark.asyncio
+async def test_ready(client):
+    response = await client.get("/health/ready")
+    assert response.status_code in (200, 503)
+    assert "status" in response.json()
+```
+
+---
+
 ## CI Workflow
 
 **.github/workflows/ci.yml:**
@@ -353,10 +428,13 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Lint
-        run: ruff check .
+        run: ruff check . && ruff format --check .
 
       - name: Test
         run: pytest
+
+      - name: Audit dependencies
+        run: pip install pip-audit && pip-audit
 ```
 
 ---
@@ -370,6 +448,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 EXPOSE {{dev-port}}
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:{{dev-port}}/health')" || exit 1
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "{{dev-port}}"]
 ```
 

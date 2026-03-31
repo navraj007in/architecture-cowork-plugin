@@ -274,6 +274,80 @@ func New(service string) *slog.Logger {
 
 ---
 
+## Go — Linting
+
+**.golangci.yml:**
+```yaml
+run:
+  timeout: 5m
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gosec
+    - bodyclose
+    - noctx
+
+linters-settings:
+  gosec:
+    excludes:
+      - G104  # unhandled errors in defer
+```
+
+Run: `golangci-lint run ./...`
+
+---
+
+## Go — Testing
+
+**main_test.go:**
+```go
+package main
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/gin-gonic/gin"
+)
+
+func setupRouter() *gin.Engine {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET("/health", healthHandler)
+	r.GET("/health/ready", readyHandler)
+	return r
+}
+
+func TestHealthHandler(t *testing.T) {
+	r := setupRouter()
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/health", nil)
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+
+	var body map[string]any
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body["status"] != "ok" {
+		t.Errorf("expected status ok, got %v", body["status"])
+	}
+}
+```
+
+---
+
 ## Go — CI Workflow
 
 **.github/workflows/ci.yml (Go):**
@@ -300,11 +374,19 @@ jobs:
       - name: Vet
         run: go vet ./...
 
+      - name: Lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+
       - name: Test
-        run: go test ./...
+        run: go test -race -coverprofile=coverage.out ./...
 
       - name: Build
         run: go build ./...
+
+      - name: Audit dependencies
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest && govulncheck ./...
 ```
 
 ---
@@ -321,12 +403,19 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /app/server main.go
 
-# Runtime stage
+# Runtime stage — distroless has no shell, use debug variant for HEALTHCHECK wget
 FROM gcr.io/distroless/static-debian12
 COPY --from=builder /app/server /server
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD ["/server", "-healthcheck"]
 ENTRYPOINT ["/server"]
 ```
+
+> **HEALTHCHECK note for distroless:** distroless images have no wget/curl. Options:
+> 1. Add a `-healthcheck` flag to your binary that GETs `/health` and exits 0/1
+> 2. Use `FROM gcr.io/distroless/static-debian12:debug` and `CMD wget -qO- http://localhost:8080/health || exit 1`
+> 3. Use Kubernetes liveness probes instead (preferred for k8s deployments)
 
 ---
 
