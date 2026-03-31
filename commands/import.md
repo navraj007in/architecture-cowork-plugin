@@ -124,6 +124,10 @@ top-level sections.** The only allowed root keys are:
 | Frontend apps (React, Vue, Angular, etc.) | `architecture.projects.frontend[]` |
 | Dev server port for frontend (vite.config, next.config, package.json scripts, .env.example) | `architecture.projects.frontend[].x-port` |
 | Git remote origin URL (`subRepo.gitOrigin` or `git remote get-url origin`) | `architecture.projects.frontend[].x-gitOrigin` / `architecture.projects.backend[].x-gitOrigin` |
+| Core domain objects (entity names from ORM models, schema files, migration names) | `domain.entities[]` — PascalCase names only |
+| Service dependencies (other services/providers a service calls) | `architecture.services[].dependsOn[]` |
+| Identity provider (Cognito, Auth0, Clerk, custom) | `auth.identityProvider` |
+| Service token validation mechanism (how services verify tokens) | `auth.serviceTokenModel: jwt \| session \| api-key` |
 | Backend services/APIs | `architecture.projects.backend[]` |
 | Mobile apps | `architecture.projects.mobile[]` |
 | Microservice boundaries | `architecture.services[]` (with kind + responsibilities) |
@@ -193,6 +197,11 @@ product:
     - name: "{inferred from routes/pages}"
       priority: critical | high | medium | low
 
+domain:                                 # Core business objects — include when 3+ services or complex data model
+  entities:
+    - "{PascalCase entity name}"        # List only — no fields here, those go in data-model deliverable
+    # e.g. User, Order, Product, Payment, Notification
+
 architecture:
   style: modular-monolith | microservices | serverless
   x-confidence: high | medium | low
@@ -216,13 +225,16 @@ architecture:
       kind: backend | worker | function | api-gateway
       responsibilities:
         - "{what this service does}"
+      dependsOn:                        # Other services + external providers this service calls
+        - "{service-name or provider}"  # e.g. auth-module, stripe, sendgrid
   sharedLibraries:                      # If shared packages exist
     - name: "{package name}"
       language: typescript | javascript | python | go
 
 auth:                                   # If auth detected
   strategy: oidc | passwordless | api-key | none
-  provider: cognito | auth0 | entra-id | firebase | supabase | clerk | custom
+  identityProvider: cognito | auth0 | entra-id | firebase | supabase | clerk | custom
+  serviceTokenModel: jwt | session | api-key  # how services validate tokens — often jwt even when IdP is Cognito
   roles: ["{role1}", "{role2}"]
   sessions:
     accessToken: jwt | opaque
@@ -405,6 +417,7 @@ For **small projects** (1-2 services), always use a single `solution.sdl.yaml` �
    - CloudFormation requires AWS
    - MongoDB incompatible with ef-core ORM
    - **Port consistency**: for each `environments[development].services[]` entry, the `url` port must match the component's `x-port`. For each `environments[development].url`, the port must match the frontend component's `x-port`. If they differ, correct the `environments` entry to match the detected dev port — do not leave mismatches silently.
+   - **Queue/provider conflict resolution**: when multiple queue signals exist (e.g. Bull/BullMQ over Redis AND a managed service reference), pick the one with the highest evidence confidence — detected library import > environment variable reference > inferred from package name. Never promote a managed service (azure-service-bus, sqs) if only a Redis-based queue library was detected.
 
 2. **Apply normalization** — let smart defaults fill gaps
 
@@ -626,6 +639,7 @@ Write `intent.json` using the standard intent schema:
 
 ## Output Rules
 
+- **SDL must contain no advisory prose.** Never write recommendations, missing-pattern notes, or "Run /architect:xxx" suggestions inside `solution.sdl.yaml`. All assessments, gaps, and action items belong exclusively in `architecture-output/import-analysis.md` Section 15.
 - Use the **founder-communication** skill for tone — plain English, no jargon without explanation
 - Use tables and structured sections for scannability
 - Include confidence levels for all inferred architecture decisions

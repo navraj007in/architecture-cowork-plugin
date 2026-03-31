@@ -58,6 +58,7 @@ See `references/sdl-schema.md` for the complete field-by-field schema reference 
 | `nonFunctional` | `availability.target`, `scaling` |
 | `deployment` | `cloud` |
 | `artifacts` | `generate[]` (min 1 artifact type) |
+| `domain` | `entities[]` (optional — include when domain objects can be named) |
 
 ### Artifact Types
 
@@ -255,6 +256,12 @@ When converting a system manifest to SDL:
 | `communication_patterns[]` | `interServiceCommunication[]` |
 | `application_patterns.error_handling` | `errorHandling` |
 | `devops.config_management` | `configuration` |
+| `services[].name` (cross-referenced) | `architecture.services[].dependsOn[]` — list service names + external providers this service calls |
+| Detected domain objects (entity names from models/schemas) | `domain.entities[]` — list of core domain object names |
+| Identity provider (Cognito, Auth0, etc.) | `auth.identityProvider` |
+| Service-level token validation mechanism (JWT, session) | `auth.serviceTokenModel: jwt \| session \| api-key` |
+
+> **Auth note:** Use `auth.identityProvider` for the external IdP (cognito, auth0, clerk) and `auth.serviceTokenModel` for how services validate tokens (jwt, session, api-key). These are often different — e.g. Cognito issues tokens, services validate them as JWT.
 
 ### Integration Provider Mapping
 
@@ -292,11 +299,37 @@ When converting a system manifest to SDL:
 
 ---
 
+## Domain Entities
+
+The `domain` section captures the core business objects of the system. It is optional but strongly recommended for any system with 3+ services or a complex data model.
+
+```yaml
+domain:
+  entities:
+    - Expert
+    - Client
+    - Appointment
+    - Payment
+    - Notification
+```
+
+Domain entities are used by:
+- `generate-data-model` — to enumerate all entities that need ORM schemas
+- `blueprint` — to drive the data model section and ERD generation
+- `prototype` — to generate typed mock data and CRUD pages
+
+Rules:
+- List entity names only (PascalCase) — no fields, no relationships here. Those belong in the data model deliverable.
+- Include any object that has its own lifecycle, identity, and persistence
+- Do NOT include value objects (Money, Address) or enums
+
+---
+
 ## SDL Generation Rules
 
 When generating SDL from a conversation or manifest:
 
-0. **Save to project root** — always write the SDL file as `sdl.yaml` in the project root directory (current working directory). Never place it inside `architecture/`, `artifacts/`, `output/`, or any other subfolder.
+0. **Save to project root** — always write the SDL file as `solution.sdl.yaml` in the project root directory (current working directory). Never place it inside `architecture/`, `artifacts/`, `output/`, or any other subfolder.
 1. **Always set** `sdlVersion: "0.1"`
 2. **Infer architecture style**:
    - Single backend → `modular-monolith`
