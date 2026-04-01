@@ -109,14 +109,23 @@ Total — 2 components reviewed
   Suggestions: 1
 ```
 
-### Report file (PR mode only)
+### Report file
 
-When `review_mode` is `pr`, write the full report (all findings + summaries) to:
-```
-architecture-output/review-pr-<pr_number>.md
-```
+Write the full report (all findings + summaries + Next Actions block) to `.archon/reviews/`. Create the directory if it does not exist.
 
-Format the file as a markdown document with a heading `# Review — PR #<N>` and the ISO-8601 timestamp. For all other modes, print to the conversation only — do not write a file.
+| Mode | File path |
+|------|----------|
+| `uncommitted` | `.archon/reviews/<component>-review.md` |
+| `file` | `.archon/reviews/<component>-review.md` |
+| `all` (multiple components) | `.archon/reviews/<component>-review.md` per component |
+| `pr` | `.archon/reviews/<component>-pr-<pr_number>.md` |
+
+Format each file as a markdown document:
+- Heading: `# Review — <component> [<runtime> / <framework>]`
+- Sub-heading: `Source: <diff_source> — <ISO-8601 timestamp>`
+- Then the findings, summary block, and Next Actions block exactly as printed to the conversation
+
+Always write the file — for all modes, not just PR. This gives the developer a persistent record they can open in an editor, share, or link from a PR description.
 
 ### No findings
 
@@ -166,7 +175,7 @@ If there are zero BLOCKERs, omit the BLOCKERs section and open with WARNINGs. If
 Append one line to `architecture-output/_activity.jsonl`:
 
 ```json
-{"ts":"<ISO-8601>","phase":"review","source":"git-uncommitted|git-pr-42|git-file","components":["api-server"],"outcome":"completed","blockers":2,"warnings":3,"suggestions":1,"files_reviewed":6,"lines_reviewed":312,"summary":"Review: 2 blockers, 3 warnings, 1 suggestion across api-server. Source: git-uncommitted."}
+{"ts":"<ISO-8601>","phase":"review","source":"git-uncommitted|git-pr-42|git-file","components":["api-server"],"outcome":"completed","blockers":2,"warnings":3,"suggestions":1,"files_reviewed":6,"lines_reviewed":312,"report":".archon/reviews/api-server-review.md","summary":"Review: 2 blockers, 3 warnings, 1 suggestion across api-server. Source: git-uncommitted."}
 ```
 
 For multi-component reviews, `components` is the full array and the counts are combined totals.

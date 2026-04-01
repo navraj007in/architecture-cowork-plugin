@@ -50,10 +50,21 @@ This command is split across two files for size:
 
 Read `review-1.md` first, then `review-2.md`. For each component in scope, delegate to the **reviewer** agent (`agents/reviewer.md`) so a failure in one component does not block others.
 
+## Output Files
+
+Review reports are written to `.archon/reviews/` — not `architecture-output/`. This keeps operational dev-workflow artifacts separate from core architecture deliverables.
+
+| Mode | Output file |
+|------|------------|
+| `uncommitted` | `.archon/reviews/<component>-review.md` |
+| `file` | `.archon/reviews/<component>-review.md` |
+| `all` | `.archon/reviews/<component>-review.md` per component reviewed |
+| `pr` | `.archon/reviews/<component>-pr-<N>.md` |
+
+Create `.archon/reviews/` if it does not exist. Never write review output to `architecture-output/`.
+
 ## _state.json Write Behaviour
 
 `review` writes to `_activity.jsonl` only. It does not modify `_state.json`. Findings describe a transient diff state and have no value as persistent project facts.
 
-Exceptions:
-- When `--pr` mode is used, the formatted report is also written to `architecture-output/review-pr-<N>.md` as a persistent artifact.
-- When `--fix` is passed, each BLOCKER fix is logged separately by the implementer agent as it would be for a normal `/architect:implement` invocation.
+When `--fix` is passed, each BLOCKER fix is logged separately by the implementer agent as it would be for a normal `/architect:implement` invocation.
