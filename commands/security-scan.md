@@ -76,6 +76,12 @@ Recommendations:
 
 Write the full scan report to `.archon/security/security-scan-<YYYY-MM-DD>.md` (create the directory if it does not exist). Using a dated filename preserves history — each run creates a new file so you can track whether findings are being resolved between scans.
 
+Also write `.archon/security/.last-scan` with the ISO-8601 timestamp and path of the latest report:
+```
+2026-04-01T14:23:00Z .archon/security/security-scan-2026-04-01.md
+```
+This sentinel file is how Archon detects that the security-scan phase is complete.
+
 Then append one line to `architecture-output/_activity.jsonl`:
 
 ```json
