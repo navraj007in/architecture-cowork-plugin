@@ -63,9 +63,9 @@ If a git provider token is available, use it directly for repo creation instead 
 
 Before scaffolding any component, read two levels of activity context to detect prior runs.
 
-**Project level** — check if `architecture-output/_activity.jsonl` exists. If it does, read the last 3 entries. Look for any `"phase":"scaffold"` entries that list a component in `components[]` — if a component was already scaffolded successfully in a prior run, skip it unless the caller has explicitly asked to re-run.
+**Project level** — check if `architecture-output/_activity.jsonl` exists. If it does, read the last `max(10, component_count)` entries (where `component_count` is the number of components being scaffolded this run). Look for any `"phase":"scaffold"` entries that list a component in `components[]` — if a component was already scaffolded successfully in a prior run, skip it unless the caller has explicitly asked to re-run. Stop reading backwards once you hit a non-scaffold phase entry older than all current components.
 
-**Component level** — for any component that will be augmented (`mode: "augment"`), also read `<component-name>/_activity.jsonl` if it exists. The last 3 entries reveal what was previously scaffolded (`filesCreated`) and what has changed since. Use this to refine the `existing_state` map and avoid redundant writes.
+**Component level** — for any component that will be augmented (`mode: "augment"`), also read `<component-name>/_activity.jsonl` if it exists. Read the last `max(5, 1)` entries to reveal what was previously scaffolded (`filesCreated`) and what has changed since. Use this to refine the `existing_state` map and avoid redundant writes.
 
 If no activity files exist, proceed normally — this is a fresh project.
 
@@ -80,7 +80,12 @@ Check the component's `mode` field first:
 When `mode: "augment"`, the directory exists with code. **Do not re-initialize or overwrite any existing file.**
 
 1. Use the `existing_state` map's `missing` list as your work list — only create files listed there.
-2. Re-read key existing files before writing anything: package manifest, `.env.example`, entry point.
+2. Re-read these specific files before writing anything (read whichever exist for the component's runtime):
+   - **Package manifest:** `package.json` / `pyproject.toml` / `requirements.txt` / `*.csproj` / `go.mod` / `pom.xml`
+   - **TypeScript config:** `tsconfig.json` (check path aliases — new files must match existing `paths` config)
+   - **Entry point:** `src/index.ts` / `main.py` / `Program.cs` / `main.go` / `src/main.ts`
+   - **Env file:** `.env.example` (to avoid duplicating variables when appending)
+   - **Existing source dirs:** top-level listing of `src/` or `app/` to understand folder convention already in use
 3. Add only what is missing: Dockerfile, docker-compose.yml, CI workflow, auth middleware stub, health check route, etc.
 4. For `.env.example`: **append** missing variables using Edit — never replace the file.
 5. Report what was added vs skipped:
@@ -96,6 +101,17 @@ Never run framework CLI init commands (`create-next-app`, `dotnet new`, etc.) in
 ---
 
 ### Fresh Scaffold Path (new components — steps 1–15)
+
+### 0. Sanitize Component Name
+
+Before creating any directory or file, validate and sanitize the component name from the manifest:
+- Convert spaces and underscores to hyphens: `my app` → `my-app`
+- Lowercase: `MyService` → `my-service`
+- Strip characters that are invalid in directory names and npm package names: only `[a-z0-9-]` allowed
+- If the name starts with a number or hyphen, prepend the project slug: `123-service` → `{{project-slug}}-123-service`
+- If after sanitization the name is empty or conflicts with an existing directory, halt and report to the user before proceeding
+
+Use the sanitized name for all directory creation, `package.json` `name` field, `go.mod` module name, Maven `artifactId`, etc.
 
 ### 1. Create the Project Directory or Repo
 
@@ -317,32 +333,54 @@ If the component is a mobile app, apply configuration from the manifest's mobile
 
 ### 7. Add Observability Setup (for backend services)
 
-For backend services, add basic observability based on the manifest's `observability` section:
+For backend services, add observability based on `scaffold_depth`. All three pillars apply — depth controls how much is implemented vs stubbed.
 
-**Health check endpoint:** Already included in base templates (`/health`). Enhance with dependency checks from `observability.health_checks`:
+**Health check endpoint** (always required — all depths):
+Already included in base templates (`/health`). Enhance with actual dependency checks from `observability.health_checks`:
 
 ```ts
-// Example: enhanced health check
 healthRouter.get("/", async (_req, res) => {
   const checks = {
     status: "ok",
     service: "{{component-name}}",
     // TODO: Add dependency checks per manifest
-    // database: await checkDb(),
-    // redis: await checkRedis(),
+    // database: await checkDb(),   // SELECT 1
+    // redis: await checkRedis(),   // PING
   };
   res.json(checks);
 });
 ```
 
-**Structured logging:** For Node.js services, add `pino` to dependencies and create `src/lib/logger.ts`. For Python services, add structured logging config in `app/lib/logger.py`.
+**Structured logging** (always required — all depths):
+- Node.js: add `pino` + `pino-pretty` (dev only), create `src/lib/logger.ts`
+- Python: add `structlog`, configure in `app/lib/logger.py`
+- Go: use `log/slog` (already in go.md template)
+- .NET: Serilog (already in dotnet.md template)
+
+**Prometheus metrics endpoint** (depth-gated):
+- `mvp`: omit entirely
+- `growth`: add `GET /metrics` stub — Node.js: `prom-client`, Python: `prometheus-fastapi-instrumentator`; return an empty registry with a note to add business metrics
+- `enterprise`: full setup — default process metrics enabled, custom counters/histograms per responsibility
+
+**Distributed tracing — OpenTelemetry** (depth-gated):
+- `mvp`: omit — add `// TODO (growth): add OTEL tracing` comment at the app entry point
+- `growth`: initialise OTEL SDK at startup with OTLP exporter:
+  - Node.js: `@opentelemetry/sdk-node`, `@opentelemetry/auto-instrumentations-node` — create `src/lib/tracing.ts`, import before all other modules in entry point
+  - Python: `opentelemetry-sdk`, `opentelemetry-instrumentation-fastapi` — call `configure_tracer()` before app startup
+  - Go: `go.opentelemetry.io/otel` + `go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc` — init in `main.go`
+  - Add `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_SERVICE_NAME` to `.env.example`
+- `enterprise`: same as growth plus baggage propagation and custom span attributes per handler
 
 ### 8. Add DevOps Files
 
 Based on the manifest's `devops` section:
 
-**GitHub Actions workflow** (`.github/workflows/ci.yml`):
-Create a CI pipeline matching the manifest's `devops.cicd.pipeline_stages`. Use the project-templates skill for the workflow template.
+**GitHub Actions workflow** (`.github/workflows/ci.yml`) — depth-gated:
+- `mvp`: create only if `devops` section exists in manifest — single environment (lint → build → test)
+- `growth`: mandatory regardless of `devops` section — two environments (dev + staging deploy job)
+- `enterprise`: mandatory — full matrix (dev → staging → production, matrix runners, security scan job)
+
+Use the project-templates skill for the workflow template matching the component's runtime.
 
 **Dockerfile — MANDATORY for all backend services and agents:**
 Every backend service, worker, and agent MUST have a production-ready Dockerfile. Use the project-templates skill for language-appropriate multi-stage Dockerfiles. This is not optional — Docker is a baseline requirement for all backend components regardless of the manifest's deployment target.
@@ -361,12 +399,28 @@ If no specific database is configured, include PostgreSQL as the sensible defaul
 **docker-compose.yml — for frontends (when applicable):**
 Web frontends MAY include a `docker-compose.yml` if they have backend dependencies for local development (e.g. a Next.js app that talks to a local API). At minimum, include the frontend service itself for consistent container-based development.
 
+**Root-level docker-compose.yml — when scaffolding 2+ components:**
+After all per-component `docker-compose.yml` files are written, create `<parent-dir>/docker-compose.yml` that includes every service via the `include` directive (Compose v2.20+):
+
+```yaml
+# Root orchestration — run the full stack with: docker compose up
+include:
+  - path: ./api-server/docker-compose.yml
+  - path: ./worker-service/docker-compose.yml
+  - path: ./web-app/docker-compose.yml
+  # Add one entry per component that has a docker-compose.yml
+```
+
+This gives developers a single `docker compose up` from the project root. Generate entries for all components that have a `docker-compose.yml`. If `include` is not supported by the user's Compose version, fall back to a flat file that re-declares all services using `build: context` paths.
+
 ### 9. Add Common Files
 
 For every project, ensure these files exist:
 
 - **`.env.example`** — Credential placeholders derived from the manifest's integrations AND security config. Include per-environment URL placeholders from the `environments` section (e.g., `# DEV: http://localhost:3001`, `# STAGING: https://api.example-staging.com`). Include comments explaining each variable.
-- **`.gitignore`** — Language-appropriate ignores (use project-templates skill).
+- **`.env.development`** (optional stub) — Copy of `.env.example` with dev-appropriate defaults pre-filled (local ports, `NODE_ENV=development`). Never commit real secrets. Add to `.gitignore`.
+- **`.env.test`** (optional stub) — Copy of `.env.example` with test defaults (`NODE_ENV=test`, in-memory DB URL placeholders). Add to `.gitignore`. Only generate if the framework has a test runner configured.
+- **`.gitignore`** — Language-appropriate ignores (use project-templates skill). Always include `.env`, `.env.development`, `.env.test`, `.env.local`, `.env.*.local`.
 - **`README.md`** — Auto-generated with:
   - Component name and description from the manifest
   - Architecture pattern and folder convention
@@ -374,6 +428,26 @@ For every project, ensure these files exist:
   - Setup instructions (`git clone`, install, copy `.env.example`, run dev)
   - Available scripts
   - Links to other components in the architecture
+
+**Linting and formatting config** — add per runtime:
+
+| Runtime | Files to create |
+|---------|----------------|
+| Node.js / TypeScript | `eslint.config.mjs` (flat config, `@typescript-eslint/eslint-plugin`) + `.prettierrc` + `"lint"` and `"format"` scripts in `package.json` |
+| Python | `pyproject.toml` `[tool.ruff]` section (replaces flake8 + black) with `line-length = 88`, `select = ["E","F","I"]` |
+| Go | `.golangci.yml` — already in `go.md` template; ensure it is included |
+| .NET | `.editorconfig` with `dotnet_style_*` rules — already in common files reference |
+| Java | `checkstyle.xml` stub + Maven Checkstyle plugin in `pom.xml` |
+
+**Pre-commit hooks and secret scanning** — add to every project:
+
+- **Node.js / TypeScript projects:** Add `husky` + `lint-staged` to `devDependencies`; create `.husky/pre-commit` that runs `lint-staged`; configure `lint-staged` in `package.json` to run ESLint + Prettier on staged files
+- **Python projects:** Create `.pre-commit-config.yaml` with hooks: `ruff`, `ruff-format`, `detect-secrets`
+- **All projects:** Also add `.gitleaks.toml` (from `skills/project-templates/SKILL.md` Common Files section) to suppress false positives in `.env.example`
+
+**Depth gating for pre-commit hooks:**
+- `mvp`: add `.gitleaks.toml` only; skip Husky/lint-staged (keep dev friction low)
+- `growth` / `enterprise`: full pre-commit setup including Husky or `.pre-commit-config.yaml`
 
 ### 10. Create Shared Packages (if applicable)
 
@@ -405,6 +479,55 @@ export interface User {
 
 **For Python monorepos:**
 Create a `packages/shared-types/` directory with type stubs as dataclasses or Pydantic models.
+
+**Monorepo root wiring** — when 2+ TypeScript/Node.js components share a parent directory, also create these root-level files:
+
+`<parent-dir>/package.json` (npm workspaces):
+```json
+{
+  "name": "@{{project-slug}}/monorepo",
+  "private": true,
+  "workspaces": ["packages/*", "{{component-1}}", "{{component-2}}"],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  }
+}
+```
+
+`<parent-dir>/turbo.json`:
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "dev": { "cache": false, "persistent": true },
+    "lint": {},
+    "test": { "dependsOn": ["^build"] }
+  }
+}
+```
+
+`<parent-dir>/.gitignore` (root-level, in addition to per-component ignores):
+```
+node_modules/
+.turbo/
+```
+
+If the manifest specifies `pnpm` as the package manager, use `pnpm-workspace.yaml` instead of npm workspaces:
+```yaml
+packages:
+  - 'packages/*'
+  - '{{component-1}}'
+  - '{{component-2}}'
+```
+
+Skip monorepo root wiring if only one TypeScript component exists or if components are in separate git repos.
 
 ### 11. Initialize Git
 
