@@ -711,7 +711,24 @@ Append one line to `architecture-output/_activity.jsonl`:
 
 List every file actually written in the `files` array.
 
-### Step 5: CTA Footer
+### Step 5: Docs Publish (Optional)
+
+After writing all files, silently probe both Confluence (`list_spaces limit:1`) and Notion (`notion_search query:"test" page_size:1`) MCP servers to check which are connected.
+
+**If Confluence is connected**, offer:
+> "Confluence is connected. Publish this blueprint to your team space? Reply with the space key (e.g. `ARCH`), a Notion parent page ID, or `skip`."
+
+- Space key provided → delegate to **confluence-publisher** with `artifact:"blueprint"`, `projectName`, `spaceKey`, `projectDir`
+
+**If Notion is connected** (and user replied with a Notion page ID, or Confluence was not connected):
+> "Notion is connected. Publish this blueprint? Reply with a parent page ID (from the page URL) or `skip`."
+
+- Page ID provided → delegate to **notion-publisher** with `artifact:"blueprint"`, `projectName`, `parentPageId`, `projectDir`
+
+**If both are connected**, offer both options in one message and let the user pick.
+**If neither is connected**, skip silently — do not mention either platform.
+
+### Step 6: CTA Footer
 
 End the full blueprint with:
 

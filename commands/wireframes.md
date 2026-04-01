@@ -105,3 +105,17 @@ Append one line to `architecture-output/_activity.jsonl`:
 ```
 
 List all generated wireframe JSON files in the `files` array.
+
+### Figma Export (Optional)
+
+After logging activity, silently attempt a lightweight Figma MCP call (e.g. `get_me` or `list_files`) to check if the server is connected.
+
+**If connected**, offer:
+
+> "Figma is connected. Export these wireframes as Figma frames? Reply with a Figma file key to update an existing file, `new` to create a new file, or `skip`."
+
+If the user confirms, delegate to the **figma-agent** with:
+- `mode: "push-wireframes"`
+- `projectDir` — current working directory
+
+**If not connected**, skip silently.

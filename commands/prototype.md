@@ -56,6 +56,25 @@ Read (use what's available, don't error if missing):
 
 6. **User personas** — **only if `_state.json.personas` is absent**; Grep `architecture-output/user-personas.md` for name + role lines only
 
+### Step 1.5: Figma Pull (Optional)
+
+If no `design-tokens.json` exists and `_state.json.design` is absent or incomplete, silently attempt a lightweight Figma MCP call (e.g. `get_me`) to check if the server is connected.
+
+**If connected**, offer:
+
+> "Figma is connected. Paste a Figma file URL to pull frame names and design tokens into the prototype, or reply `skip`."
+
+If the user provides a file URL or key, delegate to the **figma-agent** with:
+- `mode: "pull"`
+- `figmaFileUrl` — the URL or key provided
+- `projectDir` — current working directory
+
+Use the returned palette, fonts, and component names as the design source for Step 2 — treat them with the same authority as `design-tokens.json`.
+
+**If connected but the design system already exists** (`design-tokens.json` or `_state.json.design` is fully populated), skip silently — no need to pull again.
+
+**If not connected**, skip silently.
+
 ### Step 2: Design Direction
 
 **If `architecture-output/design-system/design-tokens.json` exists:** This is the authoritative design source. Read it now. Record the exact hex values, font names, spacing scale, border-radius, and shadow. The prototype MUST match the design system exactly — same colors, same fonts, same radii. Skip the domain derivation below entirely.

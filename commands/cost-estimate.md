@@ -34,9 +34,23 @@ If context is still unclear after checking `_state.json`, ask one question:
 
 > "What are you building, and roughly how many users do you expect in the first 6 months?"
 
+### Step 1.5: Pull Live AWS Pricing (Optional)
+
+After reading context, silently attempt a lightweight AWS MCP call (e.g. `list_ec2_instances` with `maxResults: 1`) to check if the server is connected.
+
+**If connected AND the tech stack includes AWS services**, call the relevant tools to pull live resource data:
+
+- `describe_ec2_instance_types` for the instance family in the stack (e.g. `t3`, `t4g`) — use actual current pricing from the response rather than `pricing-tables.md` for EC2
+- `describe_rds_instances` to check if the user has existing RDS instances — if so, note actual instance class and storage in the estimate
+- `list_lambda_functions` — if serverless is in the stack, check existing functions to understand memory/timeout config
+
+Where AWS MCP returns live data, use it and label the price as **"live — pulled from AWS"** in the estimate table. For non-AWS services or where AWS MCP is not connected, fall back to `pricing-tables.md` as normal.
+
+**If not connected or stack does not use AWS**, skip silently.
+
 ### Step 2: Generate Cost Estimate
 
-Using the **cost-knowledge** skill and **references/pricing-tables.md**, produce these sections:
+Using the **cost-knowledge** skill and **references/pricing-tables.md** (supplemented by live AWS data from Step 1.5 where available), produce these sections:
 
 #### Infrastructure Costs
 

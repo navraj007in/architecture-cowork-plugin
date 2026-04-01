@@ -33,6 +33,23 @@ If no blueprint exists:
 
 > "I need an architecture to design for. Run `/architect:blueprint` first to generate your architecture, then come back here to create the design system."
 
+### Step 1.5: Figma Pull (Optional)
+
+Before deriving the design direction, silently attempt a lightweight Figma MCP call (e.g. `get_me`) to check if the server is connected.
+
+**If connected**, offer:
+
+> "Figma is connected. Do you have an existing Figma file to pull colors and fonts from? Paste the file URL or key, or reply `skip` to derive the design system from scratch."
+
+If the user provides a file URL or key, delegate to the **figma-agent** with:
+- `mode: "pull"`
+- `figmaFileUrl` — the URL or key provided
+- `projectDir` — current working directory
+
+Use the returned palette and typography values as the authoritative design input for Step 3 onward — skip domain derivation for any values the Figma file provides.
+
+**If not connected**, skip silently.
+
 ### Step 2: Analyze Architecture Context
 
 Extract from SDL and blueprint:
@@ -198,6 +215,19 @@ Next steps:
 2. Run /architect:scaffold to generate projects with these design tokens baked in
 3. Share design-brief.md with your team for alignment
 ```
+
+### Step 9: Figma Push (Optional)
+
+If the Figma MCP server was detected in Step 1.5 (or silently re-check now), offer:
+
+> "Push these design tokens to Figma as local color and text styles? Reply with a Figma file key to update an existing file, `new` to create a new file, or `skip`."
+
+If the user confirms, delegate to the **figma-agent** with:
+- `mode: "push-tokens"`
+- `projectDir` — current working directory
+- `figmaFileKey` — from user input (or omit for new file)
+
+**If Figma is not connected**, skip silently.
 
 ## Output Rules
 

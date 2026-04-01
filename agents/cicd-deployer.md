@@ -73,6 +73,27 @@ jobs:
 
 If `dependsOn[]` is absent from SDL, default to parallel builds for all services.
 
+### 0.75. Check Existing Infrastructure via MCP (Optional)
+
+Before generating any pipeline or manifest files, check which infrastructure MCP servers are connected. Use this data to generate configs that target real, existing resources rather than placeholder names.
+
+**AWS MCP** — if `AWS_ACCESS_KEY_ID` env var is set and deployment target is AWS:
+- Call `list_ec2_instances` — note existing instance names/IDs
+- Call `describe_rds_instances` — capture actual DB instance identifiers and endpoint addresses
+- Call `list_lambda_functions` — capture function names and runtimes if serverless is in scope
+- Use these values directly in generated pipeline YAML (e.g. actual ECS cluster name, actual ECR repo ARN) rather than generic `${{ secrets.ECS_CLUSTER }}` placeholders where names are known
+
+**Kubernetes MCP** — if deployment target is Kubernetes/K8s:
+- Call `list_namespaces` — determine which namespaces exist; use the appropriate one (or `default` if none match the project)
+- Call `list_deployments` — check if any deployments already exist for this project; if so, generate `kubectl rollout` update steps rather than fresh `kubectl apply`
+- Pass real namespace names into generated K8s manifest files and `kubectl` commands in the pipeline
+
+**Terraform MCP** — if Terraform is in the tech stack or `.tf` files will be generated:
+- Note that `terraform_validate` will be called on any generated `.tf` files after writing (see Step 3.5)
+- Call `terraform_show` to check if a state file already exists — if it does, generate `terraform plan` steps in the pipeline rather than `terraform apply` directly
+
+If none of these MCP servers are connected, skip silently and use blueprint values / placeholder names.
+
 ### 1. Read Existing CI Config
 
 Check if any CI config already exists:
@@ -356,6 +377,21 @@ Based on the deployment target:
     push: true
     tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
 ```
+
+### 3.5. Validate Infrastructure Files via MCP (Optional)
+
+After writing all pipeline and infrastructure files, run validation if the relevant MCP servers are connected.
+
+**Terraform validation** — if Terraform MCP is connected and any `.tf` files were written:
+- Call `terraform_validate` with the directory path of each generated `.tf` file
+- If validation returns errors, fix them before reporting success
+- If validation passes, add a note to the summary: `Terraform config validated ✓`
+- If Terraform MCP is not connected, add a note: `Run \`terraform validate\` to verify generated configs`
+
+**Kubernetes manifest validation** — if Kubernetes MCP is connected and K8s YAML files were written:
+- Call `list_namespaces` to confirm the target namespace exists
+- If the target namespace doesn't exist, add a `kubectl create namespace <name>` step to the pipeline's pre-deploy job
+- If Kubernetes MCP is not connected, add a note: `Run \`kubectl apply --dry-run=client\` to verify manifests`
 
 ### 4. Configure Python Projects
 

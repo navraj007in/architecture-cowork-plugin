@@ -1,3 +1,68 @@
 {
-  "mcpServers": {}
+  "mcpServers": {
+    "jira": {
+      "command": "npx",
+      "args": ["-y", "@orengrinker/jira-mcp-server"],
+      "env": {
+        "JIRA_BASE_URL": "${JIRA_BASE_URL}",
+        "JIRA_EMAIL": "${JIRA_EMAIL}",
+        "JIRA_API_TOKEN": "${JIRA_API_TOKEN}"
+      }
+    },
+    "linear": {
+      "command": "npx",
+      "args": ["-y", "@linear/mcp-server"],
+      "env": {
+        "LINEAR_API_KEY": "${LINEAR_API_KEY}"
+      }
+    },
+    "azure-devops": {
+      "command": "npx",
+      "args": ["-y", "@azure-devops/mcp"],
+      "env": {
+        "AZURE_DEVOPS_ORG_URL": "${AZURE_DEVOPS_ORG_URL}",
+        "AZURE_DEVOPS_PAT": "${AZURE_DEVOPS_PAT}",
+        "AZURE_DEVOPS_DEFAULT_PROJECT": "${AZURE_DEVOPS_DEFAULT_PROJECT}"
+      }
+    },
+    "confluence": {
+      "command": "npx",
+      "args": ["-y", "@atlassian/mcp-confluence", "--stdio"],
+      "env": {
+        "CONFLUENCE_API_TOKEN": "${CONFLUENCE_API_TOKEN}",
+        "CONFLUENCE_URL": "${CONFLUENCE_URL}",
+        "CONFLUENCE_USERNAME": "${CONFLUENCE_USERNAME}"
+      }
+    },
+    "notion": {
+      "command": "npx",
+      "args": ["-y", "@notionhq/notion-mcp-server"],
+      "env": {
+        "NOTION_TOKEN": "${NOTION_TOKEN}"
+      }
+    },
+    "aws": {
+      "command": "npx",
+      "args": ["-y", "awslabs/mcp"],
+      "env": {
+        "AWS_ACCESS_KEY_ID": "${AWS_ACCESS_KEY_ID}",
+        "AWS_SECRET_ACCESS_KEY": "${AWS_SECRET_ACCESS_KEY}",
+        "AWS_REGION": "${AWS_REGION}"
+      }
+    },
+    "terraform": {
+      "command": "npx",
+      "args": ["-y", "@hashicorp/terraform-mcp-server"],
+      "env": {
+        "TF_TOKEN_app_terraform_io": "${TF_TOKEN_app_terraform_io}"
+      }
+    },
+    "kubernetes": {
+      "command": "npx",
+      "args": ["-y", "kubectl-mcp-server"],
+      "env": {
+        "KUBECONFIG": "${KUBECONFIG}"
+      }
+    }
+  }
 }

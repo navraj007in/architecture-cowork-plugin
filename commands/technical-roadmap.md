@@ -198,6 +198,23 @@ After writing all output files, merge a completion marker into `architecture-out
 
 (Replace `<N>` with the actual number of phases generated.)
 
+### Docs Publish (Optional)
+
+After writing all files, silently probe both Confluence (`list_spaces limit:1`) and Notion (`notion_search query:"test" page_size:1`) to check which are connected.
+
+**If Confluence is connected**, offer:
+> "Confluence is connected. Publish this roadmap? Reply with the space key (e.g. `ARCH`), a Notion parent page ID, or `skip`."
+
+- Space key → delegate to **confluence-publisher** with `artifact:"technical-roadmap"`, `projectName`, `spaceKey`, `projectDir`
+
+**If Notion is connected** (and Confluence was not, or user prefers Notion):
+> "Notion is connected. Publish this roadmap? Reply with a parent page ID or `skip`."
+
+- Page ID → delegate to **notion-publisher** with `artifact:"technical-roadmap"`, `projectName`, `parentPageId`, `projectDir`
+
+**If both connected**, offer both options in one message.
+**If neither**, skip silently.
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/technical-roadmap.md`

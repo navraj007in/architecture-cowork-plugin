@@ -69,6 +69,23 @@ Deploy: push api-docs/ to GitHub Pages, Vercel, or Netlify
 Import: drag api-server.postman.json into Postman for API testing
 ```
 
+### Step 5: Docs Publish (Optional)
+
+After generating the docs, silently probe both Confluence (`list_spaces limit:1`) and Notion (`notion_search query:"test" page_size:1`) to check which are connected.
+
+**If Confluence is connected**, offer:
+> "Confluence is connected. Publish the API reference to your team space as well? Reply with the space key (e.g. `ARCH`), a Notion parent page ID, or `skip`."
+
+- Space key → delegate to **confluence-publisher** with `artifact:"api-docs"`, `projectName`, `spaceKey`, `projectDir`
+
+**If Notion is connected** (and Confluence was not, or user prefers Notion):
+> "Notion is connected. Publish the API reference to Notion? Reply with a parent page ID or `skip`."
+
+- Page ID → delegate to **notion-publisher** with `artifact:"api-docs"`, `projectName`, `parentPageId`, `projectDir`
+
+**If both connected**, offer both options in one message.
+**If neither**, skip silently.
+
 ### Final Step: Log Activity
 
 After the export completes, append one line to `architecture-output/_activity.jsonl`:

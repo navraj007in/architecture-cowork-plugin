@@ -29,16 +29,32 @@ If no blueprint or no sprint backlog exists, respond:
 
 > "I need a sprint backlog to sync. Run `/architect:blueprint` first to generate your architecture with a sprint plan, then come back here to push it to your project board."
 
-### Step 2: Ask Platform
+### Step 2: Detect Available Connections
 
-Ask the user:
+Before asking the user anything, silently check which MCP servers are connected:
+- Try a lightweight Jira MCP call (e.g. `search_issues` with `maxResults: 1`)
+- Try a lightweight Linear MCP call (e.g. `list_teams`)
+- Try a lightweight Azure DevOps MCP call (e.g. `list_projects`)
+
+If **multiple** are connected, ask the user which platform to use.
+If **one** is connected, tell the user which was detected and confirm.
+If **none** are connected, fall back to asking which platform and gathering credentials manually.
+
+**When MCP is detected**, tell the user:
+
+> "I found a connected <platform> integration. I'll use that to push the backlog — no credentials needed."
+
+Skip to Step 4 (preview).
+
+**When no MCP is available**, ask:
 
 > "Where should I push the backlog?"
 >
-> - **Azure DevOps** — Uses `az` CLI (requires Azure CLI with DevOps extension)
+> - **Linear** — Uses Linear MCP or API (requires `LINEAR_API_KEY`)
 > - **Jira** — Uses `jira-cli` or REST API (requires API token)
+> - **Azure DevOps** — Uses `az` CLI (requires Azure CLI with DevOps extension)
 
-### Step 3: Gather Connection Details
+### Step 3: Gather Connection Details (CLI path only — skip if MCP detected)
 
 **For Azure DevOps:**
 

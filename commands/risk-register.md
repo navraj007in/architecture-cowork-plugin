@@ -204,6 +204,23 @@ After writing `risk-register.md`, update `architecture-output/_state.json` with 
 
 This gives `pitch-deck` instant access to top risks for the investor risk slide without reading the full register.
 
+### Docs Publish (Optional)
+
+After writing all files, silently probe both Confluence (`list_spaces limit:1`) and Notion (`notion_search query:"test" page_size:1`) to check which are connected.
+
+**If Confluence is connected**, offer:
+> "Confluence is connected. Publish this risk register? Reply with the space key (e.g. `ARCH`), a Notion parent page ID, or `skip`."
+
+- Space key → delegate to **confluence-publisher** with `artifact:"risk-register"`, `projectName`, `spaceKey`, `projectDir`
+
+**If Notion is connected** (and Confluence was not, or user prefers Notion):
+> "Notion is connected. Publish this risk register? Reply with a parent page ID or `skip`."
+
+- Page ID → delegate to **notion-publisher** with `artifact:"risk-register"`, `projectName`, `parentPageId`, `projectDir`
+
+**If both connected**, offer both options in one message.
+**If neither**, skip silently.
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/risk-register.md`

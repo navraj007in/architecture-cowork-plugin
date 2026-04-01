@@ -45,6 +45,22 @@ Ask the user:
 > "Where are you deploying?"
 > - Vercel, Railway, AWS, Azure, GCP, Docker/self-hosted
 
+### Step 2.5: Check Existing Infrastructure (Optional)
+
+Before delegating, silently probe the relevant MCP servers based on the deployment target chosen in Step 2:
+
+**If deploying to AWS** — attempt `list_ec2_instances` (maxResults: 1) to check if AWS MCP is connected:
+- If connected: call `list_ec2_instances`, `describe_rds_instances`, `list_lambda_functions` to surface existing resources. Pass this snapshot to the cicd-deployer agent so it can reference real cluster/function names in the generated pipeline config (e.g. actual ECS cluster name, actual ECR repo ARN).
+- If not connected: proceed with blueprint values only.
+
+**If deploying to Kubernetes** — attempt `list_namespaces` to check if Kubernetes MCP is connected:
+- If connected: call `list_namespaces` and `list_deployments` to understand existing cluster state. Pass namespace list to cicd-deployer so K8s manifests target the correct namespace.
+- If not connected: proceed with `default` namespace unless the blueprint specifies otherwise.
+
+**If Terraform is in the stack** — attempt a Terraform MCP call (`terraform_show`) to check if the server is connected:
+- If connected: note that generated `.tf` files will be validated via `terraform_validate` after writing.
+- If not connected: skip Terraform validation.
+
 ### Step 3: Delegate to CI/CD Deployer Agent
 
 Pass the following to the **cicd-deployer** agent:
