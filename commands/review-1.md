@@ -51,22 +51,22 @@ auto_fix:          true | false
 
 ## Step 2: Acquire the Diff
 
-Run from the component directory unless otherwise specified. Combine staged and unstaged changes — a developer may have staged some hunks and left others unstaged.
+**All git commands run from the repo root** — never cd into a component directory. Component scope is enforced by the `-- <component_filter>/` path argument. Combine staged and unstaged changes — a developer may have staged some hunks and left others unstaged.
 
 ### Mode: `uncommitted`
 
-Run from within `<component_filter>/`:
+Run from the repo root, scoped to the component directory:
 ```bash
-git diff HEAD -- .
-git diff --cached HEAD -- .
+git diff HEAD -- <component_filter>/
+git diff --cached HEAD -- <component_filter>/
 ```
-Combine both outputs. If both are empty, check for untracked new files:
+Combine both outputs. If both are empty, check for untracked new files inside the component:
 ```bash
-git ls-files --others --exclude-standard
+git ls-files --others --exclude-standard -- <component_filter>/
 ```
 For each untracked file, produce a synthetic diff:
 ```bash
-git diff --no-index /dev/null <file>
+git diff --no-index /dev/null <component_filter>/<file>
 ```
 If all three sources are empty: output — "No changes found in {component} — nothing to review." and stop.
 
@@ -159,26 +159,26 @@ For each component in `components_to_review`:
 
 ### 4a. Verify the component exists on disk
 
-If `<component-name>/` does not exist: abort with — "Component '{name}' has not been scaffolded yet. Run `/architect:scaffold-component {name}` first."
+Check that the directory `<component-name>/` exists relative to the repo root. If it does not exist: abort with — "Component '{name}' not found on disk. Run `/architect:scaffold-component {name}` first, or check that the component directory name matches the argument exactly."
 
 ### 4b. Detect the fingerprint
 
-Run these reads (use Glob and Grep — no full file reads unless necessary):
+**All paths are relative to the repo root and MUST be prefixed with `<component-name>/`.** Never read files outside the component directory during fingerprinting.
 
 | Signal | Detection method |
 |--------|-----------------|
-| **Runtime** | `package.json` → `engines.node`; `go.mod`; `*.csproj`; `pyproject.toml`; `build.gradle.kts`; `Podfile`/`Package.swift` (iOS); `pubspec.yaml` (Flutter) |
-| **Framework** | `package.json` deps (`express`, `fastify`, `@nestjs/core`, `next`); `requirements.txt` or `pyproject.toml` (`fastapi`, `django`, `flask`); `.csproj` SDK attribute; `pom.xml` spring-boot-starter; `go.mod` require (`gin-gonic/gin`, `labstack/echo`) |
-| **Folder convention** | List top-level dirs inside `src/` or `app/` or project root |
-| **Route style** | Grep `src/` or `app/` for: `router\.get\|router\.post` (Express), `@Get\|@Post\|@Controller` (NestJS), `@app\.get\|@router\.get` (FastAPI/Flask), `http\.HandleFunc\|r\.GET` (Go), `\[HttpGet\]\|\[HttpPost\]` (.NET), `@GetMapping\|@PostMapping` (Spring) |
-| **Service layer** | Check if a `services/` or `application/` or `use_cases/` directory exists |
-| **ORM / data access** | Grep `package.json`/`pyproject.toml`/`.csproj`/`go.mod`/`pom.xml` for: `prisma`, `drizzle`, `typeorm`, `sequelize`, `sqlalchemy`, `alembic`, `tortoise-orm`, `entity-framework`, `gorm`, `spring-data`, `jpa` |
-| **Validation library** | Grep `src/` for: `z\.object\|z\.string` (zod), `Joi\.object` (Joi), `class-validator` (NestJS), `pydantic\|BaseModel` (Python), `FluentValidation` (.NET), `validator\.` (Go), `@Valid\|@NotNull` (Java) |
-| **Error response format** | Read first 60 lines of one existing route/controller file — extract the error return shape |
-| **Import alias** | `tsconfig.json` → `paths`; `vite.config.*` → `resolve.alias`; Python uses relative imports |
-| **Test runner + location** | `package.json` → `scripts.test`; `pytest.ini`/`pyproject.toml [tool.pytest]`; `go test` (Go); `dotnet test` (.NET); `./gradlew test` (Java). Scan for `tests/`, `__tests__/`, `spec/`, co-located `*.test.*`, `*_test.*`, `*Spec.*` |
-| **Naming convention** | Read 2 existing service files — camelCase functions vs snake_case, class-based vs functional |
-| **Logger** | Grep `src/` or `app/` for: `pino\|winston\|bunyan` (Node.js), `structlog\|logging` (Python), `slog\|zap\|logrus` (Go), `Serilog\|ILogger` (.NET), `slf4j\|logback` (Java) — record the logger name used |
+| **Runtime** | `<component-name>/package.json` → `engines.node`; `<component-name>/go.mod`; glob `<component-name>/**/*.csproj`; `<component-name>/pyproject.toml`; `<component-name>/build.gradle.kts`; `<component-name>/Podfile` or `Package.swift` (iOS); `<component-name>/pubspec.yaml` (Flutter) |
+| **Framework** | Grep `<component-name>/package.json` for deps: `express`, `fastify`, `@nestjs/core`, `next`; grep `<component-name>/pyproject.toml` or `<component-name>/requirements.txt` for `fastapi`, `django`, `flask`; grep `<component-name>/**/*.csproj` SDK attribute; grep `<component-name>/go.mod` for `gin-gonic/gin`, `labstack/echo` |
+| **Folder convention** | List top-level dirs inside `<component-name>/src/` or `<component-name>/app/` or `<component-name>/` |
+| **Route style** | Grep `<component-name>/src/` or `<component-name>/app/` for: `router\.get\|router\.post` (Express), `@Get\|@Post\|@Controller` (NestJS), `@app\.get\|@router\.get` (FastAPI/Flask), `http\.HandleFunc\|r\.GET` (Go), `\[HttpGet\]\|\[HttpPost\]` (.NET), `@GetMapping\|@PostMapping` (Spring) |
+| **Service layer** | Check if `<component-name>/src/services/`, `<component-name>/src/application/`, or `<component-name>/src/use_cases/` exists |
+| **ORM / data access** | Grep `<component-name>/package.json`, `<component-name>/pyproject.toml`, `<component-name>/go.mod`, or `<component-name>/**/*.csproj` for: `prisma`, `drizzle`, `typeorm`, `sequelize`, `sqlalchemy`, `gorm`, `entity-framework`, `spring-data` |
+| **Validation library** | Grep `<component-name>/src/` for: `z\.object\|z\.string` (zod), `Joi\.object`, `class-validator`, `pydantic\|BaseModel`, `FluentValidation`, `@Valid\|@NotNull` |
+| **Error response format** | Read first 60 lines of one existing route/controller file inside `<component-name>/` — extract the error return shape |
+| **Import alias** | `<component-name>/tsconfig.json` → `paths`; `<component-name>/vite.config.*` → `resolve.alias` |
+| **Test runner + location** | `<component-name>/package.json` → `scripts.test`; `<component-name>/pyproject.toml` `[tool.pytest.ini_options]`; glob `<component-name>/**/*.test.*`, `<component-name>/**/*_test.*`, `<component-name>/**/*Spec.*`; check `<component-name>/tests/`, `<component-name>/src/__tests__/` |
+| **Naming convention** | Read 2 existing service files inside `<component-name>/src/services/` or equivalent |
+| **Logger** | Grep `<component-name>/src/` or `<component-name>/app/` for: `pino\|winston\|bunyan`, `structlog\|logging`, `slog\|zap\|logrus`, `Serilog\|ILogger`, `slf4j\|logback` |
 
 ### 4c. Build the fingerprint object
 
@@ -203,7 +203,7 @@ Run these reads (use Glob and Grep — no full file reads unless necessary):
 
 ### 4d. Check for component-level CLAUDE.md
 
-If `<component-name>/CLAUDE.md` exists, read it. Treat its rules as additional constraints — they take priority over fingerprint defaults.
+If `<component-name>/CLAUDE.md` exists at that path relative to the repo root, read it. Treat its rules as additional constraints — they take priority over fingerprint defaults.
 
 ### Output of Step 4 (internal state)
 

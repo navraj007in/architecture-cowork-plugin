@@ -67,7 +67,7 @@ Count total files and total lines changed for the result contract.
 
 ## Check 1: Pattern Conformance
 
-Compare added lines against `pattern_fingerprint`. Use Grep on the component's `src/` or `app/` directory to confirm what the existing codebase actually does before flagging a divergence.
+Compare added lines against `pattern_fingerprint`. Use Grep scoped to `<component_name>/src/` or `<component_name>/app/` (whichever exists) to confirm what the existing codebase actually does before flagging a divergence. **Never grep outside the component directory** — other components' patterns are irrelevant.
 
 | Signal | How to detect | Severity |
 |--------|--------------|---------|
@@ -101,7 +101,7 @@ Parse added lines for new route handlers, new service functions, and new outboun
 |--------|----------|---------|
 | **Unstructured logging** | Added lines contain: `console.log(`, `console.error(`, `print(`, `fmt.Println(`, `System.out.println(`, `fmt.Printf(` in non-test files | Warning — replace with the logger in `pattern_fingerprint.logger` |
 | **Unhandled async** | Added `async` function (TS/Python/Kotlin) or `goroutine` or `Task` with no `try/catch`, `except`, `recover`, or `.catch` in the same function body | Warning |
-| **Correlation ID missing** | Check if project uses correlation IDs: Grep existing middleware for `x-correlation-id`, `x-request-id`, `correlation_id`, `trace_id`. If found and new outbound HTTP calls in the diff do not forward the header → Warning |
+| **Correlation ID missing** | Check if project uses correlation IDs: Grep `<component_name>/src/` or `<component_name>/app/` for `x-correlation-id`, `x-request-id`, `correlation_id`, `trace_id`. If found and new outbound HTTP calls in the diff do not forward the header → Warning |
 | **Hardcoded credential** | Added lines contain string literals matching patterns: `password=`, `api_key=`, `secret=`, `bearer `, `sk_`, `pk_` followed by a non-empty value (not a variable reference, not `.env` read) | Blocker |
 | **Hardcoded URL (non-local)** | Added lines contain `http://` or `https://` string literals that are not `localhost`, `127.0.0.1`, or `0.0.0.0` — env var should be used | Warning |
 | **No error boundary on route** | New route handler function body has no error handling at all (no try/catch, no `.catch`, no `if err != nil`, no `except`) | Warning |
@@ -145,8 +145,8 @@ Skip functions defined inside test files (`test_location` from fingerprint).
 
 For each new function or route found:
 
-1. Determine the expected test file location using `pattern_fingerprint.test_location` and naming convention.
-2. Read or Grep the test file for a reference to the function name or route path.
+1. Determine the expected test file location using `pattern_fingerprint.test_location` and naming convention — the path is `<component_name>/<test_location>/<test_file>`.
+2. Read or Grep that path (prefixed with `<component_name>/`) for a reference to the function name or route path.
 3. If no test file or no reference found → **Warning**: "No test for `<name>` — add: happy path, validation failure, not-found."
 4. If test references exist: Grep the test block for assertions covering failure/error/not-found cases. Pattern: look for negative status codes (`404`, `422`, `400`, `403`), error message assertions, or exception assertions. If only `200`/success assertions are present → **Warning**: "`<name>` tests only cover the happy path — add failure and edge case tests."
 
