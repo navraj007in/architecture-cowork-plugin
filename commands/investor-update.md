@@ -160,6 +160,12 @@ After writing all output files, merge a completion marker into `architecture-out
 }
 ```
 
+Then append one line to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"investor-update","outcome":"completed","files":["architecture-output/investor-update.md"],"summary":"Investor update generated for <project-name>."}
+```
+
 ## Output Rules
 
 - Use **founder-communication** skill for ALL text — investors are not engineers
