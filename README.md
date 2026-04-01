@@ -37,6 +37,8 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 | `/architect:sdl`                   | Generate, validate, diff, or browse SDL architecture specifications               |
 | `/architect:scaffold`              | Create project structure plan from a blueprint architecture                        |
 | `/architect:scaffold-component`    | Scaffold a single component from the SDL with full starter code                    |
+| `/architect:implement`             | Implement a user story or feature end-to-end into an already-scaffolded codebase   |
+| `/architect:review`                | Review code changes against the project's own patterns, best practices, and security |
 | `/architect:cost-estimate`         | Infrastructure + third-party + LLM token cost breakdown                           |
 | `/architect:complexity-check`      | Build difficulty assessment with 10-factor scoring                                |
 | `/architect:agent-spec`            | AI agent architecture — orchestration, tools, guardrails, token costs             |
@@ -238,6 +240,8 @@ The plugin includes 29 domain knowledge skills:
 | **Stakeholder Doc**            | Stakeholder-facing documentation for non-technical audiences                                                              |
 | **Sync Backlog**               | Backlog synchronization for Azure DevOps and Jira                                                                         |
 | **Validate**                   | Architecture validation and consistency checking rules                                                                    |
+| **Clean Code**                 | Structural quality rules (function length, single responsibility, naming, DRY, dead code, frontend component decomposition) applied at write time and review time |
+| **Production Hardening**       | Runtime-specific patterns for retry, timeout, structured logging, graceful shutdown, correlation IDs, and health checks   |
 
 ## Plugin Structure
 
@@ -247,16 +251,18 @@ architecture-cowork-plugin/
 │   ├── marketplace.json
 │   └── plugin.json
 ├── README.md
-├── agents/                          # 8 subagents with tool access
+├── agents/                          # 11 subagents with tool access
 │   ├── api-docs-publisher.md
 │   ├── backlog-sync.md
 │   ├── cicd-deployer.md
 │   ├── data-model-generator.md
 │   ├── diagram-exporter.md
 │   ├── env-setup.md
+│   ├── implementer.md
+│   ├── reviewer.md
 │   ├── scaffolder.md
 │   └── security-scanner.md
-├── commands/                        # 24 slash commands
+├── commands/                        # 30 slash commands
 │   ├── agent-spec.md
 │   ├── blueprint.md
 │   ├── compare-stack.md
@@ -267,12 +273,14 @@ architecture-cowork-plugin/
 │   ├── generate-data-model.md
 │   ├── hiring-brief.md
 │   ├── deep-research.md
+│   ├── implement-index.md           # split: implement-1.md, implement-2.md
 │   ├── import.md
 │   ├── investor-update.md
 │   ├── launch-checklist.md
 │   ├── onboarding-pack.md
 │   ├── publish-api-docs.md
 │   ├── quick-spec.md
+│   ├── review-index.md              # split: review-1.md, review-2.md
 │   ├── scaffold-component.md
 │   ├── scaffold.md
 │   ├── sdl.md
@@ -281,7 +289,7 @@ architecture-cowork-plugin/
 │   ├── setup-env.md
 │   ├── sync-backlog.md
 │   └── well-architected.md
-├── skills/                          # 29 domain knowledge skills
+├── skills/                          # 31 domain knowledge skills
 │   ├── agent-architecture/
 │   ├── api-artifacts/
 │   ├── application-patterns/
@@ -309,6 +317,8 @@ architecture-cowork-plugin/
 │   ├── setup-env/
 │   ├── stakeholder-doc/
 │   ├── sync-backlog/
+│   ├── clean-code/
+│   ├── production-hardening/
 │   ├── validate/
 │   └── well-architected/
 ├── templates/                       # 12 SDL starter templates

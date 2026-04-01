@@ -78,6 +78,19 @@ Compare added lines against `pattern_fingerprint`. Use Grep on the component's `
 | **Validation library** | Added route handler has a request body or query params and no call to the fingerprint's validation library | Warning |
 | **Error response shape** | Added error returns do not match `pattern_fingerprint.error_format` (e.g. project uses `{"detail": "..."}` but new code returns `{"error": "..."}`) | Warning |
 
+### Clean Code sub-checks (Check 1)
+
+Read `skills/clean-code/SKILL.md` to get the severity table, then read `naming.md` and `hygiene.md`. If the diff contains new function definitions with many parameters or boolean literal arguments, also read `interface.md`.
+
+| Signal | How to detect | Check ID | Severity |
+|--------|--------------|---------|---------|
+| **Generic names** | Added variable/parameter/function names match blocklist: `data`, `result`, `temp`, `tmp`, `value`, `val`, `obj`, `item`, `thing`, `stuff`, `info`, `ret`, `out`, `buf` | `cleancode-naming` | Warning |
+| **Magic values** | Numeric literal > 1 or string literal > 3 chars in added lines, outside log messages / test files / import paths, with no corresponding named constant | `cleancode-magic-value` | Warning |
+| **Premature abstraction** | New file in `utils/`, `helpers/`, `lib/`, `common/` or function named `*Helper`/`*Util`/`*Factory` with only one call site across diff + existing code | `cleancode-premature-abstraction` | Warning |
+| **Dead code** | Commented-out code blocks, unused parameters, unreachable else-after-return, variables assigned but never read | `cleancode-dead-code` | Warning |
+| **Parameter count** | New function/method definition exceeds runtime threshold (TS: 3, Python: 4, Go: 4, .NET: 3, Java: 3) | `cleancode-param-count` | Warning |
+| **Boolean trap** | Function call in added lines passes `true`/`false` as a non-obvious argument | `cleancode-boolean-trap` | Suggest |
+
 ---
 
 ## Check 2: Production Hardening
@@ -152,6 +165,19 @@ Track how many new functions/routes have no test at all. Include in the result a
 | **Cross-component import** | Added import/require lines reference a path that traverses another component's directory. Patterns: `from '../../<other-component>/`, `require('../<other-component>/`, `import "<other-component>/` | Check against `sdl_context.component_boundaries` — if the import targets a component not in the allowed list → Blocker. If allowed → no finding |
 | **SDL boundary violation** | A component imports from another that is not listed in its `component_boundaries` entry | Blocker (same detection as above, explicit severity label) |
 
+### Clean Code sub-checks (Check 5)
+
+Read `skills/clean-code/structure.md`. If the diff includes frontend files (`.tsx`, `.jsx`, `.vue`, `.svelte`, Swift, Kotlin composable files), also read `skills/clean-code/frontend.md`.
+
+| Signal | How to detect | Check ID | Severity |
+|--------|--------------|---------|---------|
+| **Function too long** | New function body exceeds runtime threshold (TS/JS: 30, Python: 25, Go: 40, .NET/Java: 35–40 lines) | `cleancode-fn-length` | Warning |
+| **Single responsibility violation** | New function name contains `And`/`Or`/`Also`/`Then` conjunction, or function body contains section-divider comments (`# Step 1`, `// ---`) | `cleancode-single-responsibility` | Warning |
+| **Mixed abstraction levels** | Function body contains both a named function call and a direct loop/arithmetic on data fields | `cleancode-abstraction-levels` | Suggest |
+| **Component too large** | New component file exceeds runtime line threshold (React: 150, Vue/Svelte: 100, Angular: 50 template lines, SwiftUI/Compose: 80) or JSX nesting depth > 4 | `cleancode-component-size` | Warning |
+| **Over-coupled props** | Component receives a full state/store object as a prop, or props count > 6, or prop is passed straight through to a child without being used | `cleancode-props-interface` | Warning |
+| **Logic in render function** | Direct `fetch(` / API call, or `useEffect` with > 5 line body, or inline array chain with 3+ operations in JSX | `cleancode-logic-extraction` | Suggest |
+
 ---
 
 ## Severity Reference
@@ -215,6 +241,6 @@ Return a structured JSON object to the calling command:
 }
 ```
 
-`check` field values: `pattern-import`, `pattern-error-class`, `pattern-naming`, `pattern-orm`, `pattern-validation`, `pattern-error-format`, `hardening-logging`, `hardening-async`, `hardening-correlation`, `hardening-secret`, `hardening-url`, `hardening-error-boundary`, `security-sqli`, `security-idor`, `security-auth-missing`, `security-mass-assign`, `security-xss`, `security-sensitive-log`, `security-http`, `test-coverage-missing`, `test-coverage-partial`, `architecture-logic-in-route`, `architecture-raw-query`, `architecture-cross-component`.
+`check` field values: `pattern-import`, `pattern-error-class`, `pattern-naming`, `pattern-orm`, `pattern-validation`, `pattern-error-format`, `hardening-logging`, `hardening-async`, `hardening-correlation`, `hardening-secret`, `hardening-url`, `hardening-error-boundary`, `security-sqli`, `security-idor`, `security-auth-missing`, `security-mass-assign`, `security-xss`, `security-sensitive-log`, `security-http`, `test-coverage-missing`, `test-coverage-partial`, `architecture-logic-in-route`, `architecture-raw-query`, `architecture-cross-component`, `cleancode-fn-length`, `cleancode-single-responsibility`, `cleancode-abstraction-levels`, `cleancode-naming`, `cleancode-magic-value`, `cleancode-param-count`, `cleancode-boolean-trap`, `cleancode-dry`, `cleancode-dead-code`, `cleancode-premature-abstraction`, `cleancode-component-size`, `cleancode-props-interface`, `cleancode-logic-extraction`.
 
 `outcome` is `"completed"` when all five checks ran without error. `"partial"` if the diff could not be parsed or a check errored — add a `"partial_reason": "..."` field describing what failed and why.

@@ -112,6 +112,25 @@ Rules:
 - Throw/return the same error types found in existing services (Grep for them — never invent new error classes)
 - External service calls (email, SMS, payment, storage): isolate in `lib/` or `integrations/` wrapper, then call from service
 
+### Clean Code
+
+Read `skills/clean-code/SKILL.md` once at the start of the write session. Then read only the sub-files relevant to each layer before writing it:
+
+| Layer | Sub-files to read |
+|-------|------------------|
+| Schema / validation | `naming.md` + `interface.md` |
+| Service layer | `structure.md` + `naming.md` + `interface.md` + `hygiene.md` |
+| Route / controller | `structure.md` + `interface.md` |
+| Integration lib | `naming.md` + `hygiene.md` |
+| Test layer | `hygiene.md` |
+| Frontend component | `frontend.md` + `naming.md` |
+
+Apply rules as design constraints **during writing** — not post-hoc. Sequence per function:
+1. Before writing the signature: apply CC-I1 (parameter count) and CC-N1 (naming)
+2. After writing the body: apply CC-S1 (function length) — decompose if over threshold before continuing
+3. After writing a file: apply CC-H2 (dead code) and CC-H3 (premature abstraction)
+4. For frontend files: design the component hierarchy before writing JSX — apply CC-F1 first
+
 ### Production Hardening
 
 Apply production hardening to all new backend files. Read the correct sub-file for this component's runtime:

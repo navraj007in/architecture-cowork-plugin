@@ -71,6 +71,21 @@ If no activity files exist, proceed normally — this is a fresh project.
 
 ---
 
+### Clean Code during scaffolding
+
+Read `skills/clean-code/SKILL.md` + `skills/clean-code/naming.md` + `skills/clean-code/hygiene.md` before generating any file. Apply these rules to all generated scaffold code:
+
+| Rule | Applies | Note |
+|------|---------|------|
+| CC-N1 Meaningful names | Yes | Template names become the codebase baseline — name things right from the start |
+| CC-N2 Magic values | Yes | No hardcoded ports, timeouts, or limits in generated files — use named constants or env vars |
+| CC-H2 Dead code | Yes — critical | No TODOs, no commented-out code blocks in generated files |
+| CC-H3 Premature abstraction | Yes — critical | Do not generate single-use utility wrappers |
+| CC-S1 Function length | Yes | Generated functions should not exceed runtime thresholds |
+| CC-H1 DRY | Partial | 3+ occurrences rule only — scaffold legitimately repeats boilerplate patterns |
+
+---
+
 Check the component's `mode` field first:
 - **`mode: "new"`** → execute steps 1–15 below (fresh scaffold)
 - **`mode: "augment"`** → follow the Augment Path instead
