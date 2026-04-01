@@ -90,10 +90,10 @@ Existing components will be augmented — missing files added, nothing overwritt
 | `frontends[]` with type `crm` | CRM Frontend | `react-vite`, `nextjs`, `angular` | React (Vite) |
 | `frontends[]` with type `booking` | Booking Frontend | `react-vite`, `nextjs` | React (Vite) |
 | `frontends[]` with type `ai-chat` | AI Chat Interface | `react-vite`, `nextjs` | React (Vite) |
-| `frontends[]` with type `mobile` | Mobile App | `react-native`, `flutter`, `swift`, `kotlin` | React Native (Expo) |
-| `services[]` with type `rest-api` or `graphql` | Backend API | `nodejs`, `dotnet`, `python-fastapi`, `go`, `java-spring`, `ruby-rails`, `django` | Node.js/Express |
+| `frontends[]` with type `mobile` | Mobile App | `react-native`, `expo`, `flutter`, `swift`, `kotlin` | React Native (Expo) |
+| `services[]` with type `rest-api` or `graphql` | Backend API | `nodejs`, `nestjs`, `fastify`, `dotnet`, `python-fastapi`, `go`, `java-spring`, `ruby-rails`, `django` | Node.js/Express |
 | `services[]` with type `background-worker` | Worker | `nodejs`, `dotnet`, `python`, `go` | Node.js/BullMQ |
-| `services[]` with type `websocket` | Real-time Service | `nodejs`, `dotnet`, `go` | Node.js/Socket.io |
+| `services[]` with type `websocket` | Real-time Service | `nodejs`, `nestjs`, `dotnet`, `go` | Node.js/Socket.io |
 | `agents[]` | AI Agent | `python-fastapi`, `nodejs` | Python/FastAPI |
 
 Always show the resolved framework next to each component name so the user can verify before scaffolding proceeds.

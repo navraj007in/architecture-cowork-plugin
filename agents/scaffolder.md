@@ -95,7 +95,7 @@ Never run framework CLI init commands (`create-next-app`, `dotnet new`, etc.) in
 
 ---
 
-### Fresh Scaffold Path (new components — steps 1–13)
+### Fresh Scaffold Path (new components — steps 1–15)
 
 ### 1. Create the Project Directory or Repo
 
@@ -125,155 +125,50 @@ Use the **project-templates** skill to determine the correct starter files for t
 | React (Vite) | `npm create vite@latest . -- --template react-ts` |
 | Vue (Nuxt) | `npx nuxi@latest init .` |
 | SvelteKit | `npx sv create .` |
+| Angular | `npx @angular/cli new . --routing --style=css --standalone --skip-git` |
 
 **Mobile Apps:**
 
 | Framework | Initialization Method |
 |-----------|----------------------|
-| React Native (Expo Managed) | `npx create-expo-app@latest . --template expo-template-blank-typescript` |
+| React Native (Expo Managed) | `npx create-expo-app@latest . --template expo-template-blank-typescript` — use `skills/project-templates/react-native.md` |
 | React Native (Expo Bare) | `npx create-expo-app@latest . --template bare-minimum` |
 | React Native CLI | `npx react-native init . --template react-native-template-typescript` |
 | Flutter | `flutter create .` |
-| Swift (iOS) | Write Xcode project files directly from project-templates skill |
-| Kotlin (Android) | Write Android Studio project files directly from project-templates skill |
+| Swift (iOS) | Use `skills/project-templates/ios-swift.md` — SwiftUI, URLSession, Keychain, FCM/APNs, deep linking |
+| Kotlin (Android) | Use `skills/project-templates/android-kotlin.md` — Jetpack Compose, Retrofit, EncryptedSharedPreferences, FCM, deep linking |
 
 **Backend Services:**
 
 | Framework | Initialization Method |
 |-----------|----------------------|
-| Node.js/Express | Write files directly from project-templates skill |
-| Python/FastAPI | Write files directly from project-templates skill |
+| Node.js/Express | Write files directly from project-templates skill (`skills/project-templates/nodejs.md`) |
+| Python/FastAPI | Write files directly from project-templates skill (`skills/project-templates/python.md`) |
 | Node.js Worker (BullMQ) | Write files directly from project-templates skill |
 | Python Agent (Claude SDK) | Write files directly from project-templates skill |
 | Node.js Agent | Write files directly from project-templates skill |
-| .NET (ASP.NET Core) | Use the .NET Clean Architecture template below — do NOT use `dotnet new webapi` alone |
+| .NET (ASP.NET Core) | Use `skills/project-templates/dotnet.md` — full Clean Architecture template; do NOT use `dotnet new webapi` alone |
+| NestJS | Use `skills/project-templates/nestjs.md` — modules, DI, guards, Swagger, ValidationPipe |
+| Java / Spring Boot | Use `skills/project-templates/spring-boot.md` — Maven, Spring Security, Spring Data JPA, Actuator |
+| Fastify | Write files directly from project-templates skill; use `fastify` + `@fastify/cors` + `@fastify/helmet` + `@fastify/swagger`; entry point registers plugins, `/health` route, and graceful shutdown |
 
-For CLI-scaffolded projects, apply customizations after initialization (add routes, configs, env files).
+For CLI-scaffolded projects (Next.js, Angular, NestJS), apply customizations after initialization (add routes, configs, env files).
 
-For write-from-template projects, create all files using the Write tool with content from the project-templates skill.
-
----
-
-#### .NET Clean Architecture Template
-
-When `framework` is `dotnet` or `pattern` is `clean-architecture`, always apply this full structure. A bare `dotnet new webapi` is not acceptable — it produces a single-project anemic scaffold with no separation of concerns.
-
-##### Solution Initialization
-
-```bash
-dotnet new sln -n <ComponentName>
-dotnet new classlib -n <ComponentName>.Domain         -o src/<ComponentName>.Domain
-dotnet new classlib -n <ComponentName>.Application    -o src/<ComponentName>.Application
-dotnet new classlib -n <ComponentName>.Infrastructure -o src/<ComponentName>.Infrastructure
-dotnet new webapi   -n <ComponentName>.WebApi         -o src/<ComponentName>.WebApi
-dotnet sln add src/<ComponentName>.Domain/<ComponentName>.Domain.csproj
-dotnet sln add src/<ComponentName>.Application/<ComponentName>.Application.csproj
-dotnet sln add src/<ComponentName>.Infrastructure/<ComponentName>.Infrastructure.csproj
-dotnet sln add src/<ComponentName>.WebApi/<ComponentName>.WebApi.csproj
-# Dependency rule: outer layers depend on inner only
-dotnet add src/<ComponentName>.Application/<ComponentName>.Application.csproj    reference src/<ComponentName>.Domain/<ComponentName>.Domain.csproj
-dotnet add src/<ComponentName>.Infrastructure/<ComponentName>.Infrastructure.csproj reference src/<ComponentName>.Application/<ComponentName>.Application.csproj
-dotnet add src/<ComponentName>.WebApi/<ComponentName>.WebApi.csproj              reference src/<ComponentName>.Application/<ComponentName>.Application.csproj
-dotnet add src/<ComponentName>.WebApi/<ComponentName>.WebApi.csproj              reference src/<ComponentName>.Infrastructure/<ComponentName>.Infrastructure.csproj
-dotnet new xunit -n <ComponentName>.Domain.Tests            -o tests/<ComponentName>.Domain.Tests
-dotnet new xunit -n <ComponentName>.Application.Tests       -o tests/<ComponentName>.Application.Tests
-dotnet new xunit -n <ComponentName>.WebApi.IntegrationTests -o tests/<ComponentName>.WebApi.IntegrationTests
-dotnet sln add tests/**/*.csproj
-```
-
-##### NuGet Packages
-
-**Application layer:**
-```xml
-<PackageReference Include="MediatR" Version="12.*" />
-<PackageReference Include="FluentValidation" Version="11.*" />
-<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.*" />
-<PackageReference Include="AutoMapper" Version="13.*" />
-<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.*" />
-```
-
-**Infrastructure layer:**
-```xml
-<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.*" />
-<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.*" />
-<PackageReference Include="Serilog.AspNetCore" Version="8.*" />
-<PackageReference Include="Serilog.Sinks.Console" Version="5.*" />
-```
-
-**WebApi layer:**
-```xml
-<PackageReference Include="Swashbuckle.AspNetCore" Version="6.*" />
-<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.*" />
-```
-
-**Test projects:**
-```xml
-<PackageReference Include="FluentAssertions" Version="6.*" />
-<PackageReference Include="NSubstitute" Version="5.*" />
-<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.*" />
-```
-
-##### Layer Structure and Files to Write
-
-**Domain** (`src/<ComponentName>.Domain/`) — zero external dependencies:
-- `Entities/BaseEntity.cs` — abstract base: `Guid Id`, `DateTime CreatedAt`, `DateTime? UpdatedAt`
-- `Entities/AggregateRoot.cs` — extends BaseEntity, holds `List<IDomainEvent> _domainEvents`
-- `Events/IDomainEvent.cs` — marker interface implementing `INotification`
-- `Interfaces/IRepository.cs` — `IRepository<T>` with GetById, GetAll, Add, Update, Delete
-- `Interfaces/IUnitOfWork.cs` — `SaveChangesAsync`
-
-**Application** (`src/<ComponentName>.Application/`) — depends on Domain only:
-- `Common/Behaviours/ValidationBehaviour.cs` — MediatR pipeline: runs FluentValidation before handler
-- `Common/Behaviours/LoggingBehaviour.cs` — logs request/response + elapsed time
-- `Common/Behaviours/UnhandledExceptionBehaviour.cs` — catches and logs unhandled exceptions
-- `Common/Exceptions/ValidationException.cs` — maps to HTTP 422
-- `Common/Exceptions/NotFoundException.cs` — maps to HTTP 404
-- `Common/Interfaces/IApplicationDbContext.cs` — DbSet<> properties the application layer needs
-- `DependencyInjection.cs` — registers MediatR, FluentValidation, AutoMapper with pipeline behaviours
-
-**Infrastructure** (`src/<ComponentName>.Infrastructure/`) — depends on Application:
-- `Persistence/ApplicationDbContext.cs` — EF Core DbContext, implements IApplicationDbContext, auto-sets UpdatedAt
-- `Repositories/Repository.cs` — generic EF Core implementation of IRepository<T>
-- `DependencyInjection.cs` — registers DbContext (Npgsql), repositories, Serilog
-
-**WebApi** (`src/<ComponentName>.WebApi/`) — depends on Application + Infrastructure:
-- `Controllers/ApiControllerBase.cs` — abstract base: `[ApiController][Route("api/[controller]")]`, exposes `ISender Mediator`
-- `Controllers/HealthController.cs` — GET /health with EF Core db check
-- `Middleware/ExceptionHandlingMiddleware.cs` — maps ValidationException → 422, NotFoundException → 404, Exception → 500 with RFC 7807 ProblemDetails
-- `Program.cs` — wires AddApplication(), AddInfrastructure(), Swagger, JWT bearer, CORS, Serilog request logging, health checks
-- `appsettings.json` — ConnectionStrings:DefaultConnection, Auth:Authority + Audience, Serilog min levels
-
-##### Per-Responsibility CQRS Stubs
-
-For each responsibility in `services[].responsibilities`, create under Application:
-```
-Application/<Responsibility>/
-  Queries/GetAll/GetAll<Responsibility>Query.cs        — record : IRequest<List<Dto>>
-  Queries/GetAll/GetAll<Responsibility>QueryHandler.cs — EF Core + AutoMapper ProjectTo
-  Queries/GetById/Get<Responsibility>ByIdQuery.cs
-  Commands/Create/Create<Responsibility>Command.cs     — record : IRequest<Guid>
-  Commands/Create/Create<Responsibility>CommandHandler.cs
-  Commands/Create/Create<Responsibility>CommandValidator.cs — FluentValidation rules
-  Commands/Update/...
-  Commands/Delete/...
-  DTOs/<Responsibility>Dto.cs
-```
-
-Write one complete controller per responsibility using `ApiControllerBase`, with GET (list), GET by id, POST, PUT, DELETE wired to MediatR.
+For write-from-template projects, create all files using the Write tool with content from the relevant project-templates sub-file.
 
 ---
 
 #### Unsupported Frameworks (LLM-generated scaffold)
 
-If the component's framework is NOT in the tables above (e.g. Angular, Spring Boot, Django, Go/Gin, Rails, Laravel, Ionic, KMM), generate the scaffold dynamically:
+If the component's framework is NOT in the tables above (e.g. Django, Rails, Laravel, Ionic, KMM, Hono, Remix, Astro), generate the scaffold dynamically:
 
 1. **Try CLI first** — Most frameworks have a CLI scaffolder. Try the standard command:
-   - Angular: `npx @angular/cli new . --skip-git`
-   - Spring Boot: `spring init --dependencies=web .` (or write files)
    - Ionic: `npx @ionic/cli start . blank --type=react --capacitor`
    - Django: `django-admin startproject {{component-name}} .`
-   - Go: `go mod init {{component-name}}`
    - Rails: `rails new . --api`
+   - Hono (Cloudflare Workers): `npm create hono@latest . -- --template cloudflare-workers`
+   - Remix: `npx create-remix@latest .`
+   - Astro: `npm create astro@latest .`
 
    If the CLI succeeds, continue to step 3 (folder structure).
 
@@ -514,7 +409,9 @@ Create a `packages/shared-types/` directory with type stubs as dataclasses or Py
 ### 11. Initialize Git
 
 ```bash
-git init
+# CLI tools (create-next-app, NestJS CLI, Angular CLI) may have already run git init.
+# Check first to avoid re-initializing an existing repo.
+[ -d .git ] || git init
 git add .
 git commit -m "Initial scaffold from Architect AI"
 ```
@@ -532,6 +429,11 @@ If the user opted for dependency installation:
 |----------|---------|
 | Node.js / TypeScript | `npm install` |
 | Python | `pip install -r requirements.txt` or `pip install -e .` |
+| .NET | `dotnet restore` |
+| Go | `go mod tidy` |
+| Java (Maven) | `mvn dependency:resolve -q` |
+| Flutter | `flutter pub get` |
+| Ruby | `bundle install` |
 
 ### 13. Write Activity Log
 
