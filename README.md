@@ -45,7 +45,7 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 | `/architect:compare-stack`         | Side-by-side technology comparison with recommendation                            |
 | `/architect:hiring-brief`          | Developer hiring package with role descriptions and interview questions           |
 | `/architect:well-architected`      | Six-pillar well-architected review with scores and improvement roadmap            |
-| `/architect:design-system`         | Design system generation — tokens, palette, typography, component library         |
+| `/architect:design-system`         | Design system generation — 11 personalities, diverse font pairs, dark mode, unconventional layouts, consumer/creative domains |
 | `/architect:generate-data-model`   | Generate ORM schemas (Prisma, SQLAlchemy, Mongoose, Drizzle) from blueprint types |
 | `/architect:setup-env`             | Walk through account setup, validate API keys, write verified .env files          |
 | `/architect:setup-cicd`            | Configure real CI/CD pipelines in GitHub Actions, Azure Pipelines, or GitLab CI   |
@@ -226,7 +226,7 @@ The plugin includes 29 domain knowledge skills:
 | **Well-Architected**           | Six-pillar framework for architecture quality evaluation with scoring and improvement roadmaps                             |
 | **Project Templates**          | Starter file templates for scaffolding across frontend, backend, mobile, and AI agent frameworks                          |
 | **Product Type Detector**      | Auto-detection of product archetypes with templates for AI agents, e-commerce, SaaS, real-time, etc.                      |
-| **Design System**              | Design token generation, color palettes, typography scales, component library selection                                   |
+| **Design System**              | Design token generation, 11 personalities (including organic/retro/expressive/cinematic), 77+ font pairs, dark mode tokens, gradient recipes, motion timing, 8 unconventional layout patterns, 23 consumer/creative domain defaults, 15 component library presets |
 | **Coding Rules**               | AI coding rules generation for CLAUDE.md, .cursorrules, copilot-instructions.md, .aider/conventions.md                   |
 | **Coding Rules Enforcement**   | Hard enforcement — ESLint, Ruff, dependency-cruiser, architecture tests, CI gates                                         |
 | **Infrastructure Generators**  | Terraform, Kubernetes, Docker Compose, Nginx config generation from SDL                                                   |
@@ -335,8 +335,11 @@ architecture-cowork-plugin/
 │   ├── portfolio-blog.sdl.yaml
 │   ├── realtime-collab.sdl.yaml
 │   └── saas-starter.sdl.yaml
-└── references/                      # 8 reference documents
-    ├── design-systems.md
+└── references/                      # 11 reference documents
+    ├── design-systems.md            # personality guide, component libraries, domain defaults
+    ├── design-system-fonts.md       # 77+ curated font pairs across 11 personalities
+    ├── design-system-patterns.md    # dark mode, gradients, motion timing, layout archetypes, 8 unconventional layouts
+    ├── design-system-creative.md    # organic/retro/expressive/cinematic personalities + consumer domains
     ├── example-blueprints.md
     ├── manifest-schema.md
     ├── prescriptive-decision-framework.md
