@@ -116,6 +116,10 @@ The `personality` field shapes layout decisions, whitespace, and visual treatmen
 | **brutalist** | none | compact | none | bold | minimal | mono/sans, raw | none |
 | **editorial** | none-sm | relaxed | flat | subtle | very generous | serif headings, fine body | smooth |
 | **luxury** | sm | relaxed | subtle | none | very generous | thin weights, tracking-wide | smooth |
+| **organic** | xl-full | relaxed | warm/soft | none | very generous | serif or soft humanist, medium | slow/smooth |
+| **retro** | none-sm | compact | hard offset | visible/double | moderate | slab serif, condensed, mono | none |
+| **expressive** | mixed | dense | dramatic or coloured | bold/coloured | tight with explosive openings | heavy + clashing scale | expressive/layered |
+| **cinematic** | none | spacious | none or glow | none | asymmetric | wide tracking, thin-to-bold | slow fade |
 
 ### Personality → Tailwind Mapping Examples
 

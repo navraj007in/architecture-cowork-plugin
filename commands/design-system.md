@@ -62,8 +62,9 @@ Load:
 - **design-system** skill — for generation logic, principles, and dark mode output spec
 - **sdl-knowledge** skill — for SDL schema awareness
 - **design-systems.md** reference — component library presets, personality guide, domain defaults, sub-domain differentiation
-- **design-system-fonts.md** reference — curated font pairing library by personality (30+ pairs with rotation rules)
-- **design-system-patterns.md** reference — dark mode tokens, gradient/texture recipes, motion timing values, layout archetype spatial specs
+- **design-system-fonts.md** reference — curated font pairing library by personality (49+ pairs with rotation rules, including organic/retro/expressive/cinematic)
+- **design-system-patterns.md** reference — dark mode tokens, gradient/texture recipes, motion timing values, layout archetype spatial specs, 8 unconventional layout patterns with CSS
+- **design-system-creative.md** reference — 4 creative personalities, consumer/creative domain defaults, personality × domain quick guide
 
 ### Step 4: Generate or Refine Design System
 

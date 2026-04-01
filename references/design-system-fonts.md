@@ -134,6 +134,78 @@ Ultra-refined, slow, high-fashion. Thin weights. Significant letter-spacing. Nev
 
 ---
 
+### Organic
+
+Warm, natural, tactile. Serifs or soft humanist sans. Never geometric or cold.
+
+| Heading | Body | Character |
+|---------|------|-----------|
+| Fraunces | DM Sans | Variable serif with personality, clean body |
+| DM Serif Display | Nunito Sans | High-contrast serif + warm rounded body |
+| Cormorant Garamond | Lato | Literary elegance + natural warmth |
+| Young Serif | Source Sans 3 | Contemporary nature-serif + neutral body |
+| Playfair Display | DM Sans | Classic serif + modern body — timeless |
+| Lora | Nunito | Both warm, consistent organic feel |
+| Zodiak | Inter | Distinctive variable serif + neutral body |
+
+**Weight guidance:** 400–500 for headings (organic avoids aggressive bold), 300–400 for body. Letter-spacing tight to default — never stretched.
+
+---
+
+### Retro / Nostalgic
+
+Vintage type energy. Display serifs, condensed grotesque, slab serifs, or actual monospace. Body stays readable.
+
+| Heading | Body | Character |
+|---------|------|-----------|
+| Alfa Slab One | Source Serif 4 | Heavy slab serif — 1960s editorial |
+| Playfair Display | Courier Prime | Broadsheet newspaper energy |
+| Bebas Neue | DM Mono | Condensed poster + mono body — 70s/80s |
+| Abril Fatface | Lora | Bold display serif + traditional body |
+| Yeseva One | Josefin Sans | Art nouveau meets modernism |
+| Ultra | Source Sans 3 | Maximum retro weight + clean readable body |
+| Righteous | Courier Prime | Retro-casual + typewriter body |
+
+**Weight guidance:** Bold display headings (700–900), normal body (400). Letter-spacing: `tracking-wider` on uppercase headings, tight on mixed-case.
+
+---
+
+### Expressive / Maximalist
+
+Type as design element. Clashing weights, varied scales, unexpected pairings. The combination should feel intentional-but-rebellious.
+
+| Heading | Body | Character |
+|---------|------|-----------|
+| Syne | Manrope | Geometric display + structured body — contemporary studio |
+| Bricolage Grotesque | Lora | Grotesque energy + literary body — productive tension |
+| Anton | DM Sans | Ultra-condensed impact + clean body — raw contrast |
+| Clash Display | Cabinet Grotesk | Both distinctive — neither is neutral |
+| Monument Extended | Inter | Wide, imposing — needs whitespace to breathe |
+| Big Shoulders Display | Source Sans 3 | American grotesque + Swiss body |
+| Hanken Grotesk | Spectral | Geometric sans + distinctive serif body |
+
+**Weight guidance:** 900 for hero headings, then drop to 400 body — the contrast IS the design. Mix sizes dramatically.
+
+---
+
+### Cinematic
+
+Wide tracking, thin-to-bold contrast, commanding presence. Type appears slowly and means something.
+
+| Heading | Body | Character |
+|---------|------|-----------|
+| Bebas Neue | DM Sans | Classic film title energy — condensed + clean |
+| Oswald | Source Sans 3 | Strong condensed + readable neutral |
+| Syne | Geist | Geometric wide + technical body |
+| Barlow Condensed | Barlow | Family cohesion — condensed heading, regular body |
+| Kanit | DM Sans | Thai-influenced grotesque — international cinematic |
+| Saira Condensed | Saira | Condensed throughout — consistent cinematic rhythm |
+| Rajdhani | Inter | Technical, structured — sci-fi/game adjacent |
+
+**Weight guidance:** 100–300 for ambient text (ultra-thin is cinematic), 700–900 for hero moments only. Letter-spacing: `tracking-[0.15em]` to `tracking-[0.3em]` on headings always.
+
+---
+
 ## Mono Font Recommendations
 
 Mono font used for code blocks, technical data, tokens, timestamps.

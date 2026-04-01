@@ -7,8 +7,9 @@ This skill generates distinctive, production-grade design systems that are **der
 
 **Reference files to load alongside this skill:**
 - `references/design-systems.md` — component library presets, personality guide, domain defaults, sub-domain differentiation
-- `references/design-system-fonts.md` — curated font pairing library by personality (30+ pairs, rotation rules)
-- `references/design-system-patterns.md` — dark mode tokens, gradient/texture recipes, motion timing values, layout archetype spatial specs
+- `references/design-system-fonts.md` — curated font pairing library by personality (49+ pairs including organic/retro/expressive/cinematic, rotation rules)
+- `references/design-system-patterns.md` — dark mode tokens, gradient/texture recipes, motion timing values, layout archetype spatial specs, 8 unconventional layout patterns with CSS
+- `references/design-system-creative.md` — 4 creative personalities (organic, retro, expressive, cinematic), consumer/creative domain defaults, personality × domain quick guide
 
 The user has an SDL blueprint. This skill fills, refines, or validates the `design` section and produces actionable design artifacts.
 
@@ -20,14 +21,22 @@ Before making any design choice, ground it in the SDL:
 2. **Derive personality** — map domain + audience to a design personality:
    - Fintech / Banking → corporate or editorial
    - Healthcare → minimal
-   - E-commerce → playful or bold
+   - E-commerce → playful or bold (B2C); corporate (B2B); luxury (D2C brand)
    - Education → minimal or playful
    - Developer tools → brutalist or minimal
    - Enterprise SaaS → corporate
-   - Creative / Media → editorial
+   - Creative / Media → editorial or expressive
    - Real estate → luxury
    - Kids / Family → playful
    - AI / ML → minimal
+   - Wellness / Nature / Food (artisan) → organic
+   - Music / Vintage / Craft → retro or cinematic
+   - Creative studio / Agency / Fashion (youth) → expressive
+   - Film / Gaming / Luxury experience → cinematic
+   - Personal portfolio (creative) → expressive or minimal
+   - Restaurant (fine dining) → luxury or organic
+   - Non-profit → minimal or editorial
+   - When unsure: read `references/design-system-creative.md` personality × domain quick guide
 3. **Derive palette** — domain-appropriate colors, NEVER indigo/purple as default:
    - Fintech → emerald or teal
    - Healthcare → sky or cyan
@@ -38,10 +47,20 @@ Before making any design choice, ground it in the SDL:
    - See `design-systems.md` reference for full domain mapping
 4. **Derive layout archetype** — from component types in SDL:
    - Admin/CRM/Dashboard frontends → `dashboard` (sidebar + header + content)
-   - Marketing/Landing pages → `marketing` (hero + sections + footer)
+   - Marketing/Landing pages (standard) → `marketing` (hero + sections + footer)
    - Content-heavy apps → `editorial` (wide content + typographic hierarchy)
    - SaaS with auth → `saas` (auth layout + dashboard + settings)
    - Mobile-first web → `app-shell` (top nav + responsive content)
+   - Creative/consumer sites — choose an unconventional layout from `references/design-system-patterns.md`:
+     - Portfolio, brand contrast → `split-screen`
+     - Feature showcase, app launch → `bento-grid`
+     - Music artist, film, narrative → `full-bleed-panels`
+     - Product storytelling, process → `sticky-scroll`
+     - Event, fashion, bold sections → `diagonal`
+     - Gallery, timeline, portfolio → `horizontal-scroll`
+     - Agency, fashion, type-driven → `typography-forward`
+     - Blog, news, lookbook → `magazine-grid`
+   - Can combine: e.g. `full-bleed-panels` for hero + `bento-grid` for features + `magazine-grid` for content
 
 ## Design Principles
 

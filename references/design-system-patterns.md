@@ -188,6 +188,10 @@ Actual `duration` and `easing` values per personality. Use in CSS custom propert
 | **brutalist** | `0ms` | `0ms` | `0ms` | `linear` | none |
 | **editorial** | `150ms` | `300ms` | `500ms` | `cubic-bezier(0.4,0,0.2,1)` | fade `300ms` |
 | **luxury** | `300ms` | `600ms` | `1000ms` | `cubic-bezier(0.25,0.1,0.25,1)` | fade + scale `600ms` |
+| **organic** | `200ms` | `500ms` | `800ms` | `cubic-bezier(0.4,0,0.2,1)` | fade `500ms` |
+| **retro** | `0ms` | `0ms` | `0ms` | `linear` | none — instant toggle |
+| **expressive** | `150ms` | `350ms` | `600ms` | `cubic-bezier(0.34,1.56,0.64,1)` | slide + scale `400ms` |
+| **cinematic** | `400ms` | `700ms` | `1200ms` | `cubic-bezier(0.25,0.1,0.25,1)` | fade `700ms` |
 
 ### Token format in design-tokens.json
 
@@ -332,3 +336,272 @@ Two-phase layout: auth shell → app shell post-login.
 | Content padding | `16px` |
 | Content max width | `768px` at `md:`, fluid at `sm:` |
 | Bottom nav items | 4–5 items, icon + label |
+
+---
+
+## Unconventional Layout Patterns
+
+For consumer, creative, and landing pages that need more than a standard hero + sections structure. Each pattern includes the core CSS technique and personality pairings.
+
+### Split-Screen
+
+Viewport divided into two contrasting halves — each half has its own background, content, and can have its own scroll. Classic for brand contrast, product A/B showcase, or portfolio intros.
+
+```css
+.split-screen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;  /* or 40fr 60fr for asymmetric */
+  min-height: 100vh;
+}
+
+/* Each half */
+.split-left  { background: var(--surface); }
+.split-right { background: var(--primary); color: var(--primary-foreground); }
+
+/* On mobile: stack vertically */
+@media (max-width: 768px) {
+  .split-screen { grid-template-columns: 1fr; }
+  .split-left, .split-right { min-height: 50vh; }
+}
+```
+
+**Personalities:** expressive, cinematic, luxury, bold, retro
+**Ratio options:** 50/50, 40/60, 33/67 — asymmetric feels more intentional
+
+---
+
+### Bento Grid
+
+Asymmetric card mosaic. Cards span different column/row counts. Apple-style feature showcase — communicates a lot at a glance without linear scrolling.
+
+```css
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 200px;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Span variants */
+.bento-wide  { grid-column: span 2; }
+.bento-tall  { grid-row: span 2; }
+.bento-hero  { grid-column: span 2; grid-row: span 2; }
+.bento-full  { grid-column: span 4; }
+
+/* Mobile: single column */
+@media (max-width: 768px) {
+  .bento-grid { grid-template-columns: 1fr; }
+  .bento-wide, .bento-tall, .bento-hero, .bento-full {
+    grid-column: span 1; grid-row: span 1;
+  }
+}
+```
+
+**Personalities:** expressive, minimal, bold, playful, organic
+**Card content ideas:** feature callout, stat/metric, image, quote, CTA, video loop
+
+---
+
+### Full-Bleed Scroll Panels
+
+Each section fills the full viewport. Scroll snapping creates a "page-through" experience. Works with or without snap — snap feels more immersive, free-scroll feels more editorial.
+
+```css
+/* With scroll snap (immersive) */
+.panel-container {
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+}
+
+.panel {
+  height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;  /* prevents skipping panels */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Without snap (editorial) — just full-height sections */
+.panel {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+}
+```
+
+**Personalities:** cinematic, bold, expressive, luxury
+**Common use:** music artists, film, portfolio hero sequences, app launch narratives
+
+---
+
+### Sticky Scroll Reveal
+
+Parent section has a tall height. Child content sticks in the viewport while the user scrolls, revealing elements progressively (driven by scroll position via JS or CSS animation-timeline).
+
+```css
+.sticky-section {
+  height: 300vh;  /* 3× viewport = scroll distance to move through */
+  position: relative;
+}
+
+.sticky-content {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+/* Reveal elements using animation-timeline (modern browsers) */
+@supports (animation-timeline: scroll()) {
+  .reveal-element {
+    animation: fadeUp linear both;
+    animation-timeline: scroll(root);
+    animation-range: entry 20% cover 40%;
+  }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+```
+
+**Personalities:** cinematic, luxury, editorial, expressive
+**Common use:** product storytelling, feature reveals, process walkthroughs
+
+---
+
+### Diagonal / Angled Sections
+
+`clip-path` creates diagonal transitions between sections — breaks the monotony of horizontal bands. Overlap sections with negative margins to maintain continuity.
+
+```css
+.diagonal {
+  clip-path: polygon(0 5vh, 100% 0, 100% calc(100% - 5vh), 0 100%);
+  margin: -5vh 0;
+  padding: 10vh 6%;
+}
+
+/* Reverse diagonal */
+.diagonal-reverse {
+  clip-path: polygon(0 0, 100% 5vh, 100% 100%, 0 calc(100% - 5vh));
+  margin: -5vh 0;
+  padding: 10vh 6%;
+}
+
+/* Steeper angle — more dramatic */
+.diagonal-steep {
+  clip-path: polygon(0 10vh, 100% 0, 100% 100%, 0 100%);
+}
+```
+
+**Personalities:** bold, expressive, playful, retro (with thick borders on the diagonal)
+**Note:** Avoid diagonal on mobile — reduce angle to 2vh or remove entirely below 768px
+
+---
+
+### Horizontal Scroll
+
+Sections flow left-to-right instead of top-to-bottom. User scrolls right through a sequence. Works well for timelines, process steps, portfolio galleries.
+
+```css
+.horizontal-scroll {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  height: 100vh;
+  /* Hide scrollbar visually */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.horizontal-scroll::-webkit-scrollbar { display: none; }
+
+.h-panel {
+  min-width: 100vw;
+  height: 100vh;
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* Narrower panels for gallery feel */
+.h-panel-narrow { min-width: 60vw; }
+```
+
+**Personalities:** expressive, cinematic, editorial (gallery mode), retro
+**Warning:** Accessibility concern — provide vertical scroll fallback for keyboard/mobile
+
+---
+
+### Typography-Forward
+
+Oversized type IS the layout. Content lives within or alongside massive letterforms. The type fills the viewport at sizes where individual letterforms become shapes. Common in fashion and design agency sites.
+
+```css
+/* Hero headline that fills the viewport */
+.type-hero {
+  font-size: clamp(4rem, 18vw, 16rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-weight: 900;
+}
+
+/* Mixed scale — different weights create visual hierarchy without layout */
+.type-mixed {
+  display: flex;
+  flex-direction: column;
+}
+.type-mixed .display { font-size: clamp(5rem, 20vw, 18rem); font-weight: 900; line-height: 0.85; }
+.type-mixed .caption { font-size: clamp(0.75rem, 1.5vw, 1rem); font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase; }
+
+/* Type that breaks out of container */
+.breakout-type {
+  margin-left: -6vw;
+  margin-right: -6vw;
+  width: calc(100% + 12vw);
+}
+```
+
+**Personalities:** bold, expressive, brutalist, editorial (lighter weight), cinematic (tracking-wide)
+**Font requirement:** Heavy display font needed — Bebas Neue, Syne, Archivo Black, Anton, or Bricolage Grotesque
+
+---
+
+### Magazine Grid
+
+Editorial mosaic. Articles and features span different column counts. Inspired by print magazine layout — varied scale creates visual rhythm.
+
+```css
+.magazine-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Common span patterns */
+.article-lead     { grid-column: span 8; }  /* dominant story */
+.article-sidebar  { grid-column: span 4; }  /* secondary stack */
+.article-feature  { grid-column: span 12; } /* full-width feature */
+.article-half     { grid-column: span 6; }  /* equal pair */
+.article-third    { grid-column: span 4; }  /* three-up */
+
+/* Add visual rhythm with varying image heights */
+.article-tall  { min-height: 480px; }
+.article-short { min-height: 280px; }
+
+/* Mobile: collapse to single column */
+@media (max-width: 768px) {
+  .magazine-grid { grid-template-columns: 1fr; }
+  [class*="article-"] { grid-column: span 1; }
+}
+```
+
+**Personalities:** editorial, organic, retro, expressive, luxury
+**Common use:** blogs, news sites, portfolio indexes, recipe sites, lookbooks
