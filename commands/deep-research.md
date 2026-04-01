@@ -153,7 +153,21 @@ Include header:
 **Confidence**: [High — web-verified / Medium — partially verified / Low — training data only]
 ```
 
-### Step 7: Log Activity
+### Step 7: Docs Publish (Optional)
+
+Silently probe both Confluence and Notion to check which (if any) is connected.
+
+**Check Confluence** — attempt `search_content` with a lightweight query (e.g. `query: "test", limit: 1`):
+- If connected: ask "Publish market research to Confluence? (space key + optional parent page ID)"
+- If confirmed: delegate to **confluence-publisher** with `artifact: "deep-research"`, `projectName`, `spaceKey`, `parentPageId`, `projectDir`
+
+**Check Notion** — attempt `notion_search` with `query: ""`, `page_size: 1`:
+- If connected: ask "Publish market research to Notion? (optional parent page ID or database ID)"
+- If confirmed: delegate to **notion-publisher** with `artifact: "deep-research"`, `projectName`, `parentPageId` or `databaseId`, `projectDir`
+
+If neither is connected, skip silently.
+
+### Step 8: Log Activity
 
 After writing `deep-research.md`, append one line to `architecture-output/_activity.jsonl`:
 

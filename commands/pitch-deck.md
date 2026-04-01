@@ -133,6 +133,22 @@ Generate TWO files:
    - Include source URLs in speaker notes
    - After generating the .pptx, delete the generator script
 
+### Docs Publish (Optional)
+
+Silently probe both Confluence and Notion to check which (if any) is connected.
+
+**Check Confluence** — attempt `search_content` with a lightweight query (e.g. `query: "test", limit: 1`):
+- If connected: ask "Publish pitch deck to Confluence? (space key + optional parent page ID)"
+- If confirmed: delegate to **confluence-publisher** with `artifact: "pitch-deck"`, `projectName`, `spaceKey`, `parentPageId`, `projectDir`
+
+**Check Notion** — attempt `notion_search` with `query: ""`, `page_size: 1`:
+- If connected: ask "Publish pitch deck to Notion? (optional parent page ID or database ID)"
+- If confirmed: delegate to **notion-publisher** with `artifact: "pitch-deck"`, `projectName`, `parentPageId` or `databaseId`, `projectDir`
+
+If neither is connected, skip silently.
+
+> **Note:** Only the markdown version (`pitch-deck.md`) is published. The `.pptx` file is a binary and cannot be published via MCP — share it as a file attachment separately.
+
 ### Final Step: Update _state.json and Log Activity
 
 After writing all output files:

@@ -121,7 +121,21 @@ Define how to measure if the MVP succeeded:
 | Retention (D7) | X% | Cohort analysis | Day 7-14 |
 | NPS / satisfaction | X | Survey | Day 14-30 |
 
-### Step 9: Log Activity
+### Step 9: Docs Publish (Optional)
+
+Silently probe both Confluence and Notion to check which (if any) is connected.
+
+**Check Confluence** — attempt `search_content` with a lightweight query (e.g. `query: "test", limit: 1`):
+- If connected: ask "Publish MVP scope to Confluence? (space key + optional parent page ID)"
+- If confirmed: delegate to **confluence-publisher** with `artifact: "mvp-scope"`, `projectName`, `spaceKey`, `parentPageId`, `projectDir`
+
+**Check Notion** — attempt `notion_search` with `query: ""`, `page_size: 1`:
+- If connected: ask "Publish MVP scope to Notion? (optional parent page ID or database ID)"
+- If confirmed: delegate to **notion-publisher** with `artifact: "mvp-scope"`, `projectName`, `parentPageId` or `databaseId`, `projectDir`
+
+If neither is connected, skip silently.
+
+### Step 10: Log Activity
 
 After writing `mvp-scope.md`, append one line to `architecture-output/_activity.jsonl`:
 

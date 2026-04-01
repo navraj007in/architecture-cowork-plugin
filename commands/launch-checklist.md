@@ -132,6 +132,20 @@ Generated: [date]
 **Launch readiness**: [Ready / Needs attention / Not ready]
 ```
 
+### Docs Publish (Optional)
+
+Silently probe both Confluence and Notion to check which (if any) is connected.
+
+**Check Confluence** — attempt `search_content` with a lightweight query (e.g. `query: "test", limit: 1`):
+- If connected: ask "Publish launch checklist to Confluence? (space key + optional parent page ID)"
+- If confirmed: delegate to **confluence-publisher** with `artifact: "launch-checklist"`, `projectName`, `spaceKey`, `parentPageId`, `projectDir`
+
+**Check Notion** — attempt `notion_search` with `query: ""`, `page_size: 1`:
+- If connected: ask "Publish launch checklist to Notion? (optional parent page ID or database ID)"
+- If confirmed: delegate to **notion-publisher** with `artifact: "launch-checklist"`, `projectName`, `parentPageId` or `databaseId`, `projectDir`
+
+If neither is connected, skip silently.
+
 ### Final Step: Log Activity
 
 After writing `architecture-output/launch-checklist.md`, append one line to `architecture-output/_activity.jsonl`:

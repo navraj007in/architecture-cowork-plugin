@@ -147,6 +147,20 @@ Template section for the founder to fill in:
 
 Write to `architecture-output/investor-update.md`.
 
+### Docs Publish (Optional)
+
+Silently probe both Confluence and Notion to check which (if any) is connected.
+
+**Check Confluence** — attempt `search_content` with a lightweight query (e.g. `query: "test", limit: 1`):
+- If connected: ask "Publish investor update to Confluence? (space key + optional parent page ID)"
+- If confirmed: delegate to **confluence-publisher** with `artifact: "investor-update"`, `projectName`, `spaceKey`, `parentPageId`, `projectDir`
+
+**Check Notion** — attempt `notion_search` with `query: ""`, `page_size: 1`:
+- If connected: ask "Publish investor update to Notion? (optional parent page ID or database ID)"
+- If confirmed: delegate to **notion-publisher** with `artifact: "investor-update"`, `projectName`, `parentPageId` or `databaseId`, `projectDir`
+
+If neither is connected, skip silently.
+
 ### Final Step: Update _state.json
 
 After writing all output files, merge a completion marker into `architecture-output/_state.json`:

@@ -138,6 +138,20 @@ Prioritized list of 8-10 UX/product recommendations derived from the journey ana
 
 1. **[Recommendation]** — Because [journey insight]. Impact: [High/Med]. Effort: [S/M/L].
 
+### Docs Publish (Optional)
+
+Silently probe both Confluence and Notion to check which (if any) is connected.
+
+**Check Confluence** — attempt `search_content` with a lightweight query (e.g. `query: "test", limit: 1`):
+- If connected: ask "Publish user journeys to Confluence? (space key + optional parent page ID)"
+- If confirmed: delegate to **confluence-publisher** with `artifact: "user-journeys"`, `projectName`, `spaceKey`, `parentPageId`, `projectDir`
+
+**Check Notion** — attempt `notion_search` with `query: ""`, `page_size: 1`:
+- If connected: ask "Publish user journeys to Notion? (optional parent page ID or database ID)"
+- If confirmed: delegate to **notion-publisher** with `artifact: "user-journeys"`, `projectName`, `parentPageId` or `databaseId`, `projectDir`
+
+If neither is connected, skip silently.
+
 ### Final Step: Update _state.json and Log Activity
 
 After writing all output files:

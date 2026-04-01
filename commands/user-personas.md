@@ -101,7 +101,21 @@ A section mapping personas to product decisions:
 - **Communication tone** — technical vs. friendly vs. enterprise
 - **Platform priority** — mobile-first vs. desktop-first based on persona devices
 
-### Step 6: Log Activity
+### Step 6: Docs Publish (Optional)
+
+Silently probe both Confluence and Notion to check which (if any) is connected.
+
+**Check Confluence** — attempt `search_content` with a lightweight query (e.g. `query: "test", limit: 1`):
+- If connected: ask "Publish user personas to Confluence? (space key + optional parent page ID)"
+- If confirmed: delegate to **confluence-publisher** with `artifact: "user-personas"`, `projectName`, `spaceKey`, `parentPageId`, `projectDir`
+
+**Check Notion** — attempt `notion_search` with `query: ""`, `page_size: 1`:
+- If connected: ask "Publish user personas to Notion? (optional parent page ID or database ID)"
+- If confirmed: delegate to **notion-publisher** with `artifact: "user-personas"`, `projectName`, `parentPageId` or `databaseId`, `projectDir`
+
+If neither is connected, skip silently.
+
+### Step 7: Log Activity
 
 After writing `user-personas.md`, append one line to `architecture-output/_activity.jsonl`:
 

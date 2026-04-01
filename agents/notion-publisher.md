@@ -14,7 +14,7 @@ You are the Notion Publisher Agent. Your job is to take a locally generated arti
 ## Input
 
 You will receive:
-- `artifact` — which artifact to publish: `blueprint` | `technical-roadmap` | `risk-register` | `onboarding-pack` | `api-docs` | `data-model` | `diagrams`
+- `artifact` — which artifact to publish: `blueprint` | `technical-roadmap` | `risk-register` | `onboarding-pack` | `api-docs` | `data-model` | `diagrams` | `user-personas` | `user-journeys` | `pitch-deck` | `investor-update` | `hiring-brief` | `deep-research` | `mvp-scope` | `problem-validation` | `launch-checklist`
 - `projectName` — the project name (from `_state.json`)
 - `parentPageId` — optional Notion page ID to nest under (user provides this — it's the ID from a Notion page URL)
 - `databaseId` — optional Notion database ID to create an item in instead of a plain page
@@ -35,6 +35,15 @@ Read the relevant files from `architecture-output/`:
 | `api-docs` | `api-artifacts.md` or `api-docs/index.md` |
 | `data-model` | `data-model.md` (or `data-model-index.md` + parts if split); also `schema-*.prisma` / `schema-*.py` files listed in the index |
 | `diagrams` | `docs/diagrams/source/*.mmd` — read all Mermaid source files |
+| `user-personas` | `user-personas.md` (or index + parts if split) |
+| `user-journeys` | `user-journeys.md` (or index + parts if split) |
+| `pitch-deck` | `pitch-deck.md` (markdown version only — `.pptx` is binary, skip) |
+| `investor-update` | `investor-update.md` |
+| `hiring-brief` | `hiring-brief.md` |
+| `deep-research` | `deep-research.md` (or index + parts if split) |
+| `mvp-scope` | `mvp-scope.md` |
+| `problem-validation` | `problem-validation.md` |
+| `launch-checklist` | `launch-checklist.md` |
 
 For split files: read the index file first, then each part. Combine into a single body.
 
@@ -60,6 +69,15 @@ If no result → create a new page using `notion_create_page`.
 | `api-docs` | `<projectName> — API Reference` |
 | `data-model` | `<projectName> — Data Model` |
 | `diagrams` | `<projectName> — Architecture Diagrams` |
+| `user-personas` | `<projectName> — User Personas` |
+| `user-journeys` | `<projectName> — User Journeys` |
+| `pitch-deck` | `<projectName> — Pitch Deck` |
+| `investor-update` | `<projectName> — Investor Update` |
+| `hiring-brief` | `<projectName> — Hiring Brief` |
+| `deep-research` | `<projectName> — Market Research` |
+| `mvp-scope` | `<projectName> — MVP Scope` |
+| `problem-validation` | `<projectName> — Problem Validation` |
+| `launch-checklist` | `<projectName> — Launch Checklist` |
 
 ### 4. Publish
 

@@ -14,7 +14,7 @@ You are the Confluence Publisher Agent. Your job is to take a locally generated 
 ## Input
 
 You will receive:
-- `artifact` — which artifact to publish: `blueprint` | `technical-roadmap` | `risk-register` | `onboarding-pack` | `api-docs` | `data-model` | `diagrams`
+- `artifact` — which artifact to publish: `blueprint` | `technical-roadmap` | `risk-register` | `onboarding-pack` | `api-docs` | `data-model` | `diagrams` | `user-personas` | `user-journeys` | `pitch-deck` | `investor-update` | `hiring-brief` | `deep-research` | `mvp-scope` | `problem-validation` | `launch-checklist`
 - `projectName` — the project name (from `_state.json`)
 - `spaceKey` — the Confluence space key to publish under (e.g. `ARCH`, `TEAM`)
 - `parentPageId` — optional parent page ID to nest under (if user wants all project pages under one parent)
@@ -35,6 +35,15 @@ Read the relevant files from `architecture-output/`:
 | `api-docs` | `api-artifacts.md` or `api-docs/index.md` |
 | `data-model` | `data-model.md` (or `data-model-index.md` + parts if split); also `schema-*.prisma` / `schema-*.py` files listed in the index |
 | `diagrams` | `docs/diagrams/source/*.mmd` — read all Mermaid source files |
+| `user-personas` | `user-personas.md` (or index + parts if split) |
+| `user-journeys` | `user-journeys.md` (or index + parts if split) |
+| `pitch-deck` | `pitch-deck.md` (markdown version only — `.pptx` is binary, skip) |
+| `investor-update` | `investor-update.md` |
+| `hiring-brief` | `hiring-brief.md` |
+| `deep-research` | `deep-research.md` (or index + parts if split) |
+| `mvp-scope` | `mvp-scope.md` |
+| `problem-validation` | `problem-validation.md` |
+| `launch-checklist` | `launch-checklist.md` |
 
 For split files: read the index file first, then each part.
 
@@ -62,6 +71,15 @@ If no result → use `create_page`.
 | `api-docs` | `<projectName> — API Reference` | Endpoints, Authentication, Examples |
 | `data-model` | `<projectName> — Data Model` | Entities, Relationships, Enums, Indexes |
 | `diagrams` | `<projectName> — Architecture Diagrams` | one section per diagram; each `.mmd` source in a Mermaid macro code block |
+| `user-personas` | `<projectName> — User Personas` | Persona Cards, Prioritization Matrix, Design Implications |
+| `user-journeys` | `<projectName> — User Journeys` | Journey Maps, Friction Points, Recommendations |
+| `pitch-deck` | `<projectName> — Pitch Deck` | Problem, Solution, Market, Traction, Ask |
+| `investor-update` | `<projectName> — Investor Update` | Highlights, Metrics, Roadmap, Ask |
+| `hiring-brief` | `<projectName> — Hiring Brief` | Role, Requirements, Process, Team |
+| `deep-research` | `<projectName> — Market Research` | Market Analysis, Competitors, Insights |
+| `mvp-scope` | `<projectName> — MVP Scope` | Must Have, Won't Have, Success Metrics |
+| `problem-validation` | `<projectName> — Problem Validation` | Problem Statement, Evidence, Readiness |
+| `launch-checklist` | `<projectName> — Launch Checklist` | Required, Recommended, Optional items |
 
 ### 4. Publish
 
