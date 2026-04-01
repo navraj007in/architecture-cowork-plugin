@@ -178,11 +178,11 @@ SENTRY_DSN="<SENTRY_DSN>"
 
 ## Multi-Service Projects — Per-Service .env Scoping
 
-For projects with multiple backend services, each service gets its own `.env` containing **only the variables it actually uses**, derived from `architecture.services[].dependsOn[]` in `solution.sdl.yaml`.
+For projects with multiple backend services, each service gets its own `.env` containing **only the variables it actually uses**, derived from `architecture.services[].dependsOn[]` in the SDL.
 
 ### Step 0: Read dependsOn[] from SDL
 
-Before generating any `.env` files, read `architecture.services[]` from `solution.sdl.yaml`:
+Before generating any `.env` files, read `architecture.services[]` from the SDL. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module (typically `sdl/architecture.yaml` or `sdl/services.yaml`):
 
 ```yaml
 architecture:

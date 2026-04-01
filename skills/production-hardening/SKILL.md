@@ -15,7 +15,7 @@ For runtime-specific implementations, read `skills/production-hardening/{runtime
 
 ## scaffold_depth Gating
 
-Before applying patterns, resolve `scaffold_depth` from `solution.stage` in `solution.sdl.yaml`:
+Before applying patterns, resolve `scaffold_depth` from `solution.stage` in the SDL. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module (typically `sdl/core.yaml` or `sdl/solution.yaml`):
 
 | `solution.stage` | `scaffold_depth` |
 |---|---|

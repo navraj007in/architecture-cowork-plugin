@@ -20,16 +20,20 @@ Unlike `/architect:scaffold` which scaffolds everything, this command targets ex
 
 ### Step 1: Identify the Component
 
-Extract the component name from the command argument. The name corresponds to a component defined in `solution.sdl.yaml`.
+Extract the component name from the command argument. The name corresponds to a component defined in the SDL.
 
-Read `solution.sdl.yaml` from the project root. Find the component matching the provided name by searching:
+Locate the SDL:
+1. Check `solution.sdl.yaml` in the project root — if it exists, read it
+2. If absent, check for `sdl/` directory — read `sdl/README.md` first, then the module containing component definitions (typically `sdl/architecture.yaml` or `sdl/projects.yaml`)
+
+Find the component matching the provided name by searching:
 - `architecture.projects[]` (array form)
 - `architecture.projects.backend[]` and `architecture.projects.frontend[]` (object form)
 - Top-level `components[]`, `modules[]`, or `services[]`
 
 If no matching component is found, respond:
 
-> "Component '{name}' not found in solution.sdl.yaml. Available components: {list}."
+> "Component '{name}' not found in SDL. Available components: {list}."
 
 ### Step 2: Extract Component Configuration
 
@@ -65,7 +69,7 @@ Also read these cross-cutting SDL sections for context:
 - `data` — database type, ORM, migrations
 
 Also read these deliverables if they exist for richer context:
-- `architecture-output/data-model.md` — entity schemas, relationships, indexes. **Only read this if the entity you need is NOT in `_state.json.entities`.** If reading, use Grep to find only the relevant entity/model section rather than reading the entire file. If `architecture-output/data-model.md` does not exist, fall back to `domain.entities[]` in `solution.sdl.yaml` for the entity name list. Field details will need to be inferred from context.
+- `architecture-output/data-model.md` — entity schemas, relationships, indexes. **Only read this if the entity you need is NOT in `_state.json.entities`.** If reading, use Grep to find only the relevant entity/model section rather than reading the entire file. If `architecture-output/data-model.md` does not exist, fall back to `domain.entities[]` from SDL for the entity name list (check `solution.sdl.yaml` first; if absent, check `sdl/data.yaml` or the relevant `sdl/` module). Field details will need to be inferred from context.
 - `architecture-output/mvp-scope.md` — prioritized features and user stories (if split, read the index file first)
 - `architecture-output/user-journeys.md` — core user flows
 - `architecture-output/user-personas.md` — who we're building for
@@ -143,7 +147,7 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 
 **Code depth requirements for backends:**
 - **Routes/Controllers:** Implement ALL endpoints declared in SDL `interfaces`. Each route handler should: parse request params/body, call service layer, return typed response with correct HTTP status codes. Include input validation using zod or joi schemas.
-- **Models/Entities:** Generate complete schema definitions from `domain.entities[]` in `solution.sdl.yaml` and `architecture-output/data-model.md` (if it exists). Include all columns, types, constraints, relationships, indexes. Use the ORM specified in SDL (Prisma, Drizzle, TypeORM, Sequelize, SQLAlchemy, etc.).
+- **Models/Entities:** Generate complete schema definitions from `domain.entities[]` in the SDL (check `solution.sdl.yaml` first; if absent, use `sdl/data.yaml` or the relevant `sdl/` module) and `architecture-output/data-model.md` (if it exists). Include all columns, types, constraints, relationships, indexes. Use the ORM specified in SDL (Prisma, Drizzle, TypeORM, Sequelize, SQLAlchemy, etc.).
 - **Services:** Implement actual CRUD logic (create, read, update, delete, list with pagination) for each resource. Include error handling (not found, duplicate, validation errors).
 - **Auth middleware:** Implement the strategy from SDL (JWT verification, API key check, OAuth token validation). Include role-based access control stubs if SDL declares roles. Read `auth.serviceTokenModel` from SDL (jwt | session | api-key) to determine the correct token validation mechanism for backend middleware and the correct injection strategy for the frontend API client.
 - **Health check:** Check DB connectivity, cache connectivity, and any external service dependencies. Return structured JSON: `{ status, checks: { db: "ok", cache: "ok" }, uptime, version }`.

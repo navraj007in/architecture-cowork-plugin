@@ -19,7 +19,7 @@ Scan the SDL specification and project files to determine what tools, runtimes, 
 Read in this order:
 
 1. `architecture-output/_state.json` — read first if it exists; provides compact `tech_stack` (frontend frameworks, backend frameworks, database, auth, deployment, integrations) and `components` (name, type, port, framework). Use these to identify required runtimes, tools, and credentials — skip reading the full SDL if `_state.json` covers the needed fields.
-2. **SDL file** (`solution.sdl.yaml`) — **only if `_state.json` is absent or lacks `tech_stack`/`components`**; extract:
+2. **SDL file** — **only if `_state.json` is absent or lacks `tech_stack`/`components`**; check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files. Extract:
    - **Components** — for each component, note the `runtime`, `language`, `framework`, and `buildTool`
    - **Data section** — `primaryDatabase`, `cache`, `queue`, `search` — what data stores are needed
    - **Auth section** — what auth provider is configured (may need specific CLIs)

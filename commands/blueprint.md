@@ -29,14 +29,14 @@ If the file does not exist or has no `intent` field, proceed with the interactiv
 
 After Step 0, **before** gathering any requirements, check whether this project already has a blueprint or was previously imported:
 
-1. Look for `solution.sdl.yaml` in the current working directory.
+1. Look for `solution.sdl.yaml` in the current working directory. If absent, check for an `sdl/` directory.
 2. Look for `architecture-output/_state.json`.
 
 **If neither file exists:** this is a fresh project — proceed normally to Step 1.
 
 **If either file exists:** this project has already been blueprinted or imported. Do the following:
 
-a) Read `architecture-output/_state.json` (if present) to get the summary. Also read the first 40 lines of `solution.sdl.yaml` for the solution name and component list.
+a) Read `architecture-output/_state.json` (if present) to get the summary. Also read the first 40 lines of the SDL (`solution.sdl.yaml`, or `sdl/README.md` + the core module if multi-file) for the solution name and component list.
 
 b) Present a brief summary of what was previously designed:
 
@@ -44,7 +44,7 @@ b) Present a brief summary of what was previously designed:
 Found an existing blueprint for: [project name]
   Components : [list component names and types]
   Tech stack : [frontend / backend / database summary]
-  SDL file   : solution.sdl.yaml
+  SDL file   : solution.sdl.yaml (or sdl/ directory)
   Deliverables: architecture-output/ ([N] files present)
 ```
 
@@ -126,9 +126,9 @@ If a valid JSON intent is provided:
 
 Also check if an `intent.json` file exists in the current working directory — if it does, read it and use it the same way as above.
 
-**Additionally, if `solution.sdl.yaml` exists in the current working directory, read it now** — even if intent.json was already loaded. The SDL from a prior import or blueprint run contains confirmed technical details (exact frameworks, port numbers, auth strategy, databases, design tokens, observability state, environment URLs) that must be preserved in the new blueprint. When building the manifest in Step 3, treat `solution.sdl.yaml` as the authoritative source for all technical fields it contains — do not re-derive or overwrite them from intent.json or Step 2 answers. Only add or extend what the SDL is missing.
+**Additionally, if SDL exists in the current working directory, read it now** — even if intent.json was already loaded. Check `solution.sdl.yaml` first; if absent, check for an `sdl/` directory and read `sdl/README.md` then the relevant module files. The SDL from a prior import or blueprint run contains confirmed technical details (exact frameworks, port numbers, auth strategy, databases, design tokens, observability state, environment URLs) that must be preserved in the new blueprint. When building the manifest in Step 3, treat the SDL as the authoritative source for all technical fields it contains — do not re-derive or overwrite them from intent.json or Step 2 answers. Only add or extend what the SDL is missing.
 
-If neither inline JSON, `intent.json`, nor `solution.sdl.yaml` is found, fall through to Step 2.
+If neither inline JSON, `intent.json`, nor SDL is found, fall through to Step 2.
 
 ### Step 2: Gather Requirements (interactive fallback)
 
@@ -658,7 +658,7 @@ End with: "This is a starting-point backlog. Expect to refine sprint scope after
 
 After completing all deliverables, update `architecture-output/_state.json` with the compact project summary. This file gives downstream commands (scaffold, roadmap, risk-register, etc.) instant access to project facts without reading large files.
 
-Read `solution.sdl.yaml` to extract these fields. Then:
+Read the SDL to extract these fields (check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files). Then:
 - If `_state.json` already exists: **read it first, then merge** the blueprint fields into it — do NOT overwrite fields owned by other commands (`entities`, `personas`, `market_research`, `mvp_scope`, `top_risks`, `design` if already set by design-system).
 - If `_state.json` does not exist: write it fresh.
 

@@ -30,7 +30,7 @@ You will receive:
 
 Before doing anything else, establish the authoritative entity inventory:
 
-1. Read `domain.entities[]` from `solution.sdl.yaml` — this is the **primary source**. It lists PascalCase entity names (e.g. `User`, `Appointment`, `Payment`). Every entity here MUST get a schema.
+1. Read `domain.entities[]` from SDL — this is the **primary source**. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module (typically `sdl/data.yaml` or `sdl/domain.yaml`). It lists PascalCase entity names (e.g. `User`, `Appointment`, `Payment`). Every entity here MUST get a schema.
 2. If `domain.entities[]` is absent, fall back to `_state.json.entities` (array of `{name, fields, owner}`).
 3. If neither exists, fall back to shared types from the manifest.
 

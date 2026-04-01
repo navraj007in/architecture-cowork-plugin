@@ -50,7 +50,7 @@ The following environment variables may be pre-set by Archon from the user's con
 
 ### 0.5. Resolve Service Dependency Order
 
-Before generating any pipeline config, read `architecture.services[].dependsOn[]` from `solution.sdl.yaml` to determine service build and deploy ordering.
+Before generating any pipeline config, read `architecture.services[].dependsOn[]` from SDL to determine service build and deploy ordering. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module (typically `sdl/architecture.yaml` or `sdl/services.yaml`).
 
 Build a dependency graph:
 - Services with no `dependsOn` entries (or only external integrations like `stripe`, `sendgrid`) can build and deploy in parallel

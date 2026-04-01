@@ -21,8 +21,7 @@ After generating a blueprint and scaffolding projects, this command walks throug
 - `tech_stack` → list of integrations (Stripe, SendGrid, etc.) to cross-reference against the accounts list
 - `components` → component directory names + ports for `.env.example` discovery
 
-**Then**, read `solution.sdl.yaml` and extract:
-- Read `architecture.services[].dependsOn[]` for each service — this lists the external providers and sibling services each service calls, which maps directly to which third-party credentials and service URLs each service needs in its `.env.example`
+**Then**, read the SDL and extract `architecture.services[].dependsOn[]` for each service — this lists the external providers and sibling services each service calls, which maps directly to which third-party credentials and service URLs each service needs in its `.env.example`. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module (typically `sdl/architecture.yaml` or `sdl/services.yaml`).
 
 **Then**, check if a blueprint with a Required Accounts list (deliverable 4m) or scaffolded projects with `.env.example` files exist.
 

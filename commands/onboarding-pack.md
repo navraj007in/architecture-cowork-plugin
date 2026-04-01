@@ -19,7 +19,7 @@ Generate a comprehensive developer onboarding document for the first engineer jo
 Read in this order:
 
 1. `architecture-output/_state.json` — read first if it exists; provides compact `project` (name, description, stage), `tech_stack` (frontend, backend, database, auth, deployment), `components` (names, types, ports, frameworks), `entities` (field names per entity), and `design` (palette and fonts). Use these instead of reading full markdown files for tech stack, component list, and entity information.
-2. **SDL file** (`solution.sdl.yaml`) — architecture style, detailed component config, auth strategy, data model relationships; **only read SDL sections not covered by `_state.json`** (e.g. inter-service communication, environments, observability config)
+2. **SDL file** — architecture style, detailed component config, auth strategy, data model relationships; **only read SDL sections not covered by `_state.json`** (e.g. inter-service communication, environments, observability config). Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files.
 3. **Executive summary** — `architecture-output/executive-summary.md` (if exists, typically small)
 4. **API docs** — `architecture-output/api-docs.md` (if exists, typically small)
 5. **ADR files** — any `adr-*.md` files in `architecture-output/`
@@ -172,6 +172,6 @@ After writing all output files, merge a completion marker into `architecture-out
 - Include copy-pasteable commands (not pseudocode)
 - If any single output file exceeds ~15KB, split into `onboarding-pack-setup.md` and `onboarding-pack-architecture.md` (and further parts if needed) and write an index file
 - Use tables instead of prose for structured data (tech stack, component map, env vars, coding conventions)
-- Do NOT read `architecture-output/data-model.md` — derive entity info from `solution.sdl.yaml` data section instead
+- Do NOT read `architecture-output/data-model.md` — derive entity info from SDL `data`/`domain` section instead (check `solution.sdl.yaml` first; if absent, use `sdl/data.yaml`)
 - Do NOT include a CTA footer
 - Do NOT ask questions — make reasonable assumptions based on available files

@@ -104,7 +104,7 @@ Always show the resolved framework next to each component name so the user can v
 - **Parent directory**: current working directory (or the path from `[workspace_dir:...]` if provided)
 - **GitHub or local**: Local directories with git init
 - **Install dependencies**: Yes
-- **Structure / auth / framework choices**: Derive ALL decisions from solution.sdl.yaml and existing ADRs in architecture-output/adrs/. Follow the SDL exactly — do NOT ask the user to choose between options. If the SDL specifies a monorepo structure, use it. If the SDL specifies auth strategy, implement it. If there's a conflict between existing code and SDL, follow the SDL (the SDL is the source of truth).
+- **Structure / auth / framework choices**: Derive ALL decisions from SDL and existing ADRs in architecture-output/adrs/. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files. Follow the SDL exactly — do NOT ask the user to choose between options. If the SDL specifies a monorepo structure, use it. If the SDL specifies auth strategy, implement it. If there's a conflict between existing code and SDL, follow the SDL (the SDL is the source of truth).
 
 **Otherwise**, ask the user these questions before proceeding:
 
@@ -132,7 +132,7 @@ If GitHub:
 Check if the design-system phase has been completed:
 
 1. Look for `architecture-output/design-system/design-tokens.json` in the blueprint directory
-2. Look for a `design` section in `solution.sdl.yaml`
+2. Look for a `design` section in `solution.sdl.yaml` (or `sdl/design.yaml` if using multi-file SDL)
 
 **If design tokens exist**, load them — the scaffolder will use these to configure frontend projects with the correct palette, typography, shape, and motion settings.
 
@@ -149,7 +149,7 @@ Inform the user:
 
 ### Step 3.6: Stage-Aware Depth Resolution
 
-Read `solution.stage` from `architecture-output/_state.json` (field `project.stage`) or directly from `solution.sdl.yaml` if `_state.json` is absent.
+Read `solution.stage` from `architecture-output/_state.json` (field `project.stage`) or directly from SDL if `_state.json` is absent (check `solution.sdl.yaml` first; if absent, check `sdl/core.yaml` or `sdl/solution.yaml`).
 
 Map stage to `scaffold_depth`:
 

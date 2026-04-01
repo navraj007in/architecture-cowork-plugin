@@ -25,7 +25,7 @@ Read in this order — stop as soon as you have enough to determine the product 
 
 2. **`intent.json`** — only if `_state.json` is absent or missing `project.description`; extract name, vision, target users
 
-3. **SDL (`solution.sdl.yaml`)** — only if both above are absent; Grep for `product:` block only
+3. **SDL** — only if both above are absent; check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files. Grep for `product:` block only
 
 If nothing exists, use the project directory name as the product name.
 

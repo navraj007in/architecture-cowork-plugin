@@ -41,7 +41,7 @@ Read (use what's available, don't error if missing):
 2. **`intent.json`** — product name, vision, target users, core features, core flows
 
 3. **SDL — extract only prototype-relevant sections** (do NOT read the full file):
-   Use Grep on `solution.sdl.yaml` to extract these sections only:
+   Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files. Use Grep to extract these sections only:
    - `product:` block → `screens`, `screenFlows`, `coreFlows` (screen inventory + navigation)
    - `auth:` block → which auth screens to generate (login, register, MFA, SSO)
    - `components:` block → component types (web/mobile/api) to determine layout and screen scope

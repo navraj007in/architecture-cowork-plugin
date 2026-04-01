@@ -27,7 +27,7 @@ Use this skill when you need to:
 - Share schema with frontend/backend teams
 - Initialize database for new project
 
-**Input**: `domain.entities[]` from `solution.sdl.yaml` (primary), with fallback to manifest shared types and blueprint Section 4
+**Input**: `domain.entities[]` from SDL (primary) — check `solution.sdl.yaml` first; if absent, check `sdl/data.yaml` or the relevant `sdl/` module — with fallback to manifest shared types and blueprint Section 4
 **Output**: ORM schema files, migration files, seed data
 
 ---

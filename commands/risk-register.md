@@ -19,7 +19,7 @@ Identify, quantify, and plan mitigations for all material risks across the produ
 Read in this order:
 1. `architecture-output/_state.json` — read first if it exists; use `project`, `tech_stack`, `components`, `personas`, `market_research`, `mvp_scope` directly — these replace intent.json and SDL for most risk categories
 2. `intent.json` — **only if `_state.json.project` is absent**; extract vision, constraints, business model
-3. `solution.sdl.yaml` — **only if `_state.json.tech_stack` or `_state.json.components` is absent**; Grep for `components:`, `tech:`, and `infrastructure:` blocks only — do NOT read the full file
+3. SDL — **only if `_state.json.tech_stack` or `_state.json.components` is absent**; check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files. Grep for `components:`, `tech:`, and `infrastructure:` blocks only — do NOT read the full file
 4. `architecture-output/problem-validation.md` — assumption risks, validation gaps (read in full, typically small)
 5. `architecture-output/cost-estimate.md` — financial risks (read in full, typically small)
 6. `architecture-output/deep-research.md` — **only if `_state.json.market_research` is absent**; if reading, Grep for "Competitor Landscape" and "Opportunity Gaps" sections only

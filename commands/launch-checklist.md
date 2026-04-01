@@ -19,7 +19,7 @@ Generate a comprehensive pre-launch readiness checklist tailored to the project'
 Read in this order:
 
 1. `architecture-output/_state.json` — read first if it exists; provides compact `project` (name, stage), `tech_stack` (auth provider, deployment, integrations), and `components` (list with types) — use these instead of reading full markdown files for basic project facts
-2. **SDL file** (`solution.sdl.yaml`) — components, auth strategy, data stores, deployment config, observability settings, non-functional requirements; **only read if `_state.json` is absent or lacks `tech_stack`/`components`**
+2. **SDL file** — components, auth strategy, data stores, deployment config, observability settings, non-functional requirements; **only read if `_state.json` is absent or lacks `tech_stack`/`components`**. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files.
 3. **Architecture output** — read `architecture-output/executive-summary.md` if it exists for high-level context (typically small)
 4. **Deployment config** — check for `docker-compose.yml`, `.github/workflows/`, Dockerfile, `fly.toml`, `vercel.json`, `netlify.toml`, `render.yaml`
 5. **Environment files** — check `.env.example` for required secrets and config

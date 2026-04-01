@@ -23,7 +23,7 @@ After generating a blueprint with `/architect:blueprint`, this command creates a
 - `personas` → target audience context; use instead of reading `user-personas.md`
 
 **Then**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does:
-- Read `solution.sdl.yaml` for the SDL document
+- Read the SDL: check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files
 - Read `blueprint.json` for the full blueprint
 - Extract product domain, target audience, and frontend components
 
@@ -110,7 +110,7 @@ Generate and write the following files to `architecture-output/design-system/`:
 
 ### Step 7: Update SDL
 
-Write the complete `design` section back into `solution.sdl.yaml`:
+Write the complete `design` section back into SDL:
 
 ```yaml
 design:
@@ -126,7 +126,8 @@ design:
   accessibility: ...
 ```
 
-If `solution.sdl.yaml` already exists, update only the `design` section — preserve everything else.
+- **Single-file SDL** (`solution.sdl.yaml` exists): update only the `design` section — preserve everything else.
+- **Multi-file SDL** (`sdl/` directory): write design section to `sdl/design.yaml` (create if absent); ensure `solution.sdl.yaml` imports it if an imports list is maintained.
 
 ### Step 7.5: Update _state.json
 

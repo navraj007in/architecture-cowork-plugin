@@ -1,6 +1,6 @@
 # Environment Setup — Go
 
-> **Per-service .env scoping** — For multi-service projects, scope env vars to only the services that need them using `architecture.services[].dependsOn[]` from `solution.sdl.yaml`. See the "Multi-Service Projects — Per-Service .env Scoping" section in `skills/setup-env/SKILL.md`.
+> **Per-service .env scoping** — For multi-service projects, scope env vars to only the services that need them using `architecture.services[].dependsOn[]` from the SDL (check `solution.sdl.yaml` first; if absent, check `sdl/architecture.yaml` or `sdl/services.yaml`). See the "Multi-Service Projects — Per-Service .env Scoping" section in `skills/setup-env/SKILL.md`.
 
 ## Recommended: `caarlos0/env` package
 

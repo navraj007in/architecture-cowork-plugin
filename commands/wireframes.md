@@ -39,9 +39,9 @@ Check if `architecture-output/wireframes/_manifest.json` exists with a non-empty
 - `design.tokens_file` → if present, read that file (e.g. `architecture-output/design-system/design-tokens.json`) to get precise token values for spacing, border radius, shadows, and motion — use these values in the `theme` object for complete fidelity
 - `entities` → field names for realistic placeholder values in specs
 
-If `_state.json.entities` is absent, read `domain.entities[]` from `solution.sdl.yaml` as the entity list fallback. This provides entity names for generating data-display wireframe screens.
+If `_state.json.entities` is absent, read `domain.entities[]` from SDL as the entity list fallback (check `solution.sdl.yaml` first; if absent, check `sdl/data.yaml` or the relevant `sdl/` module). This provides entity names for generating data-display wireframe screens.
 
-**Then** read the SDL — **only if `_state.json` is absent or missing `project.name`**; Grep for `product:` block (screens, coreFlows, auth) and `components:` block only. Do NOT read the full SDL file.
+**Then** read the SDL — **only if `_state.json` is absent or missing `project.name`**; check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files. Grep for `product:` block (screens, coreFlows, auth) and `components:` block only. Do NOT read the full SDL file.
 
 ### Step 3: Build Manifest
 

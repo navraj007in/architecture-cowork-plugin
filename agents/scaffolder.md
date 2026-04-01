@@ -302,7 +302,7 @@ Use the manifest's `application_patterns.folder_convention` to organize the proj
 | `module-based` | Create `src/modules/` with a subdirectory per responsibility |
 | `flat` | Keep files directly in `src/` |
 
-**Entity source:** Use `domain.entities[]` from `solution.sdl.yaml` as the entity inventory for creating model/entity placeholder files. If `domain.entities[]` is absent, fall back to `_state.json.entities`, then to the manifest's shared types.
+**Entity source:** Use `domain.entities[]` from SDL as the entity inventory for creating model/entity placeholder files. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module (typically `sdl/data.yaml` or `sdl/domain.yaml`). If `domain.entities[]` is absent, fall back to `_state.json.entities`, then to the manifest's shared types.
 
 **Route source:** If a contract file (`architecture-output/contracts/<service>.openapi.yaml`) exists for this service, generate route handler stubs for every `operationId` declared in the spec. The spec is the authoritative route list — do not add routes that are not in it.
 
@@ -323,7 +323,7 @@ Each file should have a minimal skeleton (exported function/class stub with a TO
 
 For backend services, add security middleware based on the manifest's `security` section.
 
-**Auth field resolution:** Read `auth.identityProvider` from SDL (e.g. `clerk`, `auth0`, `cognito`, `firebase`, `custom-jwt`) and `auth.serviceTokenModel` (e.g. `jwt`, `session`, `api-key`) to determine the correct token validation mechanism. The `auth.ts` stub must match the declared model — do NOT default to generic JWT if `serviceTokenModel` says `session` or `api-key`.
+**Auth field resolution:** Read `auth.identityProvider` from SDL (check `solution.sdl.yaml` first; if absent, check `sdl/security.yaml` or `sdl/auth.yaml`) — e.g. `clerk`, `auth0`, `cognito`, `firebase`, `custom-jwt` — and `auth.serviceTokenModel` (e.g. `jwt`, `session`, `api-key`) to determine the correct token validation mechanism. The `auth.ts` stub must match the declared model — do NOT default to generic JWT if `serviceTokenModel` says `session` or `api-key`.
 
 **Rate limiting depth:** At `scaffold_depth: "mvp"`, add a `// TODO (growth): configure rate limiting` comment at the exact mount point instead of a full implementation. At `growth` or `enterprise`, add `express-rate-limit` (or equivalent) with configuration.
 

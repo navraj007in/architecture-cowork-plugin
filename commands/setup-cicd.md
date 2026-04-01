@@ -22,8 +22,7 @@ After generating a blueprint with `/architect:blueprint`, this command takes the
 - `tech_stack.frontend`, `tech_stack.backend` → framework detection for build commands (e.g. Next.js → `npm run build`, Go → `go build ./...`)
 - `components` → list of components to configure pipelines for
 
-**Then**, read `solution.sdl.yaml` and extract:
-- Read `architecture.services[].dependsOn[]` from `solution.sdl.yaml` to determine service dependency order. Services with no dependents should build/deploy first. Services that depend on others should deploy after their dependencies are healthy. Include this ordering in the CI/CD pipeline job dependencies (`needs:` in GitHub Actions).
+**Then**, read the SDL and extract `architecture.services[].dependsOn[]` to determine service dependency order. Services with no dependents should build/deploy first. Services that depend on others should deploy after their dependencies are healthy. Include this ordering in the CI/CD pipeline job dependencies (`needs:` in GitHub Actions). Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module (typically `sdl/architecture.yaml` or `sdl/services.yaml`).
 
 **Then**, check if a blueprint with a DevOps section (deliverable 4h) exists earlier in the conversation.
 

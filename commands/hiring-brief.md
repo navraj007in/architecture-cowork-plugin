@@ -16,7 +16,7 @@ Generate a complete developer hiring package from an architecture. Helps non-tec
 
 ### Step 1: Understand the Architecture
 
-**First**, check `architecture-output/_state.json`. If it exists, read it in full — it provides instant access to `project`, `tech_stack`, `components`, `design`, `entities`, and `personas` without reading larger files. Use its values directly where available; fall back to SDL only for detail not in `_state.json`.
+**First**, check `architecture-output/_state.json`. If it exists, read it in full — it provides instant access to `project`, `tech_stack`, `components`, `design`, `entities`, and `personas` without reading larger files. Use its values directly where available; fall back to SDL (check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files) only for detail not in `_state.json`.
 
 If the user ran `/architect:blueprint` earlier in the conversation, use that architecture. Otherwise, ask:
 

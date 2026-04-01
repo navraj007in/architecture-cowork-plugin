@@ -21,7 +21,7 @@ After scaffolding projects with `/architect:scaffold`, this command validates th
 - `tech_stack` → auth provider (Clerk, Auth0, JWT, etc.), framework, ORM — used to tailor checklist items (e.g. Prisma → parameterized queries, Clerk → session token strategy)
 - `components` → which components to scan (names + types)
 
-**Also read from `solution.sdl.yaml`** (Grep for `auth:` section):
+**Also read from SDL** (Grep for `auth:` section — check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then `sdl/security.yaml` or `sdl/auth.yaml`):
 - `auth.identityProvider` — the external identity provider (Cognito, Auth0, Clerk, custom) — used to tailor auth middleware checks (e.g. Cognito → JWKS validation, Clerk → session token, custom → JWT verify)
 - `auth.serviceTokenModel` — how backend services validate tokens (jwt | session | api-key) — used to verify the correct validation mechanism is implemented in each service's middleware
 

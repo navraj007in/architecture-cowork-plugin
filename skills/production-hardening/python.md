@@ -2,7 +2,7 @@
 
 Apply these patterns when the SDL specifies `runtime: python` or `framework: python-fastapi` / `django`.
 
-> **scaffold_depth gating** — Before applying patterns, resolve `scaffold_depth` from `solution.stage` in `solution.sdl.yaml`. Pattern 7 (retry+timeout) and Pattern 8 (soft delete) have reduced requirements at MVP stage. See the gating table in `skills/production-hardening/SKILL.md`.
+> **scaffold_depth gating** — Before applying patterns, resolve `scaffold_depth` from `solution.stage` in the SDL (check `solution.sdl.yaml` first; if absent, check `sdl/core.yaml` or `sdl/solution.yaml`). Pattern 7 (retry+timeout) and Pattern 8 (soft delete) have reduced requirements at MVP stage. See the gating table in `skills/production-hardening/SKILL.md`.
 
 ---
 
