@@ -428,13 +428,272 @@ include:
 
 This gives developers a single `docker compose up` from the project root. Generate entries for all components that have a `docker-compose.yml`. If `include` is not supported by the user's Compose version, fall back to a flat file that re-declares all services using `build: context` paths.
 
+### 8.5. Add Test Infrastructure
+
+Set up the test runner, config, and folder structure for every component. **Do not write test implementations** — create the infrastructure so a developer can run tests immediately and the CI pipeline doesn't fail on a missing test command.
+
+#### Backend services
+
+| Runtime | Test runner | Config file | `devDependencies` / deps to add |
+|---------|------------|-------------|--------------------------------|
+| Node.js / TypeScript | Vitest | `vitest.config.ts` | `vitest`, `@vitest/coverage-v8`, `supertest`, `@types/supertest` |
+| Python | pytest | `pyproject.toml` `[tool.pytest.ini_options]` + `pytest.ini` fallback | `pytest`, `pytest-asyncio`, `httpx` (for async client), `pytest-cov` |
+| Go | stdlib `testing` + testify | none — Go resolves `*_test.go` automatically | `github.com/stretchr/testify` via `go get` |
+| .NET | xUnit | `<ComponentName>.Tests/` project + `<solution>.sln` update | `xunit`, `xunit.runner.visualstudio`, `Microsoft.AspNetCore.Mvc.Testing` |
+| Java / Spring | JUnit 5 | `src/test/` tree already created by Spring Initializr | `spring-boot-starter-test` (already in starter) |
+
+**Files to create per runtime:**
+
+**Node.js / TypeScript:**
+```
+vitest.config.ts                  ← test runner config with coverage
+src/__tests__/
+  health.test.ts                  ← one smoke test against GET /health
+```
+
+`vitest.config.ts`:
+```ts
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      exclude: ['node_modules/', 'dist/'],
+    },
+  },
+})
+```
+
+`package.json` scripts to add:
+```json
+"test": "vitest run",
+"test:watch": "vitest",
+"test:coverage": "vitest run --coverage"
+```
+
+`src/__tests__/health.test.ts`:
+```ts
+import { describe, it, expect } from 'vitest'
+import request from 'supertest'
+import { app } from '../app.js'
+
+describe('Health check', () => {
+  it('GET /health returns 200', async () => {
+    const res = await request(app).get('/health')
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveProperty('status', 'ok')
+  })
+})
+```
+
+**Python / FastAPI:**
+```
+pyproject.toml                    ← [tool.pytest.ini_options] section
+tests/
+  __init__.py
+  conftest.py                     ← shared fixtures (app client, db session stub)
+  test_health.py                  ← one smoke test against GET /health
+```
+
+`pyproject.toml` addition:
+```toml
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "--cov=app --cov-report=term-missing"
+```
+
+`tests/conftest.py`:
+```python
+import pytest
+from httpx import AsyncClient
+from app.main import app
+
+@pytest.fixture
+async def client():
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+```
+
+`tests/test_health.py`:
+```python
+async def test_health(client):
+    response = await client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
+```
+
+**Go:**
+```
+internal/
+  health/
+    health_test.go                ← one smoke test for the health handler
+```
+
+`internal/health/health_test.go`:
+```go
+package health_test
+
+import (
+    "net/http"
+    "net/http/httptest"
+    "testing"
+
+    "github.com/stretchr/testify/assert"
+)
+
+func TestHealthHandler(t *testing.T) {
+    req := httptest.NewRequest(http.MethodGet, "/health", nil)
+    w := httptest.NewRecorder()
+    // TODO: wire your actual handler here
+    // handler.ServeHTTP(w, req)
+    assert.Equal(t, http.StatusOK, w.Code)
+}
+```
+
+Add `"test": "go test ./..."` equivalent note to `README.md` — Go has no `package.json`.
+
+**.NET:**
+```
+<ComponentName>.Tests/
+  <ComponentName>.Tests.csproj    ← xUnit project referencing main project
+  HealthCheckTests.cs             ← one smoke test using WebApplicationFactory
+```
+
+`<ComponentName>.Tests.csproj`:
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.*" />
+    <PackageReference Include="xunit" Version="2.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../<ComponentName>/<ComponentName>.csproj" />
+  </ItemGroup>
+</Project>
+```
+
+`HealthCheckTests.cs`:
+```csharp
+using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit;
+
+public class HealthCheckTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+
+    public HealthCheckTests(WebApplicationFactory<Program> factory)
+        => _client = factory.CreateClient();
+
+    [Fact]
+    public async Task GetHealth_ReturnsOk()
+    {
+        var response = await _client.GetAsync("/health");
+        response.EnsureSuccessStatusCode();
+    }
+}
+```
+
+Add the test project to the solution file: `dotnet sln add <ComponentName>.Tests/<ComponentName>.Tests.csproj`
+
+#### Frontend projects
+
+| Framework | Test runner | Config file | Packages to add |
+|-----------|------------|-------------|-----------------|
+| Next.js / React (Vite) | Vitest + Testing Library | `vitest.config.ts` | `vitest`, `@vitest/coverage-v8`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom` |
+| Vue / Nuxt | Vitest + Vue Testing Library | `vitest.config.ts` | `vitest`, `@vitest/coverage-v8`, `@testing-library/vue`, `jsdom` |
+| SvelteKit | Vitest + Svelte Testing Library | `vitest.config.ts` | `vitest`, `@vitest/coverage-v8`, `@testing-library/svelte`, `jsdom` |
+| Angular | Jest (via `@jest/angular`) | `jest.config.ts` | `jest`, `@angular-builders/jest`, `@angular/core/testing` |
+
+**Files to create for all frontend frameworks:**
+```
+src/__tests__/
+  setup.ts                        ← test setup (e.g. @testing-library/jest-dom matchers)
+  App.test.tsx                    ← renders root component, asserts not crashing
+```
+
+`vitest.config.ts` (React / Next.js example):
+```ts
+import { defineConfig } from 'vitest/config'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/__tests__/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      exclude: ['node_modules/', '.next/'],
+    },
+  },
+})
+```
+
+`src/__tests__/setup.ts`:
+```ts
+import '@testing-library/jest-dom'
+```
+
+`package.json` scripts to add:
+```json
+"test": "vitest run",
+"test:watch": "vitest",
+"test:coverage": "vitest run --coverage"
+```
+
+#### Mobile apps
+
+| Platform | Test runner | Files to create |
+|----------|------------|-----------------|
+| React Native (Expo / bare) | Jest + Testing Library | `jest.config.ts`, `src/__tests__/App.test.tsx` |
+| iOS / Swift | XCTest (included in Xcode) | `<ComponentName>Tests/` directory stub with empty `<ComponentName>Tests.swift` |
+| Android / Kotlin | JUnit 4 (included in Android project) | `src/test/` and `src/androidTest/` stubs created by `create-expo-app` — verify they exist |
+| Flutter | `flutter_test` (included) | `test/widget_test.dart` stub already created by `flutter create` — verify it exists |
+
+#### Depth gating
+
+| scaffold_depth | What to create |
+|---------------|----------------|
+| `mvp` | Test runner config + scripts + empty `__tests__/` or `tests/` directory + one health/smoke test file |
+| `growth` | Everything above + coverage config + `.env.test` wired to in-memory/test DB |
+| `enterprise` | Everything above + coverage thresholds enforced in CI (fail if `<` 60% lines) |
+
+**Coverage threshold addition for enterprise depth** (vitest example):
+```ts
+coverage: {
+  provider: 'v8',
+  reporter: ['text', 'lcov'],
+  thresholds: { lines: 60, functions: 60 },
+}
+```
+
+**.NET enterprise — add to CI workflow:**
+```yaml
+- name: Test with coverage
+  run: dotnet test --collect:"XPlat Code Coverage" --results-directory ./coverage
+```
+
+**After this step**, update `.env.test` (from step 9) to be unconditional — now that test infrastructure always exists, `.env.test` is always generated.
+
 ### 9. Add Common Files
 
 For every project, ensure these files exist:
 
 - **`.env.example`** — Credential placeholders derived from the manifest's integrations AND security config. Include per-environment URL placeholders from the `environments` section (e.g., `# DEV: http://localhost:3001`, `# STAGING: https://api.example-staging.com`). Include comments explaining each variable.
 - **`.env.development`** (optional stub) — Copy of `.env.example` with dev-appropriate defaults pre-filled (local ports, `NODE_ENV=development`). Never commit real secrets. Add to `.gitignore`.
-- **`.env.test`** (optional stub) — Copy of `.env.example` with test defaults (`NODE_ENV=test`, in-memory DB URL placeholders). Add to `.gitignore`. Only generate if the framework has a test runner configured.
+- **`.env.test`** — Copy of `.env.example` with test defaults (`NODE_ENV=test`, in-memory or test DB URL placeholders). Add to `.gitignore`. Always generated — test infrastructure is now always in place (see step 8.5).
 - **`.gitignore`** — Language-appropriate ignores (use project-templates skill). Always include `.env`, `.env.development`, `.env.test`, `.env.local`, `.env.*.local`.
 - **`README.md`** — Auto-generated with:
   - Component name and description from the manifest
