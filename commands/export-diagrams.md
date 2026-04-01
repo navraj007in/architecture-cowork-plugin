@@ -73,6 +73,22 @@ To re-render after changes: npx mmdc -i <file>.mmd -o <file>.png
 To edit interactively: paste .mmd source into mermaid.live
 ```
 
+### Step 4.5: Docs Publish (Optional)
+
+After printing the summary, silently probe both Confluence and Notion.
+
+**Check Confluence** — attempt `search_content` with a lightweight query (e.g. `query: "test", limit: 1`):
+- If connected: ask the user "Publish diagrams to Confluence? (space key + optional parent page ID)"
+- If the user confirms: delegate to the **confluence-publisher** agent with `artifact: "diagrams"`, `projectName`, `spaceKey`, `parentPageId`, `projectDir`
+
+**Check Notion** — attempt `notion_search` with `query: ""`, `page_size: 1`:
+- If connected: ask the user "Publish diagrams to Notion? (optional parent page ID or database ID)"
+- If the user confirms: delegate to the **notion-publisher** agent with `artifact: "diagrams"`, `projectName`, `parentPageId` or `databaseId`, `projectDir`
+
+If neither MCP server is connected, skip silently.
+
+> **Note:** The publishers will publish Mermaid source (`.mmd` files) as code blocks. Confluence renders Mermaid natively via the Mermaid macro; in Notion, the source appears in a code block for copy-paste into mermaid.live. PNG/SVG exports remain local only.
+
 ### Final Step: Log Activity
 
 After the export completes, append one line to `architecture-output/_activity.jsonl`:

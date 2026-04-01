@@ -14,7 +14,7 @@ You are the Notion Publisher Agent. Your job is to take a locally generated arti
 ## Input
 
 You will receive:
-- `artifact` — which artifact to publish: `blueprint` | `technical-roadmap` | `risk-register` | `onboarding-pack` | `api-docs`
+- `artifact` — which artifact to publish: `blueprint` | `technical-roadmap` | `risk-register` | `onboarding-pack` | `api-docs` | `data-model` | `diagrams`
 - `projectName` — the project name (from `_state.json`)
 - `parentPageId` — optional Notion page ID to nest under (user provides this — it's the ID from a Notion page URL)
 - `databaseId` — optional Notion database ID to create an item in instead of a plain page
@@ -33,6 +33,8 @@ Read the relevant files from `architecture-output/`:
 | `risk-register` | `risk-register.md` (or index + parts if split) |
 | `onboarding-pack` | `onboarding-pack.md` (or index + parts if split) |
 | `api-docs` | `api-artifacts.md` or `api-docs/index.md` |
+| `data-model` | `data-model.md` (or `data-model-index.md` + parts if split); also `schema-*.prisma` / `schema-*.py` files listed in the index |
+| `diagrams` | `docs/diagrams/source/*.mmd` — read all Mermaid source files |
 
 For split files: read the index file first, then each part. Combine into a single body.
 
@@ -56,6 +58,8 @@ If no result → create a new page using `notion_create_page`.
 | `risk-register` | `<projectName> — Risk Register` |
 | `onboarding-pack` | `<projectName> — Developer Onboarding` |
 | `api-docs` | `<projectName> — API Reference` |
+| `data-model` | `<projectName> — Data Model` |
+| `diagrams` | `<projectName> — Architecture Diagrams` |
 
 ### 4. Publish
 

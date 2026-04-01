@@ -98,6 +98,20 @@ After generating ORM schemas, update `architecture-output/_state.json` with a co
 
 This allows `scaffold-component` to know entity shapes without parsing ORM schema files.
 
+### Step 5.5: Docs Publish (Optional)
+
+After updating `_state.json`, silently probe both Confluence and Notion to check which (if any) is connected.
+
+**Check Confluence** — attempt `search_content` with a lightweight query (e.g. `query: "test", limit: 1`):
+- If connected: ask the user "Publish data model to Confluence? (space key + optional parent page ID)"
+- If the user confirms: delegate to the **confluence-publisher** agent with `artifact: "data-model"`, `projectName`, `spaceKey`, `parentPageId`, `projectDir`
+
+**Check Notion** — attempt `notion_search` with `query: ""`, `page_size: 1`:
+- If connected: ask the user "Publish data model to Notion? (optional parent page ID or database ID)"
+- If the user confirms: delegate to the **notion-publisher** agent with `artifact: "data-model"`, `projectName`, `parentPageId` or `databaseId`, `projectDir`
+
+If neither MCP server is connected, skip silently.
+
 ### Final Step: Log Activity
 
 Append one line to `architecture-output/_activity.jsonl`:
