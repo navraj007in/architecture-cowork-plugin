@@ -1,0 +1,160 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyMobileApp"
+  description: "Cross-platform mobile app with backend API and admin web portal"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Mobile User"
+      goals:
+        - "Sign up via social or email"
+        - "Use core features on the go"
+        - "Receive push notifications"
+        - "Manage profile and settings"
+    - name: "Admin"
+      accessLevel: "admin"
+      goals:
+        - "Manage users and content"
+        - "Send targeted push notifications"
+        - "View analytics and retention"
+        - "Configure feature flags"
+  coreFlows:
+    - name: "User Onboarding"
+      priority: "critical"
+      steps:
+        - "Download app"
+        - "Sign up with Google or Apple"
+        - "Complete profile"
+        - "Grant notification permission"
+        - "Land on home screen"
+    - name: "Core Feature"
+      priority: "critical"
+      steps:
+        - "Open app"
+        - "Navigate to feature"
+        - "Perform action"
+        - "View result"
+    - name: "Admin: User Management"
+      priority: "high"
+      steps:
+        - "Log in to admin portal"
+        - "Search and filter users"
+        - "View user detail"
+        - "Suspend or delete user"
+    - name: "Admin: Push Campaign"
+      priority: "medium"
+      steps:
+        - "Create notification campaign"
+        - "Target by segment"
+        - "Schedule or send immediately"
+        - "View delivery stats"
+design:
+  personality: "playful"
+  palette:
+    primary: "violet-600"
+    secondary: "pink-500"
+    neutral: "zinc"
+    surface: "light"
+  typography:
+    heading: "DM Sans"
+    body: "Inter"
+    scale: "default"
+  shape:
+    radius: "lg"
+    density: "default"
+    shadows: "elevated"
+    borders: "none"
+  motion:
+    transitions: "expressive"
+  iconLibrary: "phosphor"
+architecture:
+  style: "modular-monolith"
+  projects:
+    mobile:
+      - name: "app"
+        platform: "cross-platform"
+        framework: "expo"
+        language: "typescript"
+        purpose: "Consumer mobile app (iOS + Android)"
+    frontend:
+      - name: "admin-web"
+        framework: "nextjs"
+        rendering: "ssr"
+        styling: "tailwind"
+        purpose: "Admin portal for user management, analytics, push campaigns"
+    backend:
+      - name: "api"
+        framework: "nodejs"
+        language: "typescript"
+        apiStyle: "rest"
+        orm: "prisma"
+        purpose: "Shared API serving both mobile app and admin portal"
+auth:
+  strategy: "oidc"
+  provider: "firebase"
+  socialProviders:
+    - "google"
+    - "apple"
+  roles:
+    - "user"
+    - "admin"
+  sessions:
+    accessToken: "jwt"
+    refreshToken: true
+  adminAuth:
+    provider: "email-password"
+    mfa: true
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "session"
+      - "push-job-queue"
+  storage:
+    blobs:
+      provider: "s3"
+      public: false
+      useCase: ["profile-images", "media-uploads"]
+integrations:
+  push:
+    provider: "firebase-fcm"
+    platforms: ["ios", "android"]
+  email:
+    provider: "resend"
+    useCase:
+      - "transactional"
+      - "account-recovery"
+  analytics:
+    provider: "posthog"
+  monitoring:
+    provider: "sentry"
+    platforms: ["mobile", "backend"]
+deployment:
+  cloud: "railway"
+  ciCd:
+    provider: "github-actions"
+  mobile:
+    distribution: "expo-eas"
+    stores: ["app-store", "play-store"]
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 500
+    expectedUsersYear1: 20000
+  security:
+    pii: true
+    encryptionAtRest: true
+    encryptionInTransit: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "backlog"
+    - "adr"
+    - "cost-estimate"

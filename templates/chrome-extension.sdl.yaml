@@ -1,0 +1,156 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyChromeExtension"
+  description: "Chrome extension with optional backend API and web dashboard"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Extension User"
+      goals:
+        - "Install extension from Chrome Web Store"
+        - "Use feature on any webpage via popup or sidebar"
+        - "Sync settings and data across devices"
+    - name: "Pro User"
+      accessLevel: "authenticated"
+      goals:
+        - "Unlock premium features"
+        - "View history and saved data on web dashboard"
+        - "Manage subscription"
+  coreFlows:
+    - name: "Install & Activate"
+      priority: "critical"
+      steps:
+        - "Install from Chrome Web Store"
+        - "Pin extension to toolbar"
+        - "Click popup to activate"
+        - "Grant required permissions"
+    - name: "Core Feature (Popup)"
+      priority: "critical"
+      steps:
+        - "Click extension icon"
+        - "View popup UI"
+        - "Perform action on current page"
+        - "See result"
+    - name: "Sign In & Sync"
+      priority: "high"
+      steps:
+        - "Click sign in in popup"
+        - "Authenticate with Google"
+        - "Data synced to account"
+        - "Access on web dashboard"
+design:
+  personality: "minimal"
+  palette:
+    primary: "blue-600"
+    secondary: "slate-500"
+    neutral: "slate"
+    surface: "light"
+  typography:
+    heading: "Inter"
+    body: "Inter"
+    scale: "compact"
+  shape:
+    radius: "md"
+    shadows: "subtle"
+    borders: "subtle"
+  iconLibrary: "lucide"
+  componentLibrary: "shadcn/ui"
+architecture:
+  style: "modular-monolith"
+  projects:
+    extension:
+      - name: "extension"
+        platform: "chrome-extension"
+        manifest: "mv3"
+        language: "typescript"
+        framework: "react"
+        entryPoints:
+          - "popup"
+          - "background-service-worker"
+          - "content-script"
+          - "options-page"
+        purpose: "Chrome extension UI, page injection, background tasks"
+    frontend:
+      - name: "web-dashboard"
+        framework: "nextjs"
+        rendering: "ssr"
+        styling: "tailwind"
+        purpose: "Web app for settings, saved data, account, and upgrade"
+    backend:
+      - name: "api"
+        framework: "nodejs"
+        language: "typescript"
+        apiStyle: "rest"
+        orm: "prisma"
+        purpose: "User accounts, data sync, usage tracking, license validation"
+auth:
+  strategy: "oidc"
+  provider: "auth0"
+  socialProviders:
+    - "google"
+  roles:
+    - "free"
+    - "pro"
+  sessions:
+    accessToken: "jwt"
+    refreshToken: true
+  extensionAuth:
+    storage: "chrome.storage.local"
+    tokenRefresh: "background-service-worker"
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+  cache:
+    type: "redis"
+    useCase:
+      - "session"
+      - "rate-limiting"
+  extensionStorage:
+    local: "chrome.storage.local"
+    sync: "chrome.storage.sync"
+integrations:
+  payments:
+    provider: "stripe"
+    mode: "subscriptions"
+    currency: "USD"
+  email:
+    provider: "resend"
+    useCase:
+      - "transactional"
+      - "upgrade-prompts"
+  analytics:
+    provider: "posthog"
+  monitoring:
+    provider: "sentry"
+    platforms: ["extension", "backend"]
+deployment:
+  cloud: "vercel"
+  ciCd:
+    provider: "github-actions"
+  extension:
+    distribution: "chrome-web-store"
+    autoPublish: false
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 200
+    expectedUsersYear1: 5000
+  performance:
+    popupLoadTarget: "200ms"
+    contentScriptImpact: "minimal"
+  security:
+    pii: false
+    encryptionAtRest: true
+    encryptionInTransit: true
+    permissions: "minimal"
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "backlog"
+    - "adr"
+    - "cost-estimate"

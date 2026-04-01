@@ -47,6 +47,30 @@ templates:
     tags: ["React Native", "Node.js", "Firebase", "Postgres"]
     file: mobile-app-api.sdl.yaml
 
+  - id: mobile-app-full
+    name: "Mobile App + Admin + API"
+    description: "Expo mobile app, Node.js API, and Next.js admin portal with push notifications"
+    icon: "layout-panel-left"
+    complexity: moderate
+    tags: ["Expo", "Node.js", "Next.js", "Firebase", "Postgres"]
+    file: mobile-app-full.sdl.yaml
+
+  - id: unity-game
+    name: "Unity Game + Backend"
+    description: "Unity game client with leaderboards, inventory, IAP, and live-ops admin portal"
+    icon: "gamepad-2"
+    complexity: moderate
+    tags: ["Unity", "C#", "Node.js", "Nakama", "Redis"]
+    file: unity-game.sdl.yaml
+
+  - id: chrome-extension
+    name: "Chrome Extension"
+    description: "Manifest V3 extension with popup, content script, web dashboard, and optional backend"
+    icon: "puzzle"
+    complexity: simple
+    tags: ["Chrome MV3", "React", "TypeScript", "Next.js", "Node.js"]
+    file: chrome-extension.sdl.yaml
+
   - id: ai-chat-app
     name: "AI Chat App"
     description: "AI-powered chat with LLM integration, streaming, and conversation history"

@@ -1,0 +1,168 @@
+sdlVersion: "0.1"
+solution:
+  name: "MyGame"
+  description: "Unity game with backend services, leaderboards, and live-ops admin"
+  stage: "MVP"
+product:
+  personas:
+    - name: "Player"
+      goals:
+        - "Download and play the game"
+        - "Earn rewards and climb leaderboards"
+        - "Purchase in-app items"
+        - "Play with or compete against friends"
+    - name: "Game Designer / Live-Ops"
+      accessLevel: "admin"
+      goals:
+        - "Configure in-game events and rewards"
+        - "Update item catalogue and pricing"
+        - "Monitor DAU, retention, and revenue"
+        - "Ban cheaters and manage reports"
+  coreFlows:
+    - name: "First-Time Player"
+      priority: "critical"
+      steps:
+        - "Install game"
+        - "Complete tutorial"
+        - "Finish first match or level"
+        - "Receive reward"
+        - "Prompted to create account"
+    - name: "Returning Session"
+      priority: "critical"
+      steps:
+        - "Open app"
+        - "Claim daily reward"
+        - "Play session"
+        - "Check leaderboard"
+    - name: "In-App Purchase"
+      priority: "high"
+      steps:
+        - "Browse store"
+        - "Select item"
+        - "Confirm platform payment (Apple/Google)"
+        - "Item credited to account"
+    - name: "Live-Ops Event"
+      priority: "medium"
+      steps:
+        - "Admin creates timed event in portal"
+        - "Players see event banner in-game"
+        - "Players complete event objectives"
+        - "Rewards distributed at end"
+design:
+  personality: "bold"
+  palette:
+    primary: "amber-500"
+    secondary: "purple-600"
+    neutral: "zinc"
+    surface: "dark"
+  typography:
+    heading: "Rajdhani"
+    body: "Inter"
+    scale: "large"
+  shape:
+    radius: "sm"
+    shadows: "dramatic"
+    borders: "subtle"
+  motion:
+    transitions: "snappy"
+  iconLibrary: "lucide"
+architecture:
+  style: "modular-monolith"
+  projects:
+    game:
+      - name: "unity-client"
+        engine: "unity"
+        language: "csharp"
+        platform: ["android", "ios", "pc", "webgl"]
+        purpose: "Game client — gameplay, UI, local state, SDK integration"
+    backend:
+      - name: "game-api"
+        framework: "nodejs"
+        language: "typescript"
+        apiStyle: "rest"
+        orm: "prisma"
+        purpose: "Player accounts, leaderboards, inventory, matchmaking, save state"
+    frontend:
+      - name: "admin-portal"
+        framework: "nextjs"
+        rendering: "ssr"
+        styling: "tailwind"
+        purpose: "Live-ops events, player management, item catalogue, analytics"
+auth:
+  strategy: "custom"
+  provider: "custom-jwt"
+  guestPlay: true
+  roles:
+    - "guest"
+    - "player"
+    - "admin"
+  sessions:
+    accessToken: "jwt"
+    refreshToken: true
+  platformAuth:
+    - "google-play-games"
+    - "apple-game-center"
+    - "steam"
+data:
+  primaryDatabase:
+    type: "postgres"
+    hosting: "managed"
+    purpose: "Player profiles, inventory, leaderboards, purchase history"
+  cache:
+    type: "redis"
+    useCase:
+      - "leaderboard-sorted-sets"
+      - "session"
+      - "matchmaking-queue"
+  storage:
+    blobs:
+      provider: "s3"
+      public: true
+      useCase: ["asset-bundles", "player-avatars"]
+integrations:
+  payments:
+    provider: "unity-iap"
+    mode: "one-time"
+    wraps: ["apple-iap", "google-play-billing", "stripe"]
+  analytics:
+    provider: "unity-analytics"
+    secondary: "posthog"
+  push:
+    provider: "firebase-fcm"
+    platforms: ["ios", "android"]
+  monitoring:
+    provider: "sentry"
+  custom:
+    - name: "Nakama"
+      purpose: "Optional: real-time multiplayer, presence, chat, matchmaking"
+      optional: true
+deployment:
+  cloud: "railway"
+  ciCd:
+    provider: "github-actions"
+  game:
+    distribution: "unity-cloud-build"
+    stores: ["app-store", "play-store", "steam"]
+nonFunctional:
+  availability:
+    target: "99.9"
+  scaling:
+    expectedUsersMonth1: 1000
+    expectedUsersYear1: 50000
+    peakConcurrent: 500
+  latency:
+    apiTarget: "100ms p95"
+  security:
+    pii: true
+    encryptionAtRest: true
+    encryptionInTransit: true
+    antiCheat: true
+artifacts:
+  generate:
+    - "architecture-diagram"
+    - "openapi"
+    - "data-model"
+    - "repo-scaffold"
+    - "backlog"
+    - "adr"
+    - "cost-estimate"
