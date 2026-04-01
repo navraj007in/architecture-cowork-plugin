@@ -1,7 +1,7 @@
 {
   "name": "architect",
   "description": "Turn product ideas into structured, buildable architecture blueprints with C4 diagrams, cost estimates, complexity scores, and next-steps guides",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Navraj Singh",
     "url": "https://github.com/navraj007in"
@@ -14,6 +14,10 @@
     "blueprints",
     "diagrams",
     "cost-estimation",
-    "scaffolding"
+    "scaffolding",
+    "implement",
+    "code-review",
+    "design-system",
+    "clean-code"
   ]
 }
