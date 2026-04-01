@@ -59,9 +59,11 @@ Existing design: [complete | partial | empty]
 ### Step 3: Load Skills & References
 
 Load:
-- **design-system** skill — for generation logic and principles
+- **design-system** skill — for generation logic, principles, and dark mode output spec
 - **sdl-knowledge** skill — for SDL schema awareness
-- **design-systems.md** reference — for preset configs, personality mapping, domain defaults
+- **design-systems.md** reference — component library presets, personality guide, domain defaults, sub-domain differentiation
+- **design-system-fonts.md** reference — curated font pairing library by personality (30+ pairs with rotation rules)
+- **design-system-patterns.md** reference — dark mode tokens, gradient/texture recipes, motion timing values, layout archetype spatial specs
 
 ### Step 4: Generate or Refine Design System
 

@@ -5,6 +5,11 @@ description: Generate a context-aware, production-grade design system from the S
 
 This skill generates distinctive, production-grade design systems that are **derived from architecture context** — not random aesthetic choices. Every design decision traces back to the product domain, target audience, component library, and accessibility requirements defined in the SDL.
 
+**Reference files to load alongside this skill:**
+- `references/design-systems.md` — component library presets, personality guide, domain defaults, sub-domain differentiation
+- `references/design-system-fonts.md` — curated font pairing library by personality (30+ pairs, rotation rules)
+- `references/design-system-patterns.md` — dark mode tokens, gradient/texture recipes, motion timing values, layout archetype spatial specs
+
 The user has an SDL blueprint. This skill fills, refines, or validates the `design` section and produces actionable design artifacts.
 
 ## Design Thinking — Context-Driven
@@ -202,6 +207,31 @@ Single-file HTML that visually demonstrates:
 - Shape system (radius, shadows, borders on sample cards)
 - Button variants in the design language
 - A mini layout demonstrating the chosen archetype
+
+### 7. Dark Mode Tokens (when surface: dark or dark default domain)
+
+When `surface: dark` is specified in SDL, or when the domain defaults to dark (developer tools, gaming, AI/ML at user preference), generate an additional dark token set alongside the light tokens.
+
+Read `references/design-system-patterns.md` → Dark Mode Token Patterns section for exact values per personality.
+
+Output dark tokens in `design-tokens.json` under a `"dark"` key:
+
+```json
+{
+  "colors": { ... },
+  "dark": {
+    "background": "#09090b",
+    "surface": "#18181b",
+    "surface-elevated": "#27272a",
+    "border": "rgba(255,255,255,0.08)",
+    "text-primary": "#fafafa",
+    "text-secondary": "#a1a1aa",
+    "primary": "#60a5fa"
+  }
+}
+```
+
+Also generate the CSS dual-mode token block (`:root` + `.dark`) for inclusion in the palette-preview.html.
 
 ## Validation Rules
 

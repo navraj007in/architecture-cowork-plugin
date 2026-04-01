@@ -45,6 +45,62 @@ When scaffolding frontend components, apply the design section from SDL strictly
 - **Key patterns:** Grid system, card deck, form groups, navbars
 - **Default look:** Familiar, rounded, visible borders, medium shadows
 
+### mantine
+- **Install:** `@mantine/core @mantine/hooks @mantine/form`
+- **Styling:** CSS Modules + `createTheme()`, built-in dark mode
+- **Key patterns:** Rich form components, date pickers, charts, notifications out of the box
+- **Default look:** Modern, rounded (md), vibrant accents, full-featured
+- **Best for:** SaaS dashboards, admin panels, data-heavy apps
+
+### radix (bare)
+- **Install:** `@radix-ui/react-dialog @radix-ui/react-select` etc. per component
+- **Styling:** Unstyled — bring Tailwind, CSS Modules, or any system
+- **Key patterns:** Headless primitives, full a11y built-in, composition over configuration
+- **Default look:** None — purely structural. Pair with Tailwind for full control.
+- **Best for:** Design systems that need maximum visual customisation
+
+### headless-ui
+- **Install:** `@headlessui/react`
+- **Styling:** Fully unstyled — Tailwind utilities
+- **Key patterns:** Transition, Dialog, Listbox, Combobox, Menu, Popover — accessible by default
+- **Default look:** None — Tailwind-driven
+- **Best for:** Tailwind-first projects wanting a11y without UI opinions
+
+### Vue — Vuetify
+- **Install:** `vuetify` + `vite-plugin-vuetify`
+- **Styling:** Material Design 3 theme system, `v-theme-provider`
+- **Key patterns:** Data tables, virtual scrolling, form validation built-in
+- **Default look:** Material Design, rounded, elevation system
+- **Best for:** Vue enterprise apps, dashboards, data-heavy tools
+
+### Vue — Naive UI
+- **Install:** `naive-ui`
+- **Styling:** Theme editor, `n-config-provider`, dark mode built-in
+- **Key patterns:** 80+ components, tree-shaking, TypeScript-first
+- **Default look:** Clean, modern, consistent — close to Ant Design aesthetic
+- **Best for:** Vue SaaS apps needing a complete component library
+
+### Svelte — shadcn-svelte
+- **Install:** `npx shadcn-svelte@latest init`
+- **Styling:** Tailwind CSS variables, same token structure as shadcn/ui
+- **Key patterns:** Same component API as shadcn/ui — familiar for React devs migrating
+- **Default look:** Clean, neutral, high adaptability
+- **Best for:** Svelte projects wanting the shadcn design language
+
+### Svelte — Skeleton UI
+- **Install:** `@skeletonlabs/skeleton`
+- **Styling:** Tailwind plugin, design token system
+- **Key patterns:** Theming system, AppShell component, drawer/modal
+- **Default look:** Modern, full-featured, dark mode first
+- **Best for:** SvelteKit apps needing an opinionated full system
+
+### Angular — Angular Material
+- **Install:** `ng add @angular/material`
+- **Styling:** Material Design 3, `MatTheme`, CSS custom properties
+- **Key patterns:** CDK for a11y, form fields, data table, tree, virtual scroll
+- **Default look:** Material Design 3 — adaptive density, rounded
+- **Best for:** Enterprise Angular apps, Google-adjacent products
+
 ---
 
 ## Personality Guide
@@ -126,8 +182,54 @@ When NO `design` section is present in SDL, infer an appropriate palette from th
 | **AI / ML products** | cyan-500 or emerald-500 | zinc | minimal |
 | **Government / Legal** | blue-800 or slate-700 | gray | corporate |
 | **Gaming** | purple-600 or red-500 | zinc | bold |
+| **Logistics / Supply chain** | amber-600 or orange-600 | slate | corporate |
+| **HR / People ops** | teal-500 or sky-500 | gray | minimal |
+| **CRM / Sales tools** | blue-600 or sky-600 | slate | corporate |
+| **Analytics / BI** | violet-600 or blue-700 | zinc | corporate |
+| **Security / Cybersecurity** | red-700 or slate-700 | zinc | minimal or brutalist |
 
 If the domain doesn't match any of the above, randomly select from: teal, emerald, sky, rose, amber, cyan — NOT indigo.
+
+### Sub-Domain Differentiation
+
+Same top-level domain can produce very different design systems depending on the audience and product type. Always check these before applying the default.
+
+**E-commerce sub-domains:**
+
+| Sub-domain | Primary | Personality | Notes |
+|------------|---------|-------------|-------|
+| B2C Marketplace (multi-vendor, discovery) | orange-500 or teal-500 | playful | Card-heavy, search-forward, high image density |
+| D2C Brand (single brand, premium) | monochrome or amber-700 | bold or luxury | Editorial layout, product photography focus |
+| B2B Procurement (purchasing, approval flows) | blue-700 or slate-600 | corporate | Dense tables, workflow-heavy, approval states |
+| Flash sale / deals | red-600 | bold | Countdown timers, urgency design, high contrast |
+
+**Healthcare sub-domains:**
+
+| Sub-domain | Primary | Personality | Notes |
+|------------|---------|-------------|-------|
+| Patient-facing consumer app | sky-500 or teal-500 | minimal | Friendly rounded forms, high readability, WCAG AA+ |
+| Clinical / EHR tools | slate-700 or blue-800 | corporate | Dense data, compact, information hierarchy critical |
+| Provider / admin portal | slate-600 | corporate | Workflow-heavy, role-based views |
+| Mental health / wellness | emerald-400 or rose-300 | minimal or luxury | Calm, soft palette, never clinical |
+
+**SaaS sub-domains:**
+
+| Sub-domain | Primary | Personality | Dark default? |
+|------------|---------|-------------|--------------|
+| Developer-first (APIs, infra) | green-500 or zinc-400 | minimal or brutalist | Yes — dark by default |
+| SMB productivity | sky-600 or blue-500 | minimal | No |
+| Enterprise (IT, ops, finance) | blue-700 or slate-700 | corporate | No |
+| AI-powered tools | cyan-500 or violet-500 | minimal | Optional |
+| No-code / low-code | fuchsia-500 or orange-500 | playful | No |
+
+**Education sub-domains:**
+
+| Sub-domain | Primary | Personality |
+|------------|---------|-------------|
+| K-12 / children | blue-400 or yellow-400 | playful — rounded, friendly |
+| Higher education / university | blue-800 or slate-700 | corporate or editorial |
+| Professional / corporate training | teal-600 | corporate |
+| Online course marketplace | orange-500 | bold or playful |
 
 ---
 
