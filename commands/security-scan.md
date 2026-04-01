@@ -74,13 +74,15 @@ Recommendations:
 
 ### Final Step: Log Activity
 
-If the security scan results were written to `architecture-output/security-scan.md`, append one line to `architecture-output/_activity.jsonl`:
+Write the full scan report to `.archon/security/security-scan-<YYYY-MM-DD>.md` (create the directory if it does not exist). Using a dated filename preserves history — each run creates a new file so you can track whether findings are being resolved between scans.
+
+Then append one line to `architecture-output/_activity.jsonl`:
 
 ```json
-{"ts":"<ISO-8601>","phase":"security-scan","outcome":"completed","files":["architecture-output/security-scan.md"],"summary":"Security scan completed: <X>/<N> checks passed across <component> with <M> recommendations."}
+{"ts":"<ISO-8601>","phase":"security-scan","outcome":"completed","files":[".archon/security/security-scan-<YYYY-MM-DD>.md"],"summary":"Security scan completed: <X>/<N> checks passed across <component> with <M> recommendations."}
 ```
 
-Replace the placeholders with actual counts. If no file was written (scan was display-only), skip this step. Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+Replace the placeholders with actual counts. Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
 
 ## Output Rules
 

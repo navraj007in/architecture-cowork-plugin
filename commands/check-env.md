@@ -95,7 +95,7 @@ Scan `.env.example` and `.env` files:
 
 ### Step 4: Generate Readiness Report
 
-Write to `architecture-output/env-readiness.md`:
+Write to `.archon/checks/env-readiness.md` (create the directory if it does not exist). This is a per-developer, per-machine artifact — it changes every run and belongs in `.archon/checks/` rather than `architecture-output/`.
 
 ```markdown
 # Environment Readiness Report — [Project Name]
@@ -143,10 +143,10 @@ For each missing tool, provide install commands for:
 
 ### Final Step: Log Activity
 
-After writing `architecture-output/env-readiness.md`, append one line to `architecture-output/_activity.jsonl`:
+After writing `.archon/checks/env-readiness.md`, append one line to `architecture-output/_activity.jsonl`:
 
 ```json
-{"ts":"<ISO-8601>","phase":"check-env","outcome":"completed","files":["architecture-output/env-readiness.md"],"summary":"Environment check: <X> ready, <Y> missing, <Z> warnings."}
+{"ts":"<ISO-8601>","phase":"check-env","outcome":"completed","files":[".archon/checks/env-readiness.md"],"summary":"Environment check: <X> ready, <Y> missing, <Z> warnings."}
 ```
 
 ## Output Rules
