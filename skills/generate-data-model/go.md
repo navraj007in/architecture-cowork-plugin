@@ -1,6 +1,6 @@
 # Data Model Generation — Go
 
-> **Entity source** — Always read `domain.entities[]` from `solution.sdl.yaml` as the primary entity list. See Step 1 "Resolve Entity Inventory" in `skills/generate-data-model/SKILL.md` for the full fallback chain.
+> **Entity source** — Always read `domain.entities[]` from SDL as the primary entity list. Check `solution.sdl.yaml` first; if absent, check `sdl/` directory (`sdl/README.md` → `sdl/data.yaml`). See Step 1 "Resolve Entity Inventory" in `skills/generate-data-model/SKILL.md` for the full fallback chain.
 
 ## ORM Selection
 

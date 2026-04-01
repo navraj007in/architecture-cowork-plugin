@@ -368,9 +368,14 @@ Migration: add `deleted_at TIMESTAMP NULL` to every entity table via TypeORM CLI
 
 ### Step 1: Resolve Entity Inventory
 
-**Primary source**: Read `domain.entities[]` from `solution.sdl.yaml` — this is the authoritative entity list. Each entry is a PascalCase entity name (e.g. `User`, `Order`, `Product`).
+**Primary source**: `domain.entities[]` from SDL — the authoritative entity list. Each entry is a PascalCase entity name (e.g. `User`, `Order`, `Product`).
 
-**Fallback order** (if `domain.entities[]` is absent):
+**SDL location** (check in order):
+1. `solution.sdl.yaml` at project root — use if present
+2. `sdl/` directory — if `solution.sdl.yaml` is absent, read `sdl/README.md` first, then `sdl/data.yaml` (or whichever module contains `domain:`)
+3. Never read a file named `sdl.yaml` — legacy filename, treat as `solution.sdl.yaml`
+
+**Fallback order** (if `domain.entities[]` is absent from SDL):
 1. `_state.json.entities` — already-extracted entity summaries
 2. Shared types from the manifest (`shared.types[]`)
 3. Blueprint Section 4 markdown (legacy format, shown below for reference)
