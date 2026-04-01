@@ -6,7 +6,7 @@ description: Review code changes against the project's own patterns and best pra
 
 ## Trigger
 
-`/architect:review [component] [--pr <N>] [:<file>]`
+`/architect:review [component] [--pr <N>] [:<file>] [--fix]`
 
 ## Arguments
 
@@ -16,6 +16,7 @@ description: Review code changes against the project's own patterns and best pra
 | `[component] --pr <N>` | `api-server --pr 42` | Review the diff of a specific PR (requires `gh` CLI) |
 | `[component]:<file>` | `api-server:app/routers/orders.py` | Review one specific file |
 | _(no argument)_ | `/architect:review` | Review all components that have uncommitted changes |
+| `--fix` | `api-server --fix` | After printing the report, auto-invoke `/architect:implement` for every BLOCKER in sequence |
 
 ## Purpose
 
@@ -29,8 +30,8 @@ scaffold → implement → review → ship
 
 ## Out of Scope
 
-This command will NOT:
-- Modify any project file — review is strictly read-only
+This command will NOT (unless `--fix` is passed):
+- Modify any project file — review is strictly read-only without `--fix`
 - Run automated fixes or refactors — it flags issues for the developer to resolve
 - Perform the deep security pass that `/architect:security-scan` does — it does a lighter OWASP surface scan on the diff only
 - Assess high-level architectural pillars (reliability, deployment, observability) — use `/architect:well-architected` for that
@@ -53,4 +54,6 @@ Read `review-1.md` first, then `review-2.md`. For each component in scope, deleg
 
 `review` writes to `_activity.jsonl` only. It does not modify `_state.json`. Findings describe a transient diff state and have no value as persistent project facts.
 
-Exception: when `--pr` mode is used, the formatted report is also written to `architecture-output/review-pr-<N>.md` as a persistent artifact.
+Exceptions:
+- When `--pr` mode is used, the formatted report is also written to `architecture-output/review-pr-<N>.md` as a persistent artifact.
+- When `--fix` is passed, each BLOCKER fix is logged separately by the implementer agent as it would be for a normal `/architect:implement` invocation.

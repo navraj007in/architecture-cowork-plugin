@@ -30,13 +30,21 @@ gh --version
 ```
 If the command fails: abort with — "The `--pr` flag requires the GitHub CLI (`gh`). Install it from https://cli.github.com or review using the default git diff mode."
 
-### 1c. Output of Step 1 (internal state)
+### 1c. `--fix` flag
+
+Detect `--fix` anywhere in the argument string. Strip it before parsing the remaining tokens.
+
+- `--fix` is compatible with all `review_mode` values.
+- `--fix` is NOT compatible with `review_mode=file` (single-file review doesn't produce enough context for safe auto-fix) — if both are present, warn: "`--fix` is not supported for single-file review. Run without a file filter to enable auto-fix." and proceed as a normal review without fix.
+
+### 1d. Output of Step 1 (internal state)
 
 ```
 review_mode:       "uncommitted" | "pr" | "file" | "all"
 component_filter:  "api-server" | null
 pr_number:         42 | null
 file_filter:       "app/routers/orders.py" | null
+auto_fix:          true | false
 ```
 
 ---

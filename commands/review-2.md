@@ -127,6 +127,38 @@ No issues found in <component> [<runtime> / <framework>]
   Source:         git-uncommitted
 ```
 
+### Next Actions block
+
+Always append this block after the combined totals, even if `--fix` is not set. Format each finding as a ready-to-run `/architect:implement` command so the user can copy-paste directly.
+
+**Construct the implement argument** from the finding's component, path, line, what-is-wrong, and what-to-do fields:
+
+```
+## Next Actions
+
+**BLOCKERs — fix before merging:**
+/architect:implement "Fix: <what is wrong> — <what to do> [<component>/<path>:<line>]"
+/architect:implement "Fix: <what is wrong> — <what to do> [<component>/<path>:<line>]"
+
+**WARNINGs — address this sprint:**
+/architect:implement "Fix: <what is wrong> — <what to do> [<component>/<path>:<line>]"
+... (list all WARNINGs)
+
+**Suggestions — review and decide:**
+- <component>/<path>:<line> — <what is wrong>
+... (listed as plain text — too minor to auto-invoke)
+
+Run /architect:review again after fixing BLOCKERs to verify resolution.
+```
+
+Rules for constructing the implement argument string:
+- Keep it under 200 characters — truncate the "what to do" if needed, keeping the file:line reference intact
+- Include `[component/path:line]` at the end so the implementer can locate the code without re-reading the report
+- If a finding has no line number (file-level finding), use `[component/path]`
+- Suggestions are listed as plain text, not as `/architect:implement` commands — they require developer judgement before acting
+
+If there are zero BLOCKERs, omit the BLOCKERs section and open with WARNINGs. If zero findings total, omit the block entirely.
+
 ---
 
 ## Step 8: Log Activity
@@ -142,3 +174,75 @@ For multi-component reviews, `components` is the full array and the counts are c
 `outcome` is `"completed"` when all agents returned a result (including zero findings). `"partial"` when one or more agents returned `outcome: "partial"` — list the affected components in the `summary` field.
 
 Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
+
+---
+
+## Step 9: Auto-Fix BLOCKERs (only when `auto_fix: true`)
+
+Skip this step entirely if `auto_fix` is `false`.
+
+If there are no BLOCKERs, print:
+```
+--fix: No BLOCKERs to fix. Review the WARNINGs above and run /architect:implement manually for any you want to address.
+```
+and stop.
+
+Otherwise:
+
+### 9a. Announce
+
+```
+--fix mode: fixing <N> BLOCKER(s) in sequence. WARNINGs and suggestions are left for manual review.
+```
+
+### 9b. Execute each BLOCKER fix sequentially
+
+For each BLOCKER finding (in the order they appear in the report):
+
+1. Print:
+   ```
+   Fixing [<N>/<total>]: <component>/<path>:<line> — <what is wrong>
+   ```
+2. Invoke the **implementer** agent (`agents/implementer.md`) with:
+   ```json
+   {
+     "task": "Fix: <what is wrong> — <what to do>",
+     "component": "<component>",
+     "target_file": "<path>",
+     "target_line": <line>,
+     "context": "<full finding text from the report>",
+     "mode": "fix"
+   }
+   ```
+3. Wait for the implementer to complete before starting the next BLOCKER — fixes may be order-dependent (e.g., a security fix that changes a function signature that the next fix also touches).
+4. If the implementer returns an error or marks the fix as `partial`, print a warning and continue to the next BLOCKER:
+   ```
+   ⚠ Fix [<N>/<total>] could not be fully applied — review manually: <component>/<path>:<line>
+   ```
+
+### 9c. Re-run review after all fixes
+
+After all BLOCKERs are processed, re-run the review automatically (same scope, same mode, `auto_fix: false`) to verify the fixes didn't introduce new issues and the original BLOCKERs are resolved.
+
+Print before re-running:
+```
+Re-running review to verify fixes...
+```
+
+If the re-review returns zero BLOCKERs:
+```
+✓ All BLOCKERs resolved. <N> warning(s) remain — see Next Actions above.
+```
+
+If BLOCKERs remain after re-review:
+```
+⚠ <N> BLOCKER(s) remain after auto-fix — manual intervention required:
+  <list remaining BLOCKERs>
+```
+
+### 9d. Log --fix activity
+
+Append a second entry to `_activity.jsonl` for the fix pass:
+```json
+{"ts":"<ISO-8601>","phase":"review-fix","blockers_attempted":<N>,"blockers_resolved":<M>,"blockers_remaining":<N-M>,"components":["api-server"],"outcome":"completed|partial","summary":"Auto-fixed <M>/<N> blockers in api-server. <N-M> require manual review."}
+```
