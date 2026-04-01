@@ -200,6 +200,8 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `compare-stack` | activity log only (no `_state.json` fields) |
 | `scaffold` | activity log only — writes `filesCreated` to `_activity.jsonl` per component |
 | `scaffold-component` | activity log only — writes `filesCreated` to `_activity.jsonl` |
+| `implement` | activity log only — exception: if feature introduces a new entity, append to `entities[]` |
+| `review` | activity log only — exception: when `--pr` mode is used, writes `architecture-output/review-pr-<N>.md` |
 | `visualise` | activity log only (no `_state.json` fields) |
 | `export-diagrams` | activity log only (no `_state.json` fields) |
 | `agent-spec` | activity log only (no `_state.json` fields) |
