@@ -1,5 +1,7 @@
 # Data Model Generation — .NET / EF Core
 
+> **Entity source** — Always read `domain.entities[]` from `solution.sdl.yaml` as the primary entity list. See Step 1 "Resolve Entity Inventory" in `skills/generate-data-model/SKILL.md` for the full fallback chain.
+
 ## ORM: Entity Framework Core
 
 EF Core is the standard ORM for .NET. Use Code-First approach — define models in C#, generate migrations.

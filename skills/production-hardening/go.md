@@ -2,6 +2,8 @@
 
 Apply these patterns when the SDL specifies `runtime: go` or `framework: go`.
 
+> **scaffold_depth gating** — Before applying patterns, resolve `scaffold_depth` from `solution.stage` in `solution.sdl.yaml`. Pattern 7 (retry+timeout) and Pattern 8 (soft delete) have reduced requirements at MVP stage. See the gating table in `skills/production-hardening/SKILL.md`.
+
 ---
 
 ### Pattern 1 — Correlation ID (Go)

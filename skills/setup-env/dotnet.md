@@ -1,5 +1,7 @@
 # Environment Setup — .NET / ASP.NET Core
 
+> **Per-service .env scoping** — For multi-service projects, scope env vars to only the services that need them using `architecture.services[].dependsOn[]` from `solution.sdl.yaml`. See the "Multi-Service Projects — Per-Service .env Scoping" section in `skills/setup-env/SKILL.md`.
+
 ## appsettings.json approach
 
 .NET uses `appsettings.json` + `appsettings.{Environment}.json` + environment variables. All three are merged — env vars override JSON files.

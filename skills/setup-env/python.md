@@ -1,5 +1,7 @@
 # Environment Setup — Python
 
+> **Per-service .env scoping** — For multi-service projects, scope env vars to only the services that need them using `architecture.services[].dependsOn[]` from `solution.sdl.yaml`. See the "Multi-Service Projects — Per-Service .env Scoping" section in `skills/setup-env/SKILL.md`.
+
 ## pydantic-settings (FastAPI / any Python backend)
 
 **Install:** `pip install pydantic-settings python-dotenv`

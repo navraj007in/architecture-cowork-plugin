@@ -261,7 +261,7 @@ components:
 ### Generation Rules
 
 1. **Derive paths from service responsibilities** — Each responsibility maps to a resource. `ticket-management` → `/tickets`, `user-management` → `/users`.
-2. **Derive schemas from shared types** — Each shared type becomes a component schema. Use its fields for properties.
+2. **Derive schemas from `domain.entities[]`** — Read `domain.entities[]` from `solution.sdl.yaml` as the primary source. Each entity becomes a component schema. Fall back to `shared.types[]` in the manifest if `domain.entities[]` is absent.
 3. **Always include standard CRUD** — GET list, GET by ID, POST, PUT, DELETE for each resource unless the service is read-only or write-only.
 4. **Always include health endpoint** — Every service gets `/health` with no auth.
 5. **Always include standard error responses** — 400, 401, 403, 404, 500 with consistent Error schema.

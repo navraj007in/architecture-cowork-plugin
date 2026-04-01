@@ -297,6 +297,61 @@ export function withSoftDelete<T extends { deletedAt: unknown }>(table: T) {
 - Advanced features (multi-database, replication)
 - Works with TypeScript and JavaScript
 
+#### Soft Delete (TypeORM)
+
+Use the built-in `@DeleteDateColumn` decorator — TypeORM's `SoftDelete()` and `SoftRemove()` methods set this column automatically, and all `find*` queries transparently exclude soft-deleted rows.
+
+```typescript
+// src/entities/base.entity.ts
+import { CreateDateColumn, DeleteDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+
+export abstract class BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @DeleteDateColumn()           // ← soft delete column; null = active row
+  deletedAt: Date | null;
+}
+
+// src/entities/user.entity.ts
+import { Column, Entity, Index, ManyToOne } from 'typeorm';
+import { BaseEntity } from './base.entity';
+
+@Entity('users')
+export class User extends BaseEntity {
+  @Column()
+  email: string;
+
+  @Column({ nullable: true })
+  name: string | null;
+}
+```
+
+Soft delete usage:
+```typescript
+// Soft-delete (sets deletedAt, excluded from future finds automatically)
+await userRepository.softDelete(id);
+// or
+await userRepository.softRemove(user);
+
+// Hard-delete (permanent — avoid unless legally required)
+await userRepository.delete(id);
+
+// Restore
+await userRepository.restore(id);
+
+// Query including soft-deleted rows (for admin views)
+await userRepository.find({ withDeleted: true });
+```
+
+Migration: add `deleted_at TIMESTAMP NULL` to every entity table via TypeORM CLI migrations.
+
 ### 4. SQL (Raw migrations)
 
 **Output**: `db/migrations/001_initial_schema.sql`
