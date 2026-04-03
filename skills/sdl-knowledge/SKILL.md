@@ -359,6 +359,27 @@ When generating SDL from a conversation or manifest:
    ```
 7. **Use comments sparingly** — only for non-obvious choices
 8. **Validate the output** — ensure all required fields are present and enums are valid
+9. **Quote YAML-unsafe string values** — any scalar value that starts with or contains a YAML special character MUST be wrapped in double quotes. Failure to quote these causes parse errors. Apply this rule to every string value you write:
+
+   | Character / pattern | Why it breaks YAML | Example fix |
+   |--------------------|--------------------|-------------|
+   | Value starts with `>` | Interpreted as block scalar folding indicator | `condition: ">5 failures in 5 min"` |
+   | Value starts with `\|` | Interpreted as block scalar literal indicator | `format: "\| pipe-delimited"` |
+   | Value starts with `{` or `[` | Interpreted as inline mapping/sequence | `config: "{key: val}"` |
+   | Value starts with `*` or `&` | Interpreted as alias/anchor | `ref: "*base"` |
+   | Value starts with `!` | Interpreted as tag | `type: "!important"` |
+   | Value contains `: ` (colon-space) anywhere | Parsed as a nested mapping key | `trigger: "EventBridge Schedule (rate: 1 day)"` |
+   | Value contains ` #` (space-hash) | Everything after is treated as a comment | `desc: "retry # times"` |
+   | Value contains `'` or `"` | May terminate the string early | Use double quotes and escape inner doubles as `\"` |
+   | Value is a bare `true`, `false`, `yes`, `no`, `on`, `off`, `null` | Coerced to boolean/null | `flag: "true"` |
+   | Value is a bare number that should be a string | Coerced to number | `version: "1.0"` |
+
+   **Practical checklist — before writing any string value, ask:**
+   - Does it start with `>`, `|`, `{`, `[`, `*`, `&`, `!`, `-`, `?`, `:`, `@`, `` ` ``? → quote it.
+   - Does it contain `: ` anywhere (including inside parentheses)? → quote it.
+   - Does it contain ` #` anywhere? → quote it.
+   - Is it a comparison expression like `>5`, `>=10`, `<100ms`? → quote it.
+   - Is it `true`, `false`, `yes`, `no`, `null`, or a plain number that must stay a string? → quote it.
 
 ## SDL Output Format
 
