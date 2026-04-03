@@ -49,6 +49,13 @@ Using the **sdl-knowledge** skill:
    - Include only optional sections that have data
    - Let normalizer defaults handle the rest
    - Validate against the 5 conditional rules
+   - **Derive `dependsOn[]` for every component in `architecture.projects`** — list the names of other components it calls plus external integrations it uses. Rules:
+     - Frontend → every backend/API service it calls
+     - Backend/service → other backend services it calls + external integration names (e.g. `["stripe", "sendgrid"]`)
+     - Lambda/worker → the service or queue it reads from and any downstream service it invokes
+     - Shared lib → `[]`
+     - Always set the field explicitly — never omit it, even when the array is empty
+     - Use the component's SDL `name` as the identifier; external providers in lowercase (e.g. `"razorpay"`, `"anthropic"`)
 
 4. **Save the SDL file to the project root directory:**
    - Write the file as `solution.sdl.yaml` in the project root (current working directory)

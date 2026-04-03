@@ -256,7 +256,7 @@ When converting a system manifest to SDL:
 | `communication_patterns[]` | `interServiceCommunication[]` |
 | `application_patterns.error_handling` | `errorHandling` |
 | `devops.config_management` | `configuration` |
-| `services[].name` (cross-referenced) | `architecture.services[].dependsOn[]` — list service names + external providers this service calls |
+| `services[].name` + `frontends[].name` (cross-referenced with communication patterns) | `architecture.projects.*[].dependsOn[]` — **required on every component**. Array of names of other components and external providers this component calls. Rules: frontend lists every backend it calls; backend lists downstream services + external integrations (e.g. `["stripe", "sendgrid"]`); lambda/worker lists its trigger source + any downstream service; shared lib gets `[]`. Always emit the field even when empty. Use the component's SDL `name` as identifier. External providers in lowercase (e.g. `"razorpay"`, `"anthropic"`). |
 | Detected domain objects (entity names from models/schemas) | `domain.entities[]` — list of core domain object names |
 | Identity provider (Cognito, Auth0, etc.) | `auth.identityProvider` |
 | Service-level token validation mechanism (JWT, session) | `auth.serviceTokenModel: jwt \| session \| api-key` |

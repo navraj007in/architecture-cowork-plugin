@@ -190,6 +190,14 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
    - Map deployment targets → `deployment.cloud`
    - Map constraints (budget, team, timeline) → `constraints`
    - Map communication patterns between services → `interServiceCommunication[]` (pattern, from, to, async)
+   - **Derive `dependsOn[]` for every component** — on each entry in `architecture.projects` (frontend, backend, lambda, etc.), set `dependsOn: []` listing the names of other components it calls plus any external integrations it uses. Rules:
+     - Frontend → lists every backend/API service it calls (derived from `interServiceCommunication[].from === componentName`)
+     - Backend/API service → lists other backend services it calls, plus external integration names from `integrations.*` and `auth.*` that it directly uses (e.g. `["order-service", "stripe", "sendgrid"]`)
+     - Lambda/worker → lists the service or queue it reads from and any downstream service it invokes
+     - Shared lib → empty array (nothing depends on it in the call direction)
+     - If a component has no dependencies, set `dependsOn: []` explicitly (never omit the field)
+     - Use the component's SDL `name` field as the identifier — not a display label
+     - External integrations use the provider name in lowercase (e.g. `"stripe"`, `"razorpay"`, `"anthropic"`)
    - Map error handling strategy from application patterns → `errorHandling` (strategy, errorFormat, retryPolicy)
    - Map config management from devops/application patterns → `configuration` (strategy, secretsManagement)
    - Map environments (dev, staging, prod) → `environments[]` with `url` (primary URL), `services[].name` + `services[].url` (per-service base URLs)
