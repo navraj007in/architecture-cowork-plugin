@@ -2,6 +2,25 @@
 
 These rules apply to ALL commands in this plugin.
 
+## Request Routing — When to Use Commands vs. Handle Directly
+
+**Only invoke a plugin command when the user explicitly uses `/architect:<command>` syntax.**
+
+For everything else, handle the request directly as a normal coding or software task:
+
+| User says | Do this |
+|---|---|
+| "fix errors", "fix the build", "it's not compiling" | Read the error output, fix source files directly — do NOT run a command |
+| "fix the TypeScript errors in X" | Edit the file and fix the types — do NOT run a command |
+| "install dependencies" | Run the install command directly |
+| "why is X failing?" | Investigate and explain directly |
+| "update file X" | Edit the file directly |
+| General coding questions | Answer directly |
+
+**Never route a free-form user message to `/architect:blueprint` or any other command unless the user explicitly asked for it.**
+
+The scaffold commands (`/architect:scaffold`, `/architect:scaffold-component`) already include a build + fix step. If the user asks to fix errors after scaffold, they want you to fix the code directly in the scaffolded directory — not re-run the scaffold or generate blueprints.
+
 ## Output File Splitting
 
 Generate architecture output in **full detail — never be vague or truncate content**.
