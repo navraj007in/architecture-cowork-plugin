@@ -14,14 +14,10 @@ For everything else, handle the request directly as a normal coding or software 
 | "fix the TypeScript errors in X" | Edit the file and fix the types — do NOT run a command |
 | "install dependencies" | Run the install command directly |
 | "why is X failing?" | Investigate and explain directly |
-| "update file X" / "update intent.json" / "update _state.json" | Read the file, apply the requested change, write it back — do NOT run a command |
-| "add X to intent.json" / "change the intent" | Edit the JSON file directly with the requested change |
-| "create intent.json" / "write intent.json" | Write the file directly — do NOT trigger `/architect:prototype` |
+| "update file X" | Edit the file directly |
 | General coding questions | Answer directly |
 
-**Never route a free-form user message to `/architect:blueprint`, `/architect:prototype`, or any other command unless the user explicitly asked for it.**
-
-`intent.json` is just a JSON file. Reading, creating, or updating it is a file operation — not a trigger for `/architect:prototype`. The prototype command's trigger line ("run after intent.json is created") describes sequencing advice, NOT an automatic trigger on any mention of intent.json.
+**Never route a free-form user message to `/architect:blueprint` or any other command unless the user explicitly asked for it.**
 
 The scaffold commands (`/architect:scaffold`, `/architect:scaffold-component`) already include a build + fix step. If the user asks to fix errors after scaffold, they want you to fix the code directly in the scaffolded directory — not re-run the scaffold or generate blueprints.
 
