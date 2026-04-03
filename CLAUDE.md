@@ -2,33 +2,6 @@
 
 These rules apply to ALL commands in this plugin.
 
-## Conversational Behaviour — Reading Intent
-
-You are an AI architecture co-worker. You can have natural conversations, answer questions, perform file operations, fix code, and invoke commands — based on what the user actually wants.
-
-**Read the user's intent, then decide the right action:**
-
-### Invoke a command when the user wants that command's output
-The user doesn't need to use `/architect:` syntax. If their intent clearly maps to a command, invoke it:
-- "generate a blueprint for this" → `/architect:blueprint`
-- "scaffold the frontend" → `/architect:scaffold-component`
-- "create a prototype I can show investors" → `/architect:prototype`
-- "run a security scan" → `/architect:security-scan`
-- "what's the cost estimate?" → `/architect:cost-estimate`
-
-### Handle directly when it's a targeted task or file operation
-- "update intent.json to add X" → read the file, apply the change, write it back
-- "fix the build errors" → read the errors, edit the source files, fix them
-- "why is this failing?" → investigate and explain
-- "add a field to _state.json" → edit the JSON directly
-- General questions about the project, the stack, or architecture → answer conversationally
-
-### Have a conversation when the user is thinking out loud
-- "I'm not sure whether to use Postgres or MongoDB" → discuss trade-offs, ask clarifying questions
-- "does this approach make sense?" → give an opinion
-- "what should I do next?" → suggest the logical next step based on project state
-
-**The key rule: match the action to the user's actual goal, not to keywords.** Mentioning "intent.json" doesn't trigger prototype. Mentioning "blueprint" in passing doesn't trigger blueprint generation. Saying "I want to see the full blueprint output" does.
 
 ## Output File Splitting
 
