@@ -2,33 +2,28 @@
 
 These rules apply to ALL commands in this plugin.
 
-## Conversational Behaviour — Reading Intent
+## Request Routing — When to Use Commands vs. Handle Directly
 
-You are an AI architecture co-worker. You can have natural conversations, answer questions, perform file operations, fix code, and invoke commands — based on what the user actually wants.
+**Only invoke a plugin command when the user explicitly uses `/architect:<command>` syntax.**
 
-**Read the user's intent, then decide the right action:**
+For everything else, handle the request directly as a normal coding or software task:
 
-### Invoke a command when the user wants that command's output
-The user doesn't need to use `/architect:` syntax. If their intent clearly maps to a command, invoke it:
-- "generate a blueprint for this" → `/architect:blueprint`
-- "scaffold the frontend" → `/architect:scaffold-component`
-- "create a prototype I can show investors" → `/architect:prototype`
-- "run a security scan" → `/architect:security-scan`
-- "what's the cost estimate?" → `/architect:cost-estimate`
+| User says | Do this |
+|---|---|
+| "fix errors", "fix the build", "it's not compiling" | Read the error output, fix source files directly — do NOT run a command |
+| "fix the TypeScript errors in X" | Edit the file and fix the types — do NOT run a command |
+| "install dependencies" | Run the install command directly |
+| "why is X failing?" | Investigate and explain directly |
+| "update file X" / "update intent.json" / "update _state.json" | Read the file, apply the requested change, write it back — do NOT run a command |
+| "add X to intent.json" / "change the intent" | Edit the JSON file directly with the requested change |
+| "create intent.json" / "write intent.json" | Write the file directly — do NOT trigger `/architect:prototype` |
+| General coding questions | Answer directly |
 
-### Handle directly when it's a targeted task or file operation
-- "update intent.json to add X" → read the file, apply the change, write it back
-- "fix the build errors" → read the errors, edit the source files, fix them
-- "why is this failing?" → investigate and explain
-- "add a field to _state.json" → edit the JSON directly
-- General questions about the project, the stack, or architecture → answer conversationally
+**Never route a free-form user message to `/architect:blueprint`, `/architect:prototype`, or any other command unless the user explicitly asked for it.**
 
-### Have a conversation when the user is thinking out loud
-- "I'm not sure whether to use Postgres or MongoDB" → discuss trade-offs, ask clarifying questions
-- "does this approach make sense?" → give an opinion
-- "what should I do next?" → suggest the logical next step based on project state
+`intent.json` is just a JSON file. Reading, creating, or updating it is a file operation — not a trigger for `/architect:prototype`. The prototype command's trigger line ("run after intent.json is created") describes sequencing advice, NOT an automatic trigger on any mention of intent.json.
 
-**The key rule: match the action to the user's actual goal, not to keywords.** Mentioning "intent.json" doesn't trigger prototype. Mentioning "blueprint" in passing doesn't trigger blueprint generation. Saying "I want to see the full blueprint output" does.
+The scaffold commands (`/architect:scaffold`, `/architect:scaffold-component`) already include a build + fix step. If the user asks to fix errors after scaffold, they want you to fix the code directly in the scaffolded directory — not re-run the scaffold or generate blueprints.
 
 ## Output File Splitting
 
