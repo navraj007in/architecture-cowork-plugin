@@ -229,6 +229,16 @@ If the user confirms, delegate to the **figma-agent** with:
 
 **If Figma is not connected**, skip silently.
 
+### Step 9.5: Signal Completion
+
+Emit the completion marker:
+
+```
+[DESIGN_SYSTEM_DONE]
+```
+
+This ensures the design-system phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use the **design-system** skill for all generation logic

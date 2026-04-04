@@ -470,6 +470,16 @@ Next steps:
 
 If GitHub repos were created, include repo URLs in the Path column.
 
+### Step 6.5: Signal Completion
+
+Emit the completion marker:
+
+```
+[SCAFFOLD_DONE]
+```
+
+This ensures the scaffold phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

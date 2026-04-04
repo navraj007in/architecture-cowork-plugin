@@ -99,6 +99,16 @@ After the export completes, append one line to `architecture-output/_activity.js
 
 List all exported file paths in the `files` array.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[DIAGRAMS_DONE]
+```
+
+This ensures the export-diagrams phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

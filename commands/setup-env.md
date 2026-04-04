@@ -97,6 +97,16 @@ Append one line to `architecture-output/_activity.jsonl`:
 
 List all `.env.example` files generated (one per service if multi-service) in the `files` array.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[SETUP_ENV_DONE]
+```
+
+This ensures the setup-env phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

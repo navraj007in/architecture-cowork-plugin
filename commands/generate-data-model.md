@@ -122,6 +122,16 @@ Append one line to `architecture-output/_activity.jsonl`:
 
 If the data model was split across multiple files, list all generated files in the `files` array.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[DATA_MODEL_DONE]
+```
+
+This ensures the generate-data-model phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

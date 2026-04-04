@@ -719,6 +719,16 @@ Append one line to `architecture-output/_activity.jsonl`:
 
 List every file actually written in the `files` array.
 
+### Step 4.7: Signal Completion
+
+Emit the completion marker:
+
+```
+[BLUEPRINT_DONE]
+```
+
+This ensures the blueprint phase is marked as complete in the project state.
+
 ### Step 5: Docs Publish (Optional)
 
 After writing all files, silently probe both Confluence (`list_spaces limit:1`) and Notion (`notion_search query:"test" page_size:1`) MCP servers to check which are connected.
