@@ -108,6 +108,21 @@ After ORM schemas are generated, create **native creation scripts** for each dat
      CREATE INDEX idx_users_email ON users(email);
      ```
 
+1a. **SQL Server (Relational):**
+   - Generate `db/schema-sqlserver.sql` with T-SQL `CREATE TABLE`, `CREATE INDEX`, constraints
+   - Include all entities mapped to SQL Server
+   - Example:
+     ```sql
+     CREATE TABLE users (
+       id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+       email VARCHAR(255) UNIQUE NOT NULL,
+       role VARCHAR(50) NOT NULL,
+       created_at DATETIME DEFAULT GETUTCDATE(),
+       updated_at DATETIME DEFAULT GETUTCDATE()
+     );
+     CREATE INDEX idx_users_email ON users(email);
+     ```
+
 2. **MongoDB (Document/NoSQL):**
    - Generate `db/schema-document.js` with collection creation and validators
    - Include all entities mapped to MongoDB
@@ -152,12 +167,13 @@ After ORM schemas are generated, create **native creation scripts** for each dat
 **Scripts are grouped in `db/` directory:**
 ```
 db/
-├── schema-index.md          ← Lists all databases and their entities
-├── schema-relational.sql    ← PostgreSQL/MySQL tables
-├── schema-document.js       ← MongoDB collections
-├── schema-cache.ts          ← Redis keys and patterns
-├── schema-search.json       ← Elasticsearch mappings
-└── seed-data.sql            ← (Optional) sample inserts for testing
+├── schema-index.md              ← Lists all databases and their entities
+├── schema-relational.sql        ← PostgreSQL/MySQL tables
+├── schema-sqlserver.sql         ← SQL Server (T-SQL) tables
+├── schema-document.js           ← MongoDB collections
+├── schema-cache.ts              ← Redis keys and patterns
+├── schema-search.json           ← Elasticsearch mappings
+└── seed-data.sql                ← (Optional) sample inserts for testing
 ```
 
 ### Step 4: Print Summary
@@ -175,14 +191,21 @@ Databases & Models:
    | Product | 8 | sellerId, status |
    Total: 3 entities, 8 tables
 
-2. MongoDB (Document)
+2. SQL Server (Relational)
+   | Table | Columns | Indexes |
+   |-------|---------|---------|
+   | User | 6 | email (unique) |
+   | Order | 7 | userId, status |
+   Total: 2 entities, 2 tables
+
+3. MongoDB (Document)
    | Collection | Validator | Indexes |
    |-----------|-----------|---------|
    | Document | 5 fields | owner_id, created_at |
    | Comment | 4 fields | document_id |
    Total: 2 entities, 2 collections
 
-3. Redis (Cache)
+4. Redis (Cache)
    | Key Pattern | TTL | Purpose |
    |------------|-----|---------|
    | sessions:{id} | 24h | Session storage |
@@ -190,7 +213,8 @@ Databases & Models:
    Total: 2 cache schemas
 
 Creation scripts generated:
-  ✅ db/schema-relational.sql — PostgreSQL DDL (15 statements)
+  ✅ db/schema-relational.sql — PostgreSQL/MySQL DDL (15 statements)
+  ✅ db/schema-sqlserver.sql — SQL Server T-SQL DDL (12 statements)
   ✅ db/schema-document.js — MongoDB validators + indexes
   ✅ db/schema-cache.ts — Redis key patterns and TTLs
   ✅ db/schema-index.md — Entity → database mapping guide
@@ -218,11 +242,12 @@ After generating ORM schemas, update `architecture-output/_state.json` with a co
 {
   "entities": [
     { "name": "User", "fields": ["id", "email", "name", "role", "createdAt", "updatedAt"], "owner": "<component>", "database": "postgresql" },
-    { "name": "Order", "fields": ["id", "userId", "total", "status", "createdAt", "updatedAt"], "owner": "<component>", "database": "postgresql" },
+    { "name": "Order", "fields": ["id", "userId", "total", "status", "createdAt", "updatedAt"], "owner": "<component>", "database": "sqlserver" },
     { "name": "Document", "fields": ["_id", "title", "ownerId", "content", "createdAt"], "owner": "<component>", "database": "mongodb" }
   ],
   "databases": [
-    { "type": "postgresql", "entity_count": 2, "script": "db/schema-relational.sql" },
+    { "type": "postgresql", "entity_count": 1, "script": "db/schema-relational.sql" },
+    { "type": "sqlserver", "entity_count": 1, "script": "db/schema-sqlserver.sql" },
     { "type": "mongodb", "entity_count": 1, "script": "db/schema-document.js" },
     { "type": "redis", "entity_count": 2, "script": "db/schema-cache.ts" }
   ]
@@ -250,7 +275,7 @@ If neither MCP server is connected, skip silently.
 Append one line to `architecture-output/_activity.jsonl`:
 
 ```json
-{"ts":"<ISO-8601>","phase":"generate-data-model","outcome":"completed","files":["db/schema-relational.sql","db/schema-document.js","db/schema-cache.ts","db/schema-index.md"],"databases":["postgresql","mongodb","redis"],"entityCount":8,"summary":"Data model generated: 8 entities across 3 databases (PostgreSQL, MongoDB, Redis). Creation scripts ready in db/ directory."}
+{"ts":"<ISO-8601>","phase":"generate-data-model","outcome":"completed","files":["db/schema-relational.sql","db/schema-sqlserver.sql","db/schema-document.js","db/schema-cache.ts","db/schema-index.md"],"databases":["postgresql","sqlserver","mongodb","redis"],"entityCount":9,"summary":"Data model generated: 9 entities across 4 databases (PostgreSQL, SQL Server, MongoDB, Redis). Creation scripts ready in db/ directory."}
 ```
 
 Include:
@@ -275,14 +300,16 @@ This ensures the generate-data-model phase is marked as complete in the project 
 - **CRITICAL: Read `data:` section from SDL to identify ALL databases (relational, NoSQL, cache, search)**
 - **Split entities by database type:** assign each entity to its correct database based on SDL `data.databases[].entities` mapping
 - **Generate ORM schemas for each database type:**
-  - Relational (PostgreSQL/MySQL): Prisma `schema.prisma` or raw SQL
+  - Relational (PostgreSQL/MySQL/SQL Server): Prisma `schema.prisma` or raw SQL/T-SQL
   - Document (MongoDB): Mongoose schemas or MongoDB validator JSON
   - Cache (Redis): TypeScript type definitions with key patterns
   - Search (Elasticsearch): JSON mappings
 - **Generate native creation scripts** for each database type in `db/` directory:
-  - `db/schema-{database-type}.sql` or `.js` or `.ts` — native DDL/validator syntax
+  - `db/schema-relational.sql` — PostgreSQL/MySQL DDL
+  - `db/schema-sqlserver.sql` — SQL Server T-SQL DDL
+  - `db/schema-{database-type}.js` or `.ts` — native validator/definition syntax
   - `db/schema-index.md` — lists all databases and their entities
-- **Never mix different database syntaxes** in one file — PostgreSQL DDL in `schema-relational.sql`, MongoDB validators in `schema-document.js`
+- **Never mix different database syntaxes** in one file — PostgreSQL DDL in `schema-relational.sql`, SQL Server T-SQL in `schema-sqlserver.sql`, MongoDB validators in `schema-document.js`
 - Always generate a seed file (`db/seed-data.sql` or equivalent) with realistic test data
 - Always add timestamps (createdAt, updatedAt) to every entity
 - Always add indexes on foreign keys and frequently-queried fields
