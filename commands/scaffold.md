@@ -243,6 +243,8 @@ Contracts generated:
 
 ### Step 4: Delegate to Scaffolder Agent
 
+**CRITICAL: This step delegates to an autonomous agent. After the agent completes, you MUST execute Step 4.5 (Install & Build) yourself — do not wait for the agent to do it.**
+
 Before delegating, build an `existing_state` map for every **EXISTS** component. For each, read:
 1. Package manifest (`package.json`, `requirements.txt`, `go.mod`, `*.csproj`, etc.) — installed deps and scripts
 2. Entry point (`src/index.ts`, `main.py`, `Program.cs`, etc.) — what is already wired up
@@ -265,7 +267,10 @@ Summarise into the `existing_state` map:
 
 Pass the following to the **scaffolder** agent:
 
-- Component list with names, types, frameworks, and `mode` (`"new"` or `"augment"`)
+- **Component list** with names, types, frameworks, and `mode` (`"new"` or `"augment"`):
+  - For `mode: "new"` components: scaffolder MUST create at `<parent_dir>/<component-name>/` (not `<parent_dir>/`)
+  - For `mode: "augment"` components: scaffolder updates existing at `<parent_dir>/<component-name>/`
+  - Example: if parent is `/Users/me/project` and component is `api-server` with mode `new`, create at `/Users/me/project/api-server/`
 - `existing_state` map (populated for augment-mode components)
 - Parent directory path
 - GitHub config (if applicable): org name, visibility
@@ -281,6 +286,8 @@ Pass the following to the **scaffolder** agent:
 - `environments` section — for generating `.env.example` files with per-environment URL placeholders
 - **`scaffold_depth`** (`"mvp"` | `"growth"` | `"enterprise"`) — resolved in Step 3.6. The scaffolder MUST consult the depth table to determine which patterns are required, stubbed, or omitted for this stage.
 - **Contract files** from Step 3.7:
+
+**After the Scaffolder Agent completes and returns its manifest, proceed to Step 4.5 immediately.**
   - Per-service OpenAPI specs: `architecture-output/contracts/<service>.openapi.yaml` — scaffolder generates route handlers and type definitions FROM these specs (routes declared in the spec are the authoritative list; don't invent additional routes from SDL inference alone)
   - Cross-service client files: `architecture-output/contracts/<caller>-calls-<dependency>.client.ts` — place these at `src/lib/clients/<dependency>-client.ts` in the caller's directory instead of generating ad-hoc clients
   - Contract index: `architecture-output/contracts/_index.md`
