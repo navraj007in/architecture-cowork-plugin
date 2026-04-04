@@ -87,6 +87,7 @@ do not attempt to read every file. Focus on architecturally significant code:
 **Determine:**
 - **Architecture style**: monolith, modular monolith, microservices, serverless, or hybrid
 - **Service boundaries**: distinct services/modules and their responsibilities
+- **Deployable components**: which components are independently deployable (mark shared libs, type packages, internal tools as `deployable: false`)
 - **Data flow**: how data flows between components, key API contracts
 - **Database schema**: entities, relationships, indexes from migration files or ORM schemas
 - **Auth flow**: authentication and authorization implementation
@@ -94,9 +95,10 @@ do not attempt to read every file. Focus on architecturally significant code:
 - **Component structure**: for frontends — page/component structure, state management
 - **Testing patterns**: test structure, coverage approach, frameworks in use
 - **Deployment model**: how the app is deployed, environments, CI/CD
+- **Environment URLs & ports**: dev vs staging vs production URLs, ports, instance counts from .env.example, docker-compose, Terraform, or .github/workflows
 - **Production hardening posture**: which of the 9 patterns are present and how completely
 - **Design system maturity**: token completeness, component library adoption, design personality
-- **Environment strategy**: dev/staging/prod separation, per-environment config approach
+- **Environment strategy**: dev/staging/prod separation, per-environment config approach, environment-specific component scaling
 - **Observability depth**: structured logging, health checks, metrics/tracing setup
 - **Security primitives**: CORS config (ALLOWED_ORIGINS), Helmet/CSP rules, rate limiting, input validation scope
 
@@ -124,6 +126,8 @@ top-level sections.** The only allowed root keys are:
 | Frontend apps (React, Vue, Angular, etc.) | `architecture.projects.frontend[]` |
 | Dev server port for frontend (vite.config, next.config, package.json scripts, .env.example) | `architecture.projects.frontend[].x-port` |
 | Git remote origin URL (`subRepo.gitOrigin` or `git remote get-url origin`) | `architecture.projects.frontend[].x-gitOrigin` / `architecture.projects.backend[].x-gitOrigin` |
+| Deployable components (mark shared libs, type packages, internal-only) | `architecture.projects.*[].deployable` (false for non-deployable items) |
+| Dev/staging/production URLs and ports | `environments[].components[].{url,port,instances,deployed}` |
 | Core domain objects (entity names from ORM models, schema files, migration names) | `domain.entities[]` — PascalCase names only |
 | Service dependencies (other services/providers a service calls) | `architecture.services[].dependsOn[]` |
 | Identity provider (Cognito, Auth0, Clerk, custom) | `auth.identityProvider` |
@@ -255,6 +259,40 @@ environments:
     region: us-east-1
 ```
 
+**`sdl/environments.sdl.yaml`** — Environment-specific deployment config:
+```yaml
+environments:
+  - name: dev
+    description: "Local development"
+    components:
+      api-server:
+        url: "http://localhost:3000"
+        port: 3000
+        instances: 1
+        deployed: true
+      web-app:
+        url: "http://localhost:3000"
+        port: 3000
+        deployed: true
+  - name: staging
+    description: "Pre-production"
+    components:
+      api-server:
+        url: "https://api-staging.example.com"
+        instances: 2
+        deployed: true
+  - name: production
+    description: "Production"
+    components:
+      api-server:
+        url: "https://api.example.com"
+        instances: 3
+        scaling:
+          minReplicas: 3
+          maxReplicas: 10
+        deployed: true
+```
+
 **`sdl/nfr.sdl.yaml`** — Non-functional requirements:
 ```yaml
 nonFunctional:
@@ -304,7 +342,8 @@ solution.sdl.yaml  # Contains only: sdlVersion, solution, architecture, data, im
 **2. Create `sdl/` directory** and write module files:
 - `sdl/product.sdl.yaml` — product section with personas, coreFlows, screens (if detected)
 - `sdl/auth.sdl.yaml` — auth section with strategy, roles, integrations (if auth exists)
-- `sdl/deployment.sdl.yaml` — deployment section with cloud, ci-cd, environments
+- `sdl/deployment.sdl.yaml` — deployment section with cloud, ci-cd
+- `sdl/environments.sdl.yaml` — environment-specific config (dev, staging, production URLs, ports, instances)
 - `sdl/nfr.sdl.yaml` — nonFunctional section (if performance/security/availability data exists)
 - `sdl/integrations.sdl.yaml` — integrations section (if 2+ external services detected)
 - `sdl/advanced.sdl.yaml` — domain entities, services, shared libraries (if microservices or complex)

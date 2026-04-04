@@ -190,6 +190,10 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
    - Map deployment targets → `deployment.cloud`
    - Map constraints (budget, team, timeline) → `constraints`
    - Map communication patterns between services → `interServiceCommunication[]` (pattern, from, to, async)
+   - **Mark deployable components** — on each entry in `architecture.projects`, set `deployable: true|false`:
+     - `true` for API services, web frontends, mobile apps, workers, agents (default)
+     - `false` for shared libraries, type packages, internal-only utilities, shared components
+     - Omit if `true` (implicit default)
    - **Derive `dependsOn[]` for every component** — on each entry in `architecture.projects` (frontend, backend, lambda, etc.), set `dependsOn: []` listing the names of other components it calls plus any external integrations it uses. Rules:
      - Frontend → lists every backend/API service it calls (derived from `interServiceCommunication[].from === componentName`)
      - Backend/API service → lists other backend services it calls, plus external integration names from `integrations.*` and `auth.*` that it directly uses (e.g. `["order-service", "stripe", "sendgrid"]`)
@@ -200,7 +204,11 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
      - External integrations use the provider name in lowercase (e.g. `"stripe"`, `"razorpay"`, `"anthropic"`)
    - Map error handling strategy from application patterns → `errorHandling` (strategy, errorFormat, retryPolicy)
    - Map config management from devops/application patterns → `configuration` (strategy, secretsManagement)
-   - Map environments (dev, staging, prod) → `environments[]` with `url` (primary URL), `services[].name` + `services[].url` (per-service base URLs)
+   - **Map environments** (dev, staging, prod) → `environments[]` with:
+     - `name` — environment name (dev, staging, production)
+     - `components[].{url, port, instances, deployed}` — per-environment URLs, ports, instance counts, deployment status
+     - For each `deployable: true` component, determine its URL/port in each environment (from .env.example, docker-compose, Terraform, GitHub workflows)
+     - For each `deployable: false` component, set `deployed: false` in all environments
    - Set `artifacts.generate` for a full blueprint:
      ```
      architecture-diagram, sequence-diagrams, openapi, data-model,
@@ -258,7 +266,8 @@ imports:
 **Modular files in `sdl/` directory:**
 - `sdl/product.sdl.yaml` — product, personas, coreFlows (if product section exists)
 - `sdl/auth.sdl.yaml` — auth, roles, integrations (if auth exists)
-- `sdl/deployment.sdl.yaml` — deployment, ci-cd, environments (if deployment data exists)
+- `sdl/deployment.sdl.yaml` — deployment, ci-cd (if deployment data exists)
+- `sdl/environments.sdl.yaml` — dev/staging/production URLs, ports, instances, scaling per component
 - `sdl/nfr.sdl.yaml` — nonFunctional requirements (if performance/security/availability data exists)
 - `sdl/integrations.sdl.yaml` — third-party integrations (if 2+ integrations)
 - `sdl/advanced.sdl.yaml` — domain entities, microservices, shared libraries (if complex architecture)
