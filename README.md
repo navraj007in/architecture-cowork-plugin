@@ -35,6 +35,7 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 | `/architect:quick-spec`            | 5-minute lightweight architecture overview for idea validation                    |
 | `/architect:import`                | Import an existing codebase — analyze structure, detect stack, generate SDL        |
 | `/architect:sdl`                   | Generate, validate, diff, or browse SDL architecture specifications               |
+| `/architect:refactor-stack`        | Coordinated architecture refactor — database, framework, provider change with consistency |
 | `/architect:scaffold`              | Create project structure plan from a blueprint architecture                        |
 | `/architect:scaffold-component`    | Scaffold a single component from the SDL with full starter code                    |
 | `/architect:implement`             | Implement a user story or feature end-to-end into an already-scaffolded codebase   |
@@ -83,6 +84,29 @@ A complete architecture blueprint with 15 deliverables:
 ### From `/architect:import`
 
 Analyze an existing codebase and generate an SDL specification from it. Detects runtime, framework, database, auth strategy, API patterns, and project structure. Produces a multi-file SDL that captures the existing architecture.
+
+### From `/architect:refactor-stack`
+
+Perform a coordinated architecture refactor when changing databases, frameworks, cloud providers, or other major components. Unlike UI-only patches, this ensures **full SDL consistency** across all affected sections:
+
+- **Parse natural language requests** — "postgres to mongodb", "express to fastapi", "vercel to railway"
+- **Validate impact** against 20+ SDL validation rules
+- **Systematically rewrite affected sections** — data, ORM, entities, deployment, etc.
+- **Generate changelog** — detailed markdown documenting all changes and rationale
+- **Flag regeneration needs** — clearly lists which artifacts need to be regenerated (data-model, blueprint, cost-estimate, etc.)
+- **Provide rollback instructions** — git commands to safely revert if needed
+- **Track cross-cutting impacts** — when changing database, automatically updates ORM compatibility, deployment assumptions, cost model, and migration strategy
+
+**Workflow:**
+1. Read existing `solution.sdl.yaml`
+2. Parse the change request (natural language or structured)
+3. Plan impact across all dependent sections
+4. Validate new architecture against constraints
+5. Rewrite affected SDL sections
+6. Generate changelog with next steps
+7. Log activity and flag what needs regeneration
+
+This prevents the fragmentation that happens when only a few SDL fields are updated without checking side effects.
 
 ### From `/architect:scaffold-component`
 
@@ -285,7 +309,7 @@ architecture-cowork-plugin/
 │   ├── reviewer.md
 │   ├── scaffolder.md
 │   └── security-scanner.md
-├── commands/                        # 30 slash commands
+├── commands/                        # 31 slash commands
 │   ├── agent-spec.md
 │   ├── blueprint.md
 │   ├── compare-stack.md
@@ -303,6 +327,7 @@ architecture-cowork-plugin/
 │   ├── onboarding-pack.md
 │   ├── publish-api-docs.md
 │   ├── quick-spec.md
+│   ├── refactor-stack.md
 │   ├── review-index.md              # split: review-1.md, review-2.md
 │   ├── scaffold-component.md
 │   ├── scaffold.md
