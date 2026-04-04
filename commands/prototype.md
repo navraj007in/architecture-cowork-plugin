@@ -191,7 +191,7 @@ prototype/
 **Dark/light mode requirements:**
 - `tailwind.config.ts`: set `darkMode: 'class'`
 - `globals.css`: define `:root` variables for light mode and `.dark` overrides for dark mode. Map all palette colors to CSS variables (`--color-primary`, `--color-surface`, `--color-text-primary`, etc.)
-- `ThemeContext.tsx`: reads `localStorage.getItem('theme')` on init; if absent, uses `window.matchMedia('prefers-color-scheme: dark')`; toggles `dark` class on `<html>`; exposes `theme` and `toggleTheme()`
+- `ThemeContext.tsx`: reads `localStorage.getItem('theme')` on init; if absent, **defaults to `'light'`** (do NOT fall back to system preference — light is always the default); toggles `dark` class on `<html>`; exposes `theme` and `toggleTheme()`
 - Every component uses `bg-surface text-text-primary` (CSS variable-backed Tailwind classes) — never hardcoded light/dark colors
 - Header component (Phase 2) must include a theme toggle button (sun/moon icon)
 
@@ -417,6 +417,6 @@ List all generated React files in the `files` array.
 - Do NOT emit `[PROTOTYPE_DONE]` until build verification passes
 - Do NOT include the CTA footer
 - **ALWAYS implement mobile responsiveness** — sidebar hidden on mobile with hamburger drawer, tables degrade to cards, all grids use responsive breakpoints, touch targets min 44px, modals full-screen on mobile
-- **ALWAYS implement dark/light mode** — `darkMode: 'class'` in Tailwind, CSS variable palette, `ThemeContext`, toggle in Header
+- **ALWAYS implement dark/light mode** — `darkMode: 'class'` in Tailwind, CSS variable palette, `ThemeContext` with **light as the default theme**, toggle in Header. The prototype opens in light mode unless the user has previously toggled to dark.
 - **ALWAYS implement i18n** — `i18next` + `react-i18next`, `en.json` + `es.json` + `ar.json` locale files, all strings via `t()`, RTL direction set on `<html>` for Arabic
 - **ALWAYS implement accessibility** — semantic HTML, visible focus rings, ARIA labels on icon-only elements, WCAG AA contrast, keyboard navigation, modal focus trap
