@@ -230,11 +230,50 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
    - Adjust the interpretation of the manifest
    - If ambiguous, ask ONE clarifying question
 
-7. **Save the SDL file to the project root directory** as `solution.sdl.yaml`. Do not place it inside `architecture/`, `artifacts/`, or any subfolder. This filename is the canonical SDL name used by all commands — never write `sdl.yaml`.
+7. **Generate modular SDL files:**
 
-**If `solution.sdl.yaml` already existed** (from a prior import or blueprint run): merge the newly generated SDL into it — preserve any fields the new manifest doesn't cover (e.g. `x-confidence` annotations, `x-evidence` fields, `observability` detail, `errorHandling`, `configuration`, `interServiceCommunication` that were reverse-engineered during import). The rule is: blueprint-generated fields take precedence for architecture decisions; import-detected fields take precedence for implementation reality (ports, exact library versions, hardening state).
+**Main file: `solution.sdl.yaml`** (root directory)
+```yaml
+sdlVersion: "0.1"
 
-**Do not show raw SDL to the user unless they ask.** Use it internally to drive consistent deliverable generation. Confirm: "Architecture spec saved to `./solution.sdl.yaml`"
+solution:
+  name: ...
+  description: ...
+  stage: ...
+
+architecture:
+  style: ...
+  projects: ...
+
+data:
+  primaryDatabase: ...
+
+imports:
+  - sdl/product.sdl.yaml
+  - sdl/auth.sdl.yaml
+  - sdl/deployment.sdl.yaml
+  # (only list modules with content)
+```
+
+**Modular files in `sdl/` directory:**
+- `sdl/product.sdl.yaml` — product, personas, coreFlows (if product section exists)
+- `sdl/auth.sdl.yaml` — auth, roles, integrations (if auth exists)
+- `sdl/deployment.sdl.yaml` — deployment, ci-cd, environments (if deployment data exists)
+- `sdl/nfr.sdl.yaml` — nonFunctional requirements (if performance/security/availability data exists)
+- `sdl/integrations.sdl.yaml` — third-party integrations (if 2+ integrations)
+- `sdl/advanced.sdl.yaml` — domain entities, microservices, shared libraries (if complex architecture)
+
+**Write files to disk:**
+1. Create `sdl/` directory
+2. Write `solution.sdl.yaml` to project root with imports list
+3. Write each module file to `sdl/` with only its section
+
+**If `solution.sdl.yaml` already existed** (from a prior import or blueprint run): 
+- Merge the newly generated SDL into it
+- Preserve `x-confidence`, `x-evidence`, and other fields not covered by new blueprint
+- Rule: blueprint-generated fields (architecture decisions) take precedence; import-detected fields (implementation reality) take precedence
+
+**Report to user:** "Architecture spec saved to `./solution.sdl.yaml` with 5 modules in `./sdl/`"
 
 **SDL drives these deliverables deterministically:**
 - 4b: Architecture Diagrams — solution architecture + service communication + agent flow (from `architecture` + `data` + `auth` + `integrations`)

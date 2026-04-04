@@ -149,21 +149,44 @@ Stakeholder progress report pre-filled from project data:
 
 ## Solution Design Language (SDL)
 
-SDL is the structured YAML specification that captures all architecture decisions. For the full specification, schema, templates, and reference implementation, see the [SDL repository](https://github.com/navraj007in/solution-definition-language).
+SDL is the structured YAML specification that captures all architecture decisions. For the full specification, schema, and reference implementation, see the [SDL repository](https://github.com/navraj007in/solution-definition-language).
 
-### Multi-File SDL
+### Modular SDL Structure
 
 ```yaml
-# solution.sdl.yaml (root)
-sdlVersion: "1.1"
+# solution.sdl.yaml (main file — core only)
+sdlVersion: "0.1"
+
+solution:
+  name: MyProduct
+  description: Brief description
+  stage: mvp
+
+architecture:
+  projects:
+    backend: [...]
+    frontend: [...]
+
+data:
+  primaryDatabase:
+    type: postgres
+    hosting: managed
+
 imports:
-  - sdl/services.sdl.yaml
-  - sdl/data.sdl.yaml
-  - sdl/auth.sdl.yaml
-  - sdl/deployment.sdl.yaml
+  - sdl/product.sdl.yaml      # Personas, flows, screens
+  - sdl/auth.sdl.yaml         # Auth strategy and roles
+  - sdl/deployment.sdl.yaml   # Cloud, CI/CD, environments
+  - sdl/nfr.sdl.yaml          # Performance, security, availability
 ```
 
-Each import file contains a section of the architecture. The system automatically resolves and merges imports.
+**Module files** contain optional/extended sections:
+- `sdl/product.sdl.yaml` — personas, coreFlows, screens
+- `sdl/auth.sdl.yaml` — authentication & authorization
+- `sdl/deployment.sdl.yaml` — infrastructure, CI/CD
+- `sdl/nfr.sdl.yaml` — non-functional requirements
+- `sdl/integrations.sdl.yaml` — third-party services (optional)
+
+The system automatically resolves and merges imports into a complete architecture specification.
 
 ### SDL Templates (12)
 

@@ -173,20 +173,50 @@ top-level sections.** The only allowed root keys are:
 | Design personality inferred from palette | `design.personality` |
 | Icon library (lucide-react, heroicons) | `design.iconLibrary` |
 
-#### 3.2 — SDL Output Template
+#### 3.2 — SDL Output: Modular Structure
 
-Use this exact structure. Omit optional sections that have no data.
+Generate a **modular SDL** with a minimal main file and separate module files:
 
+**Main file: `solution.sdl.yaml`** (core only, ~50 lines):
 ```yaml
 sdlVersion: "0.1"
 
 solution:
   name: "{from README or package.json}"
   description: "{one-line description}"
-  stage: MVP | Growth | Enterprise
+  stage: mvp | growth | enterprise
   x-confidence: high | medium | low
   x-evidence: "{why this stage}"
 
+architecture:
+  style: modular-monolith | microservices | serverless
+  projects:
+    frontend:
+      - name: "{app name}"
+        framework: nextjs | react | vue | angular | svelte | solid
+        x-port: {dev server port}
+    backend:
+      - name: "{service name}"
+        framework: nodejs | python-fastapi | dotnet | go | java-spring | ruby-rails
+        apiStyle: rest | graphql | grpc | mixed
+        orm: prisma | mongoose | sqlalchemy | ef-core | gorm
+
+data:
+  primaryDatabase:
+    type: postgres | mysql | mongodb | sqlserver | dynamodb
+    hosting: managed | self-hosted | serverless
+
+imports:
+  - sdl/product.sdl.yaml      # Product, personas, flows, screens
+  - sdl/auth.sdl.yaml         # Authentication & authorization
+  - sdl/deployment.sdl.yaml   # Cloud, CI/CD, environments
+  - sdl/nfr.sdl.yaml          # Performance, security, availability
+```
+
+**Separate modules (optional sections):**
+
+**`sdl/product.sdl.yaml`** — Product context, personas, user flows, screens:
+```yaml
 product:
   personas:
     - name: "{inferred from auth roles or UI}"
@@ -196,82 +226,107 @@ product:
   coreFlows:
     - name: "{inferred from routes/pages}"
       priority: critical | high | medium | low
+  screens:
+    - id: "{screen-id}"
+      name: "{screen-name}"
+```
 
-domain:                                 # Core business objects — include when 3+ services or complex data model
-  entities:
-    - "{PascalCase entity name}"        # List only — no fields here, those go in data-model deliverable
-    # e.g. User, Order, Product, Payment, Notification
-
-architecture:
-  style: modular-monolith | microservices | serverless
-  x-confidence: high | medium | low
-  x-evidence: "{structural signals}"
-  projects:
-    frontend:                           # Include if frontend exists
-      - name: "{app name}"
-        framework: nextjs | react | vue | angular | svelte | solid
-        # Add rendering, styling, stateManagement if detected
-        x-port: {dev server port}
-        x-gitOrigin: "{git remote origin URL — omit if not a git repo}"
-    backend:                            # Include if backend exists
-      - name: "{service name}"
-        framework: nodejs | python-fastapi | dotnet | go | java-spring | ruby-rails | php-laravel
-        apiStyle: rest | graphql | grpc | mixed
-        orm: prisma | typeorm | mongoose | sqlalchemy | ef-core | gorm | sequelize
-        x-port: {port}
-        x-gitOrigin: "{git remote origin URL — omit if not a git repo}"
-  services:                             # Required if style=microservices (min 2)
-    - name: "{service name}"
-      kind: backend | worker | function | api-gateway
-      responsibilities:
-        - "{what this service does}"
-      dependsOn:                        # Other services + external providers this service calls
-        - "{service-name or provider}"  # e.g. auth-module, stripe, sendgrid
-  sharedLibraries:                      # If shared packages exist
-    - name: "{package name}"
-      language: typescript | javascript | python | go
-
-auth:                                   # If auth detected
+**`sdl/auth.sdl.yaml`** — Authentication & authorization:
+```yaml
+auth:
   strategy: oidc | passwordless | api-key | none
-  identityProvider: cognito | auth0 | entra-id | firebase | supabase | clerk | custom
-  serviceTokenModel: jwt | session | api-key  # how services validate tokens — often jwt even when IdP is Cognito
+  identityProvider: cognito | auth0 | entra-id | firebase | clerk | custom
+  serviceTokenModel: jwt | session | api-key
   roles: ["{role1}", "{role2}"]
-  sessions:
-    accessToken: jwt | opaque
-    refreshToken: true | false
-  x-confidence: high | medium | low
-  x-evidence: "{auth implementation details}"
+```
 
-data:
-  primaryDatabase:
-    type: postgres | mysql | mongodb | sqlserver | dynamodb | cockroachdb | planetscale
-    hosting: managed | self-hosted | serverless
-    x-confidence: high | medium | low
-    x-evidence: "{how detected}"
-  secondaryDatabases:                   # If additional DBs found
-    - type: "{type}"
-      hosting: "{hosting}"
-      role: primary | read-replica | analytics
-  cache:                                # If Redis/Memcached found
-    type: redis | memcached
-    useCase: [session, api, query]
-  storage:                              # If blob/file storage found
-    blobs:
-      provider: s3 | azure-blob | gcs | cloudflare-r2
-  queues:                               # If message queue found
-    provider: rabbitmq | azure-service-bus | sqs | kafka | redis
-    useCase: [async-jobs, event-streaming, notifications]
-  search:                               # If search engine found
-    provider: elasticsearch | algolia | typesense | azure-search
+**`sdl/deployment.sdl.yaml`** — Infrastructure & CI/CD:
+```yaml
+deployment:
+  cloud: aws | gcp | azure | vercel | railway | fly
+  ciCd:
+    provider: github-actions | gitlab-ci | azure-pipelines
+    environments: [dev, staging, production]
 
-integrations:                           # If third-party services found
-  payments:
-    provider: stripe | paypal
-    mode: subscriptions | one-time | marketplace
-  email:
-    provider: sendgrid | ses | resend | mailgun
-    useCase: [transactional, marketing]
-  sms:
+environments:
+  - name: dev
+    region: us-east-1
+  - name: production
+    region: us-east-1
+```
+
+**`sdl/nfr.sdl.yaml`** — Non-functional requirements:
+```yaml
+nonFunctional:
+  performance:
+    responseTime: "{ms}"
+    throughput: "{req/sec}"
+  security:
+    encryption: true
+    compliance: [gdpr, hipaa]
+  availability:
+    uptime: "99.9%"
+```
+
+**Additional modules** (if applicable):
+- `sdl/integrations.sdl.yaml` — Stripe, SendGrid, Twilio, etc.
+- `sdl/advanced.sdl.yaml` — Microservices, shared libraries, domain entities
+- `sdl/observability.sdl.yaml` — Logging, monitoring, tracing
+
+**Generate file structure:**
+```
+sdl/
+├── product.sdl.yaml
+├── auth.sdl.yaml
+├── deployment.sdl.yaml
+├── nfr.sdl.yaml
+└── (other modules as needed)
+```
+
+**Generation rules:**
+1. Always create `solution.sdl.yaml` with ONLY: sdlVersion, solution, architecture, data, imports
+2. Move product/personas/flows → `sdl/product.sdl.yaml`
+3. Move auth → `sdl/auth.sdl.yaml`
+4. Move deployment/ci-cd → `sdl/deployment.sdl.yaml`
+5. Move performance/security/availability → `sdl/nfr.sdl.yaml`
+6. Move integrations → `sdl/integrations.sdl.yaml` (if 2+ integrations)
+7. Keep sdlVersion as `"0.1"` (official spec version)
+
+#### 3.3 — Write Modular Files to Disk
+
+After generating the complete SDL structure (Step 3.2), write the modular files:
+
+**1. Main file: `solution.sdl.yaml`**
+```bash
+solution.sdl.yaml  # Contains only: sdlVersion, solution, architecture, data, imports
+```
+
+**2. Create `sdl/` directory** and write module files:
+- `sdl/product.sdl.yaml` — product section with personas, coreFlows, screens (if detected)
+- `sdl/auth.sdl.yaml` — auth section with strategy, roles, integrations (if auth exists)
+- `sdl/deployment.sdl.yaml` — deployment section with cloud, ci-cd, environments
+- `sdl/nfr.sdl.yaml` — nonFunctional section (if performance/security/availability data exists)
+- `sdl/integrations.sdl.yaml` — integrations section (if 2+ external services detected)
+- `sdl/advanced.sdl.yaml` — domain entities, services, shared libraries (if microservices or complex)
+
+**3. Report generated files:**
+```
+Generated SDL:
+  ✓ solution.sdl.yaml (main file)
+  ✓ sdl/product.sdl.yaml (personas, flows)
+  ✓ sdl/auth.sdl.yaml (authentication)
+  ✓ sdl/deployment.sdl.yaml (infrastructure)
+  ✓ sdl/integrations.sdl.yaml (stripe, sendgrid, sentry)
+  
+Total: 5 files | Imports: 5 | Entities: 8
+```
+
+**Rules:**
+- Each module file contains only its section (no overlapping keys across files)
+- All imports are listed in the main file's `imports:` array in order
+- No duplicate sections across files
+- sdlVersion only in main file, never in modules
+- Comments (YAML `#`) can explain purpose of each module
     provider: twilio | vonage
   monitoring:
     provider: datadog | sentry | azure-monitor | newrelic
