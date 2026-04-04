@@ -230,23 +230,51 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
      cost-estimate, backup-plan, design-tokens
      ```
 
-2. **Validate mentally** against the 6+ conditional rules:
-   - Microservices → needs 2+ services
-   - OIDC → needs provider
-   - PII → needs encryptionAtRest
+2. **Validate mentally** against 20+ conditional rules:
+   
+   **Reference Integrity:**
+   - Environment components → each in `environments[].components` must exist in `architecture.projects`
+   - SLO components → each in `slos[].component` must exist in `architecture.projects`
+   - Cost components → each in `costs.infrastructure[].component` must exist in `architecture.projects`
+   - Circular dependencies → no cycles in `dependsOn` references
+   - API endpoints → `contracts[].paths[].service` must exist
+   - Foreign keys → `domain.entities[].relationships[].target` entities must exist
+   
+   **Type Compatibility:**
+   - ORM-Database → Prisma (✓ any relational/MongoDB), Mongoose (✓ MongoDB only), EF Core (✗ MongoDB)
+   - Framework-Language → NestJS (✓ Node/TS only), Django (✓ Python only), Spring (✓ Java only)
+   - Auth provider → if "stripe", must exist in `integrations[]`
+   
+   **Deployment:**
+   - Microservices → need 2+ services
+   - Deployable coverage → all `deployable: true` components in ≥1 environment
+   - Port conflicts → no duplicate ports in same environment
+   - Regions → must be valid for cloud provider (AWS/GCP/Azure)
    - CloudFormation → only with AWS
-   - MongoDB → no EF Core
-   - Environment components → each `environments[].components` entry must exist in `architecture.projects`
-   - (v1.1) SLO components → each `slos[].component` must exist in `architecture.projects`
-   - (v1.1) Cost components → each `costs.infrastructure[].component` must exist in `architecture.projects`
+   
+   **Data Model:**
+   - Primary keys → all entities must have `primaryKey: true` field
+   - Unique names → component names globally unique
+   - Foreign key databases → cross-database FKs won't enforce at DB level
+   
+   **Configuration:**
+   - Deployable fields → must have `path` and `runtime`
+   - OIDC → must have provider/issuer URL
+   - PII → if present, must have `encryptionAtRest: true`
 
 3. **Apply normalization mentally** — note what the normalizer would infer (runtime from cloud, ORM from framework+DB, etc.) but do not manually set those fields
 
-4. **Check for warnings:**
-   - Microservices with small team
-   - Aggressive timeline vs scope
-   - Multi-persona without auth
-   - Budget vs infrastructure mismatch
+4. **Check for warnings (10+ non-blocking issues):**
+   - Microservices with < 3 team members
+   - Aggressive timeline (< 4 weeks) vs complex architecture
+   - Multiple personas (3+) without auth defined
+   - Estimated costs exceed budget
+   - Cross-database foreign keys (no database-level enforcement)
+   - Unused integrations (listed but not in any `dependsOn`)
+   - Production stage without observability section
+   - SLO targets < 99% for production
+   - Cost scenarios vary by >10x (low vs high tiers)
+   - Missing design tokens for production stage
 
 5. **If warnings exist**, briefly report them to the user before proceeding:
    - "Before generating deliverables, a few things to note: [warning messages]"
