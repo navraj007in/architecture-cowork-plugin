@@ -346,7 +346,9 @@ For each **frontend component**, the scaffolder MUST:
 
 ### Step 4.5: Install Dependencies & Build
 
-After the Scaffolder Agent completes file generation, immediately install dependencies and build each component (if the user opted in at Step 3).
+**MANDATORY STEP — MUST execute after Scaffolder Agent completes, before emitting [SCAFFOLD_DONE].**
+
+After the Scaffolder Agent completes file generation, immediately install dependencies and build each component (if the user opted in at Step 3). Do NOT skip this step even if all files were written successfully — build verification is required.
 
 **For each scaffolded component:**
 
@@ -561,13 +563,20 @@ If GitHub repos were created, include repo URLs in the Path column.
 
 ### Step 6.5: Signal Completion
 
-Emit the completion marker:
+**CRITICAL: Only emit this marker if ALL build verifications passed or were skipped.**
+
+If any component failed to build:
+1. Report the failures clearly (see Step 6 summary above)
+2. Do NOT emit `[SCAFFOLD_DONE]`
+3. Instruct user to fix errors and re-run the command
+
+If all builds passed or dependencies weren't installed (skipped):
 
 ```
 [SCAFFOLD_DONE]
 ```
 
-This ensures the scaffold phase is marked as complete in the project state.
+This ensures the scaffold phase is marked as complete in the project state only when verification is successful.
 
 ## Output Rules
 
@@ -577,4 +586,6 @@ This ensures the scaffold phase is marked as complete in the project state.
 - Always ask about GitHub vs local and dependency installation
 - Report clear results for each component
 - If any component fails, report the failure and continue with the rest
+- **MANDATORY: Step 4.5 (Install & Build) is always executed before completing the command**
+- **Do NOT emit [SCAFFOLD_DONE] if any component has build errors** — report failures and tell user to fix and re-run
 - Do NOT include the CTA footer
