@@ -268,9 +268,16 @@ Summarise into the `existing_state` map:
 Pass the following to the **scaffolder** agent:
 
 - **Component list** with names, types, frameworks, and `mode` (`"new"` or `"augment"`):
-  - For `mode: "new"` components: scaffolder MUST create at `<parent_dir>/<component-name>/` (not `<parent_dir>/`)
-  - For `mode: "augment"` components: scaffolder updates existing at `<parent_dir>/<component-name>/`
-  - Example: if parent is `/Users/me/project` and component is `api-server` with mode `new`, create at `/Users/me/project/api-server/`
+  - **MANDATORY INSTRUCTION FOR SCAFFOLDER:** Every component gets its own directory named exactly after the component
+  - For `mode: "new"` components: scaffolder MUST:
+    1. Create a **new directory** named `<component-name>` in the parent directory
+    2. Scaffold ALL files into that directory (never into parent root)
+    3. Example: component "api-server" → create `/Users/me/project/api-server/` directory, put all files inside it
+  - For `mode: "augment"` components: scaffolder MUST:
+    1. Verify directory `<parent_dir>/<component-name>/` exists
+    2. Add missing files into that existing directory
+  - **FORBIDDEN:** Do not scaffold into `<parent_dir>/` root. Do not merge files from different components into the same directory.
+  - Real example: parent = `/Users/nexper/Code/AIeCommerce`, component = `api-server` → create and populate `/Users/nexper/Code/AIeCommerce/api-server/`
 - `existing_state` map (populated for augment-mode components)
 - Parent directory path
 - GitHub config (if applicable): org name, visibility
