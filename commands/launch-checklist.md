@@ -171,6 +171,16 @@ After writing all output files, merge a completion marker into `architecture-out
 
 (Replace `<N>` with the total number of checklist items generated.)
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[LAUNCH_CHECKLIST_DONE]
+```
+
+This ensures the launch-checklist phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use **founder-communication** skill for all descriptions — plain English, no jargon

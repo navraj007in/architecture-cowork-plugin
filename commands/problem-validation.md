@@ -153,6 +153,16 @@ After writing all output files:
 {"ts":"<ISO-8601>","phase":"problem-validation","outcome":"completed","files":["architecture-output/problem-validation.md"],"summary":"Problem validation completed: <N> assumptions mapped, <N> experiments designed, overall readiness: <status>."}
 ```
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[PROBLEM_VALIDATION_DONE]
+```
+
+This ensures the problem-validation phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/problem-validation.md`

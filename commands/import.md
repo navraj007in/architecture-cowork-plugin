@@ -642,6 +642,16 @@ Write `intent.json` using the standard intent schema:
   {"ts":"<ISO-8601>","phase":"import","outcome":"completed","files":["solution.sdl.yaml","intent.json","architecture-output/import-analysis.md","architecture-output/_state.json"],"summary":"Import complete: <N> components detected, <style> architecture, hardening <x>/9."}
   ```
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[IMPORT_DONE]
+```
+
+This ensures the import phase is marked as complete in the project state.
+
 ## Output Rules
 
 - **SDL must contain no advisory prose.** Never write recommendations, missing-pattern notes, or "Run /architect:xxx" suggestions inside `solution.sdl.yaml`. All assessments, gaps, and action items belong exclusively in `architecture-output/import-analysis.md` Section 15.

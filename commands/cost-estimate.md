@@ -148,6 +148,16 @@ After writing `architecture-output/cost-estimate.md`, append one line to `archit
 
 Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[COST_ESTIMATE_DONE]
+```
+
+This ensures the cost-estimate phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use the **cost-knowledge** skill for all pricing data

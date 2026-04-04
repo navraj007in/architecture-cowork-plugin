@@ -175,6 +175,16 @@ After writing all output files:
 {"ts":"<ISO-8601>","phase":"user-journeys","outcome":"completed","files":["architecture-output/user-journeys.md"],"summary":"User journeys mapped: <N> journeys across <N> personas with friction analysis and touchpoint inventory."}
 ```
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[USER_JOURNEYS_DONE]
+```
+
+This ensures the user-journeys phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/user-journeys.md`

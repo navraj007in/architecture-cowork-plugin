@@ -164,6 +164,16 @@ After writing `mvp-scope.md`, update `architecture-output/_state.json` with comp
 
 Keep feature names short (3-5 words each). This lets `technical-roadmap` and `risk-register` understand MVP scope without reading the full mvp-scope.md.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[MVP_SCOPE_DONE]
+```
+
+This ensures the mvp-scope phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/mvp-scope.md`

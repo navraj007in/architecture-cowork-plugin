@@ -221,6 +221,16 @@ After writing all files, silently probe both Confluence (`list_spaces limit:1`) 
 **If both connected**, offer both options in one message.
 **If neither**, skip silently.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[RISK_REGISTER_DONE]
+```
+
+This ensures the risk-register phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/risk-register.md`

@@ -103,6 +103,16 @@ After writing all CI/CD workflow files, append one line to `architecture-output/
 
 Adjust the `files` array to list all workflow files actually created. Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[SETUP_CICD_DONE]
+```
+
+This ensures the setup-cicd phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

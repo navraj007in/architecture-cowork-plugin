@@ -215,6 +215,16 @@ After writing all files, silently probe both Confluence (`list_spaces limit:1`) 
 **If both connected**, offer both options in one message.
 **If neither**, skip silently.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[TECHNICAL_ROADMAP_DONE]
+```
+
+This ensures the technical-roadmap phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/technical-roadmap.md`

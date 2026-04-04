@@ -96,6 +96,16 @@ After the export completes, append one line to `architecture-output/_activity.js
 
 List all published file paths in the `files` array.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[API_DOCS_DONE]
+```
+
+This ensures the api-docs phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

@@ -142,6 +142,16 @@ After writing `user-personas.md`, update `architecture-output/_state.json` with 
 }
 ```
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[USER_PERSONAS_DONE]
+```
+
+This ensures the user-personas phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Write the full deliverable to `architecture-output/user-personas.md`

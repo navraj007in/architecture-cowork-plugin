@@ -200,6 +200,16 @@ After writing `deep-research.md`, update `architecture-output/_state.json` with 
 
 Limit `competitors` to the top 5 direct competitors. `key_insight` is ONE sentence — the single most important finding for product positioning.
 
+### Signal Completion
+
+Emit the completion marker:
+
+```
+[DEEP_RESEARCH_DONE]
+```
+
+This ensures the deep-research phase is marked as complete in the project state.
+
 ## Output Rules
 
 - Use **founder-communication** skill — write for founders and investors, not engineers
