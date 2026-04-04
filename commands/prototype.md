@@ -102,17 +102,28 @@ Use the returned palette, fonts, and component names as the design source for St
 
 #### Color Palette Generation
 
-Generate a COMPLETE palette — not just a primary color:
-- **Primary** — main brand color (domain-derived)
-- **Primary-light / Primary-dark** — lighter and darker variants for hover/active states
-- **Secondary** — contrasting accent for CTAs and highlights
-- **Surface** — background color (light or dark based on personality)
-- **Surface-elevated** — cards, modals, dropdowns (slightly lighter/darker than surface)
-- **Border** — subtle border color
-- **Text-primary** — main text color
-- **Text-secondary** — muted text
-- **Text-on-primary** — text on primary color backgrounds
-- **Success / Warning / Error / Info** — semantic colors
+Generate a COMPLETE dual palette — **both light and dark variants for every token**. This is what makes the prototype themeable, not just toggle-able.
+
+Define ALL of the following for **both `:root` (light) and `.dark` (dark)**:
+
+| Token | Light value | Dark value |
+|---|---|---|
+| `--color-primary` | brand color | same or slightly lighter |
+| `--color-primary-dark` | hover/active darker | hover/active lighter |
+| `--color-secondary` | accent color | accent color (adjust if needed for contrast) |
+| `--color-surface` | white or near-white | dark base (e.g. zinc-950) |
+| `--color-surface-elevated` | slightly off-white | slightly lighter than surface (e.g. zinc-900) |
+| `--color-surface-overlay` | modal/drawer backdrop tint | modal/drawer backdrop tint |
+| `--color-border` | subtle gray | subtle dark border |
+| `--color-text-primary` | near-black | near-white |
+| `--color-text-secondary` | muted gray | muted light gray |
+| `--color-text-on-primary` | white or dark (whichever contrasts primary) | same |
+| `--color-success` | green variant | green variant (may lighten for dark bg) |
+| `--color-warning` | amber variant | amber variant |
+| `--color-error` | red variant | red variant |
+| `--color-info` | blue variant | blue variant |
+
+**WCAG AA contract rule:** every `--color-text-*` against its paired `--color-surface-*` must meet 4.5:1 contrast in BOTH light and dark modes. Verify mentally — darken text or lighten surface if in doubt.
 
 #### Typography
 
@@ -188,12 +199,77 @@ prototype/
 │       └── globals.css   ← Google Fonts @import; CSS variables for light AND dark palettes
 ```
 
-**Dark/light mode requirements:**
-- `tailwind.config.ts`: set `darkMode: 'class'`
-- `globals.css`: define `:root` variables for light mode and `.dark` overrides for dark mode. Map all palette colors to CSS variables (`--color-primary`, `--color-surface`, `--color-text-primary`, etc.)
-- `ThemeContext.tsx`: reads `localStorage.getItem('theme')` on init; if absent, **defaults to `'light'`** (do NOT fall back to system preference — light is always the default); toggles `dark` class on `<html>`; exposes `theme` and `toggleTheme()`
-- Every component uses `bg-surface text-text-primary` (CSS variable-backed Tailwind classes) — never hardcoded light/dark colors
-- Header component (Phase 2) must include a theme toggle button (sun/moon icon)
+**Dark/light mode — full themeable setup (REQUIRED):**
+
+`globals.css` must define ALL palette tokens as CSS variables for both modes:
+```css
+@import url('https://fonts.googleapis.com/css2?family=...');
+
+:root {
+  --color-primary: #...;
+  --color-primary-dark: #...;
+  --color-secondary: #...;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f8fafc;
+  --color-surface-overlay: rgba(0,0,0,0.4);
+  --color-border: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-on-primary: #ffffff;
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+}
+
+.dark {
+  --color-primary: #...;        /* same or adjusted for dark bg */
+  --color-primary-dark: #...;
+  --color-secondary: #...;
+  --color-surface: #09090b;
+  --color-surface-elevated: #18181b;
+  --color-surface-overlay: rgba(0,0,0,0.6);
+  --color-border: #27272a;
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-on-primary: #ffffff;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+}
+```
+
+`tailwind.config.ts` must wire every CSS variable into Tailwind's theme so utility classes work:
+```ts
+theme: {
+  extend: {
+    colors: {
+      primary: 'var(--color-primary)',
+      'primary-dark': 'var(--color-primary-dark)',
+      secondary: 'var(--color-secondary)',
+      surface: 'var(--color-surface)',
+      'surface-elevated': 'var(--color-surface-elevated)',
+      border: 'var(--color-border)',
+      'text-primary': 'var(--color-text-primary)',
+      'text-secondary': 'var(--color-text-secondary)',
+      'text-on-primary': 'var(--color-text-on-primary)',
+      success: 'var(--color-success)',
+      warning: 'var(--color-warning)',
+      error: 'var(--color-error)',
+      info: 'var(--color-info)',
+    },
+    fontFamily: { heading: [...], body: [...] },
+  },
+  darkMode: 'class',
+}
+```
+
+`ThemeContext.tsx`: reads `localStorage.getItem('theme')` on init; if absent, **defaults to `'light'`** (do NOT fall back to system preference — light is always the default); toggles `dark` class on `<html>`; exposes `theme` and `toggleTheme()`.
+
+**Every component in the prototype MUST use only these Tailwind classes for color** — `bg-surface`, `bg-surface-elevated`, `text-text-primary`, `text-text-secondary`, `text-primary`, `bg-primary`, `border-border`, `text-on-primary`, etc. **Zero hardcoded hex values or Tailwind color utilities like `bg-zinc-900`, `text-gray-800`, `bg-white` anywhere in component files.** When the theme toggles, every surface, text, and border switches automatically because everything resolves through CSS variables.
+
+Header component (Phase 2) must include a theme toggle button (sun/moon icon from lucide-react).
 
 **Internationalisation & RTL requirements:**
 - `i18next` + `react-i18next` — initialised in `src/i18n/index.ts` with `en` as default, `es` as second locale, `ar` as third
