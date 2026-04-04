@@ -183,7 +183,7 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
    - Map project metadata → `solution` (name, description, stage)
    - Map user roles → `product.personas` (each with name and goals)
    - Map frontends/services → `architecture.projects` (frontend, backend, mobile)
-   - Map shared types and domain objects from the manifest → `domain.entities[]` (PascalCase entity names only — e.g. User, Order, Product. No fields here, just names)
+   - Map shared types and domain objects from the manifest → `domain.entities[]` (PascalCase entity names with full field specs — name, type, primaryKey, nullable, relationships, indexes)
    - Infer `architecture.style`: single backend → `modular-monolith`, 2+ → `microservices`, functions → `serverless`
    - Map databases → `data` (primary + secondary)
    - Map integrations → `integrations` and `auth` sections
@@ -209,10 +209,25 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
      - `components[].{url, port, instances, deployed}` — per-environment URLs, ports, instance counts, deployment status
      - For each `deployable: true` component, determine its URL/port in each environment (from .env.example, docker-compose, Terraform, GitHub workflows)
      - For each `deployable: false` component, set `deployed: false` in all environments
-   - Set `artifacts.generate` for a full blueprint:
+   
+   **v1.1 additional mappings:**
+   - Extract API contracts (OpenAPI paths, methods, request/response schemas) from backend code/docs → `contracts[].paths[]` with method, description, requestBody, responses
+   - Extract ORM entity fields (from Prisma schema, migrations, SQLAlchemy models, Mongoose schemas) → `domain.entities[].fields[]` with type, nullable, default, constraints
+   - Extract feature list from routes/pages/backlog → `features.phase1.features[]` with name, description, status
+   - Extract feature flags from codebase (LaunchDarkly, env vars) → `features.featureFlags[]` with name, enabled_by_default
+   - Extract compliance signals (GDPR consent, SOC2 audit logs, HIPAA BAA) → `compliance.frameworks[]` with name, status, controls
+   - Extract data retention policies (job schedules for data purge) → `compliance.dataRetention[]` with entity, retention_period_days, deletion_job
+   - Extract performance targets from README/NFR docs → `slos[]` with component, availability.target (e.g. 99.9%), latency.p99ms, throughput
+   - Extract resilience patterns (retry middleware, circuit breakers, timeouts) from code → `resilience.circuitBreaker[]`, `resilience.retryPolicy[]`, `resilience.timeout[]` with thresholds
+   - Extract infrastructure costs from Terraform/docker-compose instance types → `costs.infrastructure.compute[]` with component, unit_cost_per_month
+   - Extract backup config (RDS snapshots, S3 versioning, pg_dump cron jobs) → `backupDr.databases[].backup` with frequency, `backupDr.databases[].rpo` with target_seconds
+   - Extract design tokens from tailwind config or design-tokens.json → `design.tokens.*` with colors, typography, spacing, shadows
+   
+   - Set `artifacts.generate` for a full v1.1 blueprint:
      ```
      architecture-diagram, sequence-diagrams, openapi, data-model,
-     repo-scaffold, adr, backlog, deployment-guide, cost-estimate
+     domain-model, feature-spec, compliance-spec, resilience-spec,
+     cost-estimate, backup-plan, design-tokens
      ```
 
 2. **Validate mentally** against the 5 conditional rules:
@@ -242,7 +257,7 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
 
 **Main file: `solution.sdl.yaml`** (root directory)
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: ...
@@ -260,17 +275,39 @@ imports:
   - sdl/product.sdl.yaml
   - sdl/auth.sdl.yaml
   - sdl/deployment.sdl.yaml
+  - sdl/contracts.sdl.yaml          # API contracts (OpenAPI, GraphQL, gRPC)
+  - sdl/domain.sdl.yaml             # Data model entities with field definitions
+  - sdl/features.sdl.yaml           # Feature planning and phases
+  - sdl/compliance.sdl.yaml         # Compliance frameworks and data retention
+  - sdl/slos.sdl.yaml               # SLOs, SLIs, performance targets
+  - sdl/resilience.sdl.yaml         # Retry, circuit breaker, timeout patterns
+  - sdl/costs.sdl.yaml              # Infrastructure and third-party costs
+  - sdl/backup-dr.sdl.yaml          # Backup, disaster recovery, RTO/RPO
+  - sdl/design.sdl.yaml             # Design tokens and theming
   # (only list modules with content)
 ```
 
-**Modular files in `sdl/` directory:**
+**Modular files in `sdl/` directory (v1.1 sections):**
+
+**Core sections (from v0.1):**
 - `sdl/product.sdl.yaml` — product, personas, coreFlows (if product section exists)
 - `sdl/auth.sdl.yaml` — auth, roles, integrations (if auth exists)
 - `sdl/deployment.sdl.yaml` — deployment, ci-cd (if deployment data exists)
 - `sdl/environments.sdl.yaml` — dev/staging/production URLs, ports, instances, scaling per component
 - `sdl/nfr.sdl.yaml` — nonFunctional requirements (if performance/security/availability data exists)
 - `sdl/integrations.sdl.yaml` — third-party integrations (if 2+ integrations)
-- `sdl/advanced.sdl.yaml` — domain entities, microservices, shared libraries (if complex architecture)
+- `sdl/advanced.sdl.yaml` — shared libraries, microservices patterns (if applicable)
+
+**Extended sections (v1.1 additions):**
+- `sdl/contracts.sdl.yaml` — API contracts with OpenAPI specs, GraphQL, gRPC definitions (if backend services exist)
+- `sdl/domain.sdl.yaml` — domain entities with full field definitions, relationships, indexes (if ORM/database exists)
+- `sdl/features.sdl.yaml` — feature phases, MVP scope, feature flags (always generate)
+- `sdl/compliance.sdl.yaml` — compliance frameworks (GDPR, HIPAA, SOC2, etc.), data retention policies (if signals detected)
+- `sdl/slos.sdl.yaml` — SLO targets per component, SLIs, performance metrics, alerting thresholds (if production or 2+ services)
+- `sdl/resilience.sdl.yaml` — resilience patterns: retry policies, circuit breakers, timeouts, fallbacks (if patterns detected in code)
+- `sdl/costs.sdl.yaml` — infrastructure costs by component, third-party service costs, scaling cost projections (always generate)
+- `sdl/backup-dr.sdl.yaml` — backup strategy, RTO/RPO targets, disaster recovery plan, failover strategy (if database exists)
+- `sdl/design.sdl.yaml` — design system tokens, typography, colors, component library, theming (if design assets exist)
 
 **Write files to disk:**
 1. Create `sdl/` directory
@@ -390,6 +427,11 @@ Include a note explaining how to use each artifact:
 - Postman → import into Postman app for immediate API testing
 - AsyncAPI → import into AsyncAPI Studio for event documentation
 
+**Also write to SDL v1.1:**
+- Serialize all OpenAPI paths, methods, request/response schemas → `sdl/contracts.sdl.yaml`
+  - Use structure: `contracts[].{type: "openapi|graphql|grpc", paths: [], schemas: []}`
+  - Include service name, endpoint definitions with status codes
+
 #### 4f. Security Architecture
 
 Using the **operational-patterns** skill:
@@ -416,6 +458,11 @@ Using the **operational-patterns** skill:
 
 Scale recommendations to the project's complexity — don't prescribe Datadog + PagerDuty for an MVP.
 
+**Also write to SDL v1.1:**
+- Serialize monitoring and alerting targets → `sdl/slos.sdl.yaml`
+  - Use structure: `slos[].{component: "api-server", availability: {target: "99.9"}, latency: {p50: 100, p99: 500}, throughput: 1000}`
+  - Include SLI definitions with alert thresholds from the observability section
+
 #### 4h. DevOps Blueprint
 
 Using the **operational-patterns** skill:
@@ -440,6 +487,12 @@ Present environments as a table:
 
 | Environment | Purpose | Data | Deploy Trigger | Access |
 |------------|---------|------|---------------|--------|
+
+**Also write to SDL v1.1:**
+- Serialize environment configuration and deployment targets → `sdl/deployment.sdl.yaml` (already written, but ensure `environments[]` includes per-component URLs, ports, instances)
+- Serialize backup and disaster recovery strategy → `sdl/backup-dr.sdl.yaml`
+  - Use structure: `backupDr.{databases: [{name: "postgres", backup: {frequency: "daily"}, rpo: 3600}]}`
+  - Include RTO/RPO targets, failover strategy, replication setup
 
 #### 4i. Cost Estimate
 
@@ -467,6 +520,11 @@ Using the **cost-knowledge** skill:
 - Identify which services have steep pricing tiers
 - State the usage threshold where costs jump significantly
 - Provide mitigation strategies
+
+**Also write to SDL v1.1:**
+- Serialize cost breakdown by component and scenario → `sdl/costs.sdl.yaml`
+  - Use structure: `costs.{infrastructure: [{service: "vercel", cost_per_month: 20}], scenarios: {low: 0, medium: 500, high: 2000}}`
+  - Include scaling cost projections for each service
 
 #### 4j. Complexity Assessment
 
@@ -709,6 +767,159 @@ Dependencies: Sprint 0 (auth provider configured)
 - Add 40% contingency for Advanced projects
 
 End with: "This is a starting-point backlog. Expect to refine sprint scope after Sprint 1 based on actual velocity. Adjust story estimates and sprint allocation as the team calibrates its pace."
+
+#### 4p. Domain Model SDL
+
+**Output file:** Write to `sdl/domain.sdl.yaml`
+
+Serialize the complete data model from the shared types (deliverable 4d) into v1.1 SDL format:
+
+```yaml
+domain:
+  entities:
+    - name: User
+      description: Platform user account
+      type: entity
+      primaryKey: id
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          nullable: false
+        - name: email
+          type: string
+          nullable: false
+          unique: true
+        - name: name
+          type: string
+          nullable: false
+        - name: role
+          type: enum
+          enum_values: [admin, user, guest]
+          default: user
+          nullable: false
+      relationships:
+        - type: one-to-many
+          target: Order
+          foreignKey: user_id
+        - type: many-to-one
+          target: Workspace
+          foreignKey: workspace_id
+      indexes:
+        - fields: [email]
+          unique: true
+        - fields: [workspace_id, role]
+```
+
+Include:
+- All entities from the manifest's domain model
+- Full field definitions: name, type (string, int, uuid, enum, datetime, etc.), nullable, default, unique, constraints
+- All relationships: one-to-one, one-to-many, many-to-one, many-to-many with target entity and foreign key
+- All indexes: fields, uniqueness constraint
+- Constraints: foreign keys, checks, auto-increment rules
+
+#### 4q. Features & Compliance SDL
+
+**Output file:** Write to `sdl/features.sdl.yaml` and `sdl/compliance.sdl.yaml`
+
+**Features (features.sdl.yaml):**
+
+Extract from manifest and sprint backlog:
+
+```yaml
+features:
+  phase1:
+    description: MVP Phase
+    features:
+      - name: User Authentication
+        description: OAuth2/JWT login with email
+        status: planned
+      - name: Dashboard
+        description: Overview of user's data
+        status: planned
+  phase2:
+    description: Growth Phase
+    features:
+      - name: Advanced Reporting
+        description: Custom reports and exports
+        status: backlog
+  featureFlags:
+    - name: new_dashboard
+      description: Toggle new dashboard UI
+      enabled_by_default: false
+      targeting: percentage
+```
+
+**Compliance (compliance.sdl.yaml):**
+
+Extract signals from the architecture and DevOps blueprint:
+
+```yaml
+compliance:
+  frameworks:
+    - name: GDPR
+      status: planned
+      controls:
+        - name: Consent Management
+          implemented: false
+        - name: Right to be Forgotten
+          implemented: false
+    - name: SOC2
+      status: not_required
+  dataRetention:
+    - entity: User
+      retention_period_days: null
+      deletion_policy: manual_only
+    - entity: AuditLog
+      retention_period_days: 365
+      deletion_job: "0 0 * * * (daily at midnight)"
+  encryption:
+    at_rest: true
+    algorithm: AES-256
+    in_transit: true
+    tls_version: "1.3"
+```
+
+#### 4r. Resilience SDL
+
+**Output file:** Write to `sdl/resilience.sdl.yaml`
+
+Serialize reliability and failure handling patterns from the DevOps and security blueprints:
+
+```yaml
+resilience:
+  circuitBreaker:
+    - service: api-server
+      call_to: payment-service
+      failure_threshold: 5
+      timeout_ms: 5000
+      half_open_requests: 3
+  retryPolicy:
+    - service: worker
+      call_to: email-service
+      max_retries: 3
+      backoff_type: exponential
+      backoff_ms: 100
+      max_backoff_ms: 10000
+  timeout:
+    - service: web
+      call_to: api-server
+      timeout_ms: 30000
+    - service: api-server
+      call_to: database
+      timeout_ms: 5000
+  fallback:
+    - service: api-server
+      when_service_fails: payment-service
+      fallback_action: queue_for_retry
+      fallback_message: "Payment processing delayed"
+```
+
+Extract from:
+- Code analysis (opossum, Polly, resilience4j, circuit breaker middleware)
+- DevOps blueprint timeout configurations
+- Error handling strategy and retry definitions
+- Fallback patterns and graceful degradation rules
 
 ### Step 4.5: Write _state.json
 

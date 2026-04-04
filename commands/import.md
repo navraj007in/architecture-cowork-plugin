@@ -104,13 +104,13 @@ do not attempt to read every file. Focus on architecturally significant code:
 
 ### Step 3: Generate SDL
 
-Using the **sdl-knowledge** skill, build a **v0.1-compliant** SDL document.
+Using the **sdl-knowledge** skill, build a **v1.1-compliant** SDL document.
 
-**CRITICAL: The output MUST use the SDL v0.1 schema structure. Do NOT invent custom
-top-level sections.** The only allowed root keys are:
+**The output MUST use the SDL v1.1 schema structure.** The allowed root keys are:
 
-**Required:** `sdlVersion`, `solution`, `product`, `architecture`, `data`, `nonFunctional`, `deployment`, `artifacts`
-**Optional:** `auth`, `integrations`, `constraints`, `technicalDebt`, `evolution`, `testing`, `observability`, `environments`, `interServiceCommunication`, `configuration`, `errorHandling`, `design`
+**Required:** `sdlVersion`, `solution`, `architecture`, `data`
+**Core v0.1:** `product`, `auth`, `deployment`, `environments`, `nonFunctional`, `integrations`, `constraints`, `testing`, `observability`, `techDebt`
+**v1.1 Additions:** `contracts`, `domain`, `features`, `compliance`, `slos`, `resilience`, `costs`, `backupDr`, `design`
 **Extension:** Any key prefixed with `x-` (e.g., `x-confidence`, `x-evidence`)
 
 **DO NOT** use these non-standard keys: `tech_stack`, `cross_cutting`, `infrastructure`,
@@ -128,7 +128,25 @@ top-level sections.** The only allowed root keys are:
 | Git remote origin URL (`subRepo.gitOrigin` or `git remote get-url origin`) | `architecture.projects.frontend[].x-gitOrigin` / `architecture.projects.backend[].x-gitOrigin` |
 | Deployable components (mark shared libs, type packages, internal-only) | `architecture.projects.*[].deployable` (false for non-deployable items) |
 | Dev/staging/production URLs and ports | `environments[].components[].{url,port,instances,deployed}` |
-| Core domain objects (entity names from ORM models, schema files, migration names) | `domain.entities[]` — PascalCase names only |
+| Core domain objects (entity names from ORM models, schema files, migration names) | `domain.entities[]` — PascalCase names only (v0.1); expanded with fields in v1.1 |
+| ORM entity fields, types, constraints, indexes from schema.prisma or migrations | `domain.entities[].fields[]` (v1.1) — type, primaryKey, unique, nullable, foreignKey |
+| ORM entity relationships from schema.prisma or migrations | `domain.entities[].relationships[]` (v1.1) — type, target, foreignKey |
+| ORM entity indexes from schema.prisma or migrations | `domain.entities[].indexes[]` (v1.1) — fields, unique |
+| API endpoint specifications (OpenAPI, GraphQL, gRPC artifacts) | `contracts[]` (v1.1) — name, type, version, path, endpointCount, baseUrl |
+| Feature list from routes/pages (MVP vs. backlog vs. future phases) | `features.phase1.features[]` (v1.1) — id, name, priority, estimatedDays, dependsOn |
+| Feature flags (LaunchDarkly, env-based toggles, rollout %) | `features.featureFlags[]` (v1.1) — name, rollout, targetAudience, phase |
+| Compliance frameworks applicable (GDPR, HIPAA, SOC2, PCI-DSS, CCPA) | `compliance.frameworks[]` (v1.1) — name, applicable, requirements, certifications |
+| Data retention policies (log retention, deleted data grace period, legal holds) | `compliance.dataRetention[]` (v1.1) — dataType, retentionDays, reason |
+| Performance targets from README/documentation (response time, throughput) | `slos[].availability.target`, `slos[].latency.p99` (v1.1) |
+| Retry/circuit breaker middleware (opossum, Polly, resilience4j, custom) | `resilience.circuitBreaker[]`, `resilience.retryPolicy[]` (v1.1) — failureThreshold, backoff, retryableErrors |
+| Timeout configurations (API response, database query, external service calls) | `resilience.timeout[]` (v1.1) — name, ms, description |
+| Infrastructure costs (EC2/Lambda/RDS instance types from Terraform or compose) | `costs.infrastructure.compute[]`, `costs.infrastructure.database[]` (v1.1) — component, platform, instanceType, costPerMonth |
+| Third-party service pricing (Stripe, SendGrid, Sentry from detected integrations) | `costs.thirdParty[]` (v1.1) — name, category, fee, volume, monthlyCost |
+| Backup strategy (RDS automated backups, S3 versioning, pg_dump cron jobs) | `backupDr.databases[].backup` (v1.1) — frequency, retention, type |
+| Disaster recovery RTO/RPO (recovery time/point objectives from docs or SLAs) | `backupDr.databases[].rto`, `backupDr.databases[].rpo` (v1.1) |
+| Multi-region failover or replica strategy (read replicas, cross-region, Route53) | `backupDr.siteFailover` (v1.1) — primary, secondary, automaticFailover, switchoverTime |
+| Design tokens full scale (Tailwind config, design-tokens.json, Figma tokens) | `design.tokens.colors`, `design.tokens.typography.scale`, `design.tokens.spacing` (v1.1) |
+| Dark/light theme definitions (colors, surface values for each theme) | `design.themes[]` (v1.1) — name, colors for dark/light modes |
 | Service dependencies (other services/providers a service calls) | `architecture.services[].dependsOn[]` |
 | Identity provider (Cognito, Auth0, Clerk, custom) | `auth.identityProvider` |
 | Service token validation mechanism (how services verify tokens) | `auth.serviceTokenModel: jwt \| session \| api-key` |
@@ -183,7 +201,7 @@ Generate a **modular SDL** with a minimal main file and separate module files:
 
 **Main file: `solution.sdl.yaml`** (core only, ~50 lines):
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "{from README or package.json}"
@@ -328,7 +346,16 @@ sdl/
 4. Move deployment/ci-cd → `sdl/deployment.sdl.yaml`
 5. Move performance/security/availability → `sdl/nfr.sdl.yaml`
 6. Move integrations → `sdl/integrations.sdl.yaml` (if 2+ integrations)
-7. Keep sdlVersion as `"0.1"` (official spec version)
+7. **V1.1 NEW:** Move API contracts → `sdl/contracts.sdl.yaml` (if any backend/API exists)
+8. **V1.1 NEW:** Move entity definitions with fields → `sdl/domain.sdl.yaml` (if ORM detected)
+9. **V1.1 NEW:** Move feature phases, flags → `sdl/features.sdl.yaml` (always generate)
+10. **V1.1 NEW:** Move compliance frameworks → `sdl/compliance.sdl.yaml` (if signals detected)
+11. **V1.1 NEW:** Move SLO targets, alert thresholds → `sdl/slos.sdl.yaml` (if production or 2+ services)
+12. **V1.1 NEW:** Move retry/circuit breaker patterns → `sdl/resilience.sdl.yaml` (if detected)
+13. **V1.1 NEW:** Move infrastructure + third-party costs → `sdl/costs.sdl.yaml` (always generate)
+14. **V1.1 NEW:** Move RTO/RPO, failover strategy → `sdl/backup-dr.sdl.yaml` (if database exists)
+15. **V1.1 NEW:** Move design tokens with full scale → `sdl/design.sdl.yaml` (if tokens/tailwind config exist)
+16. Set sdlVersion as `"1.1"` (official spec version)
 
 #### 3.3 — Write Modular Files to Disk
 
@@ -346,18 +373,38 @@ solution.sdl.yaml  # Contains only: sdlVersion, solution, architecture, data, im
 - `sdl/environments.sdl.yaml` — environment-specific config (dev, staging, production URLs, ports, instances)
 - `sdl/nfr.sdl.yaml` — nonFunctional section (if performance/security/availability data exists)
 - `sdl/integrations.sdl.yaml` — integrations section (if 2+ external services detected)
-- `sdl/advanced.sdl.yaml` — domain entities, services, shared libraries (if microservices or complex)
+- **V1.1:** `sdl/contracts.sdl.yaml` — contracts section with API specs (if any backend/REST/GraphQL/gRPC exists)
+- **V1.1:** `sdl/domain.sdl.yaml` — domain section with entity definitions, fields, relationships, indexes (if ORM detected)
+- **V1.1:** `sdl/features.sdl.yaml` — features section with phase planning, feature flags, dependencies (always generate)
+- **V1.1:** `sdl/compliance.sdl.yaml` — compliance section with frameworks, requirements, data retention (if signals detected)
+- **V1.1:** `sdl/slos.sdl.yaml` — slos section with availability targets, latency, error budgets (if production stage or 2+ services)
+- **V1.1:** `sdl/resilience.sdl.yaml` — resilience section with circuit breakers, retries, timeouts (if patterns detected)
+- **V1.1:** `sdl/costs.sdl.yaml` — costs section with infrastructure + third-party pricing (always generate)
+- **V1.1:** `sdl/backup-dr.sdl.yaml` — backupDr section with RTO/RPO, failover strategy (if database exists)
+- **V1.1:** `sdl/design.sdl.yaml` — design section with token scales, themes (if design-tokens.json or tailwind config exists)
+- `sdl/advanced.sdl.yaml` — domain entities (names only), services, shared libraries (if microservices or complex)
 
 **3. Report generated files:**
 ```
-Generated SDL:
-  ✓ solution.sdl.yaml (main file)
+Generated SDL (v1.1):
+  ✓ solution.sdl.yaml (main file with imports)
   ✓ sdl/product.sdl.yaml (personas, flows)
   ✓ sdl/auth.sdl.yaml (authentication)
   ✓ sdl/deployment.sdl.yaml (infrastructure)
+  ✓ sdl/environments.sdl.yaml (per-env URLs, ports)
+  ✓ sdl/nfr.sdl.yaml (performance, security, availability)
   ✓ sdl/integrations.sdl.yaml (stripe, sendgrid, sentry)
+  ✓ sdl/contracts.sdl.yaml (API contracts: 3 OpenAPI specs)
+  ✓ sdl/domain.sdl.yaml (8 entities with fields, relationships, indexes)
+  ✓ sdl/features.sdl.yaml (3 phases, 12 features total)
+  ✓ sdl/compliance.sdl.yaml (GDPR, SOC2 frameworks)
+  ✓ sdl/slos.sdl.yaml (availability 99.9%, latency p99 < 500ms)
+  ✓ sdl/resilience.sdl.yaml (4 circuit breakers, retry policies)
+  ✓ sdl/costs.sdl.yaml ($4700/month infrastructure + third-party)
+  ✓ sdl/backup-dr.sdl.yaml (RTO 15m, RPO 5m, active-passive failover)
+  ✓ sdl/design.sdl.yaml (design tokens with full color scale, typography)
   
-Total: 5 files | Imports: 5 | Entities: 8
+Total: 16 files | Imports: 15 | Entities: 8 | APIs: 3 | Features: 12 | Compliance: 2 frameworks
 ```
 
 **Rules:**
