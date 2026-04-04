@@ -337,6 +337,65 @@ For each **frontend component**, the scaffolder MUST:
    - Add the correct npm package
    - Include sample imports in the sample page
 
+### Step 4.5: Install Dependencies & Build
+
+After the Scaffolder Agent completes file generation, immediately install dependencies and build each component (if the user opted in at Step 3).
+
+**For each scaffolded component:**
+
+**1. Install Dependencies** — run framework-appropriate install command:
+
+| Framework | Install Command | Notes |
+|-----------|-----------------|-------|
+| Node.js / TypeScript / Next.js / React / Vue / Angular | `npm install` in component root | Check if `yarn.lock` or `pnpm-lock.yaml` exists; if so, use `yarn install` or `pnpm install` instead |
+| Python / FastAPI / Django | `pip install -r requirements.txt` in component root | Or `poetry install` if `pyproject.toml` exists |
+| Go | `go mod download` in component root | Downloads transitive deps without building |
+| .NET / C# | `dotnet restore` in component root | Restores NuGet packages |
+| Rust | `cargo build` in component root | Also downloads deps |
+| Java / Spring | `mvn dependency:resolve` in component root | Or `gradle dependencies` if Gradle |
+| Ruby / Rails | `bundle install` in component root | |
+
+**2. Verify Installation Success** — check for errors:
+- If install fails: log the error, continue to next component, mark as failed in activity log
+- If install succeeds: proceed to build
+
+**3. Run Build Command** — compile/check each component:
+
+| Framework | Build Command | Purpose |
+|-----------|--------------|---------|
+| Node.js / TypeScript / Next.js | `npm run build` in component root | Produces dist/ or .next/ output; catches TypeScript errors |
+| React / Vue (Vite) | `npm run build` | Production build |
+| Python / FastAPI | `python -m py_compile $(find src -name "*.py" -o -name "*.pyi")` | Syntax check only (interpreted lang) |
+| Go | `go build ./...` in component root | Produces binary; catches compile errors |
+| .NET / C# | `dotnet build --configuration Release` in component root | Full build with optimizations |
+| Rust | `cargo build --release` in component root | Full optimized build |
+| Java / Spring | `mvn clean package` or `gradle build` in component root | Full build + test run |
+| Ruby / Rails | `rails assets:precompile` (if web) or `ruby -c $(find . -name "*.rb")` | Asset compilation or syntax check |
+
+**4. Parse Build Output** — capture success/failure:
+- **Success (0 exit code):** Extract install + build time, dependency count, output directory
+  - Example: "Installed 156 dependencies, built in 45s. Output: dist/"
+- **Failure (non-zero exit code):** Extract first 10 error/warning lines (truncate rest with "...and N more errors")
+  - Example: "Build failed: 3 TypeScript errors in src/index.ts"
+
+**5. Update Component Activity Log** — append one line to `<component-name>/_activity.jsonl`:
+
+Success case:
+```json
+{"ts":"<ISO-8601>","phase":"install-build","status":"success","installer":"npm","installTime":"45s","dependencyCount":156,"buildCommand":"npm run build","buildOutput":"dist/","summary":"Installed 156 deps (45s), built successfully"}
+```
+
+Failure case:
+```json
+{"ts":"<ISO-8601>","phase":"install-build","status":"failed","installer":"npm","installTime":"12s","error":{"code":"BUILD_FAILED","message":"3 TypeScript errors","location":"src/index.ts","details":["src/index.ts(12,5): error TS2304: Cannot find name 'x'","src/index.ts(28,7): error TS2345: Argument of type..."]},"summary":"Build failed: 3 errors in src/index.ts"}
+```
+
+**6. Skip If Dependencies Were Not Installed** — if user selected "no" at Step 3:
+- Note: "Skipped install/build (dependencies not installed per user config)"
+- Log as `{"ts":"...","phase":"install-build","status":"skipped","reason":"user-opted-out","summary":"Skipped: dependencies not installed per user request"}`
+
+**7. Report Results to User** — collect all install/build results for the summary in Step 6
+
 ### Step 5: Log Activity
 
 Before printing the summary, write two levels of activity log.
@@ -344,11 +403,13 @@ Before printing the summary, write two levels of activity log.
 **1. Project-level** — append one line to `architecture-output/_activity.jsonl`:
 
 ```json
-{"ts":"<ISO-8601>","phase":"scaffold","outcome":"completed|partial|failed","components":["api-server","web-app"],"summary":"Scaffolded api-server (.NET Clean Architecture) and web-app (Next.js). 25 files total."}
+{"ts":"<ISO-8601>","phase":"scaffold","outcome":"completed|partial|failed","components":["api-server","web-app"],"installOutcome":"all-success|partial-failed|skipped","buildOutcome":"all-success|partial-failed|skipped","summary":"Scaffolded api-server (.NET) and web-app (Next.js). Installed 179 deps, 2/2 builds passed. 25 files total."}
 ```
 
 - `components`: just the names (array of strings)
-- `summary`: one sentence under 120 chars covering all components and any failures
+- `installOutcome`: one of `"all-success"`, `"partial-failed"`, `"skipped"`
+- `buildOutcome`: one of `"all-success"`, `"partial-failed"`, `"skipped"`
+- `summary`: one sentence under 120 chars covering all components, install results, build results, and any failures
 
 **2. Component-level** — for each component that was scaffolded or augmented, append one line to `<component-name>/_activity.jsonl` (inside the component directory):
 
@@ -416,18 +477,32 @@ Scaffold complete! Here's what was created:
 
 Stage: MVP — lean scaffold applied (patterns 1–7 required; rate limiting and retry stubbed)
 
-| # | Component | Framework | Path | Status | Build |
-|---|-----------|-----------|------|--------|-------|
-| 1 | web-app | Next.js | ./web-app | Created | ✅ tsc: 0 errors |
-| 2 | api-server | .NET | ./api-server | Augmented | ✅ dotnet build: 0 errors |
-| 3 | worker-service | BullMQ | ./worker-service | Created | ⚠ tsc: 2 errors (see below) |
-| 4 | mobile-app | Expo | ./mobile-app | Created | ⏭ skipped (deps not installed) |
-| 5 | support-agent | FastAPI | ./support-agent | Created | ✅ py_compile: 0 errors |
+| # | Component | Framework | Path | Status | Install | Build |
+|---|-----------|-----------|------|--------|---------|-------|
+| 1 | web-app | Next.js | ./web-app | Created | ✅ 156 deps (45s) | ✅ dist/ built |
+| 2 | api-server | .NET | ./api-server | Augmented | ✅ 23 packages (28s) | ✅ Release/ built |
+| 3 | worker-service | BullMQ | ./worker-service | Created | ✅ 89 deps (32s) | ⚠ 2 errors (see below) |
+| 4 | mobile-app | Expo | ./mobile-app | Created | ⏭ skipped (no install) | ⏭ skipped |
+| 5 | support-agent | FastAPI | ./support-agent | Created | ✅ 12 deps (8s) | ✅ syntax OK |
 
 Contracts generated:
   architecture-output/contracts/api-server.openapi.yaml — 12 endpoints
   architecture-output/contracts/worker-service.openapi.yaml — 3 endpoints
   architecture-output/contracts/web-app-calls-api-server.client.ts — typed client (8 operations)
+
+Dependencies installed:
+  web-app: 156 packages (45s)
+  api-server: 23 packages (28s)
+  worker-service: 89 packages (32s)
+  support-agent: 12 packages (8s)
+  mobile-app: skipped (no install option selected)
+
+Build results:
+  ✅ web-app: dist/ ready (Next.js build succeeded)
+  ✅ api-server: Release/ ready (dotnet build Release succeeded)
+  ⚠ worker-service: 2 TypeScript errors (see below)
+  ✅ support-agent: syntax OK (Python compilation check passed)
+  ⏭ mobile-app: skipped (no build run)
 
 Build errors to fix:
   worker-service/src/jobs/email.ts(14,3): error TS2304: Cannot find name 'EmailPayload'
@@ -459,11 +534,18 @@ Each project has:
 - Mobile: push notification config, deep linking setup, permission declarations, OTA update config
 
 Next steps:
-1. Fix any build errors listed above before writing feature code
+1. **Fix build errors first** — any component with build errors must be fixed before running (see "Build errors to fix" above)
 2. Copy .env.example to .env in each project and fill in your credentials
 3. Review `src/config/index.ts` in each backend service — fill in any auth-provider-specific env vars
 4. Update `ALLOWED_ORIGINS` in `.env` for each backend and frontend to match your actual domain(s)
-5. Follow the README in each project to start the dev server
+5. Dependencies are already installed — start your dev servers immediately:
+   ```bash
+   # From each project root:
+   npm run dev          # Node.js / Next.js / React
+   dotnet run          # .NET
+   go run .            # Go
+   uvicorn main:app    # Python FastAPI
+   ```
 6. Open the sample page to see your design system in action
 7. Start building features!
 ```
