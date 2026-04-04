@@ -230,12 +230,15 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
      cost-estimate, backup-plan, design-tokens
      ```
 
-2. **Validate mentally** against the 5 conditional rules:
+2. **Validate mentally** against the 6+ conditional rules:
    - Microservices → needs 2+ services
    - OIDC → needs provider
    - PII → needs encryptionAtRest
    - CloudFormation → only with AWS
    - MongoDB → no EF Core
+   - Environment components → each `environments[].components` entry must exist in `architecture.projects`
+   - (v1.1) SLO components → each `slos[].component` must exist in `architecture.projects`
+   - (v1.1) Cost components → each `costs.infrastructure[].component` must exist in `architecture.projects`
 
 3. **Apply normalization mentally** — note what the normalizer would infer (runtime from cloud, ORM from framework+DB, etc.) but do not manually set those fields
 
