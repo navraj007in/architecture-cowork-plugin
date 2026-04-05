@@ -38,7 +38,10 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 | `/architect:refactor-stack`        | Coordinated architecture refactor — database, framework, provider change with consistency |
 | `/architect:scaffold`              | Create project structure plan from a blueprint architecture                        |
 | `/architect:scaffold-component`    | Scaffold a single component from the SDL with full starter code                    |
+| `/architect:generate-tests`        | Generate unit, integration, and e2e test suites following testing patterns         |
+| `/architect:setup-monitoring`      | Configure observability stack (metrics, tracing, logging, alerts, dashboards)      |
 | `/architect:implement`             | Implement a user story or feature end-to-end into an already-scaffolded codebase   |
+| `/architect:load-test`             | Generate load testing scenarios (k6/Locust) from API contracts                     |
 | `/architect:review`                | Review code changes against the project's own patterns, best practices, and security |
 | `/architect:cost-estimate`         | Infrastructure + third-party + LLM token cost breakdown                           |
 | `/architect:complexity-check`      | Build difficulty assessment with 10-factor scoring                                |
@@ -51,8 +54,10 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 | `/architect:setup-env`             | Walk through account setup, validate API keys, write verified .env files          |
 | `/architect:setup-cicd`            | Configure real CI/CD pipelines in GitHub Actions, Azure Pipelines, or GitLab CI   |
 | `/architect:security-scan`         | Validate scaffolded code against the blueprint's security checklist               |
+| `/architect:compliance`            | Audit code for compliance gaps (SOC2, HIPAA, GDPR, PCI DSS) with remediation plans |
 | `/architect:sync-backlog`          | Push sprint backlog into Azure DevOps or Jira as sprints and work items           |
 | `/architect:publish-api-docs`      | Generate interactive API documentation (Swagger UI, Redoc, AsyncAPI)              |
+| `/architect:generate-docs`         | Generate deployment runbooks, architecture guides, ADRs, and incident playbooks    |
 | `/architect:export-diagrams`       | Render Mermaid diagrams to PNG/SVG with light and dark themes                     |
 | `/architect:deep-research`         | Web-verified competitor analysis, market sizing, and differentiation map          |
 | `/architect:launch-checklist`      | Pre-launch readiness checklist — infra, security, legal, analytics, go-live      |
