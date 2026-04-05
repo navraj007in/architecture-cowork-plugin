@@ -43,6 +43,7 @@ Read (use what's available, don't error if missing):
 3. **SDL — extract only prototype-relevant sections** (do NOT read the full file):
    Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files. Use Grep to extract these sections only:
    - `product:` block → `screens`, `screenFlows`, `coreFlows` (screen inventory + navigation)
+   - `product.navigationPatterns` (if present) → which patterns to include: `guards`, `contextualRouting`, `errorHandling`, `ephemeralStates`, `dynamicNavigation`
    - `auth:` block → which auth screens to generate (login, register, MFA, SSO)
    - `architecture.projects:` block → **CRITICAL: determine application type**:
      * `type: "web"` + `framework: "react"/"next"/"vue"/etc` → **Web Prototype** (responsive React)
@@ -52,7 +53,9 @@ Read (use what's available, don't error if missing):
    - `design:` block → palette, fonts, personality if not in `_state.json`
    - `domain:` block → entity names for mock data shape — **only if `_state.json.entities` is absent** (e.g. `domain.entities: [User, Order, Product]`)
 
-   **Skip entirely:** infrastructure, deployment, integrations, environment, security policies, cost — none of these affect the prototype UI.
+   **Extract navigation patterns for realistic prototype:** guards, error states, context switching, ephemeral overlays, dynamic menus
+
+   **Skip entirely:** infrastructure, deployment, integrations (except auth), environment, security policies, cost — none of these affect the prototype UI.
 
 4. **Design tokens** — `architecture-output/design-system/design-tokens.json` if available
 
@@ -281,18 +284,28 @@ prototype/
 ├── tailwind.config.ts    ← exact values from design-tokens.json or _state.json.design — not re-derived; darkMode: 'class'
 ├── src/
 │   ├── main.tsx
-│   ├── App.tsx           ← router with <Route> for every screen; wraps in ThemeProvider + I18nextProvider
+│   ├── App.tsx           ← router with <Route> for every screen; wraps in ThemeProvider + I18nextProvider + ErrorBoundary + guards
+│   ├── guards/
+│   │   ├── ProtectedRoute.tsx     ← if SDL has route guards: checks auth, roles, feature flags; redirects on failure
+│   │   ├── useRouteGuards.ts      ← hook to check if current user can access route (mocked auth state)
+│   │   └── mockAuthState.ts       ← simulated user with roles for guard testing
 │   ├── context/
-│   │   └── ThemeContext.tsx   ← useTheme() hook — persists to localStorage, defaults to system preference
+│   │   ├── ThemeContext.tsx       ← useTheme() hook — persists to localStorage, defaults to system preference
+│   │   ├── AuthContext.tsx        ← if guards exist: mock auth state (user, roles, isAuthenticated)
+│   │   └── ContextSwitcher.tsx    ← if contextual routing exists: workspace/tenant switching context
+│   ├── components/
+│   │   ├── ErrorBoundary.tsx      ← catches render errors; shows fallback UI
+│   │   ├── ErrorPage.tsx          ← if errorHandling patterns exist: 404, 403, 500, offline UIs
+│   │   └── ContextSwitcher.tsx    ← if contextualRouting: tenant/workspace dropdown in header
 │   ├── i18n/
-│   │   ├── index.ts           ← i18next init (react-i18next)
+│   │   ├── index.ts               ← i18next init (react-i18next)
 │   │   └── locales/
-│   │       ├── en.json        ← all UI strings in English
-│   │       └── es.json        ← all UI strings in Spanish (auto-translated placeholder values)
+│   │       ├── en.json            ← all UI strings in English
+│   │       └── es.json            ← all UI strings in Spanish (auto-translated placeholder values)
 │   ├── data/
-│   │   └── mock.ts       ← realistic typed mock data, 10-20 records per entity
+│   │   └── mock.ts                ← realistic typed mock data, 10-20 records per entity
 │   └── styles/
-│       └── globals.css   ← Google Fonts @import; CSS variables for light AND dark palettes
+│       └── globals.css            ← Google Fonts @import; CSS variables for light AND dark palettes
 ```
 
 **Dark/light mode — full themeable setup (REQUIRED):**
@@ -382,6 +395,33 @@ Header component (Phase 2) must include a theme toggle button (sun/moon icon fro
 - Include relationships between entities (order references a customer, etc.)
 - Add avatar URLs using `https://api.dicebear.com/9.x/avataaars/svg?seed={name}`
 - For entity structure: use `_state.json.entities` if available
+
+**Navigation Patterns (ONLY if in SDL `product.navigationPatterns`):**
+
+**IF `navigationPatterns.guards` exists:**
+- Generate `guards/ProtectedRoute.tsx` — wraps routes with auth/role/feature flag checks
+- Generate `guards/useRouteGuards.ts` — checks if user can access route
+- Generate `context/AuthContext.tsx` — mock user state with roles
+
+**IF `navigationPatterns.errorHandling` exists:**
+- Generate `components/ErrorPage.tsx` with 404, 403, 500, offline UIs
+- Generate `components/ErrorBoundary.tsx` — catches render errors
+
+**IF `navigationPatterns.contextualRouting` exists:**
+- Generate `context/ContextSwitcher.tsx` — workspace/tenant switching context
+- Add context switcher dropdown to Header (Phase 2)
+- Routes scoped to `/workspace/{id}/...`
+
+**IF `navigationPatterns.dynamicNavigation` exists:**
+- Generate `data/navigationConfig.ts` — backend-driven menu config
+- Render nav conditionally from roles/feature flags
+
+**IF `navigationPatterns.ephemeralStates` exists:**
+- Generate `hooks/useModalStack.ts` — modal state management
+- Generate `components/Modal.tsx` with back button handling
+- Mock 2-3 modal scenarios
+
+**IF none of these patterns exist:** Skip all guard/error/context/dynamic files. Generate basic routing only.
 
 Update `prototype/_manifest.json` → set `phase_complete: 1`, add written files to `files_written`.
 

@@ -278,7 +278,36 @@ Before delegating to the Scaffolder Agent, analyze the component types and provi
    - **Starter code**: `electron-main.ts` (Electron) or `tauri.conf.json` (Tauri), window chrome setup
    - **Build command**: `npm run dev` (dev mode) or `npm run build` (distributable)
 
-**Inform Scaffolder Agent via prompt:**
+**Navigation Pattern Stubs** (ONLY if patterns exist in SDL):
+
+**Check SDL `product.navigationPatterns` — generate ONLY what's needed:**
+
+**IF `navigationPatterns.guards` exists:**
+- `src/guards/ProtectedRoute.tsx` — auth/role/feature flag checks
+- `src/guards/useRouteGuards.ts` — guard checking hook
+- `src/context/AuthContext.tsx` — mock auth state
+
+**IF `navigationPatterns.errorHandling` exists:**
+- `src/components/ErrorBoundary.tsx` — error boundary
+- `src/components/ErrorPage.tsx` — 404, 403, 500, offline UIs
+- Route error fallbacks in App.tsx
+
+**IF `navigationPatterns.contextualRouting` exists:**
+- `src/context/ContextSwitcher.tsx` — workspace/tenant context
+- `src/components/ContextSwitcherMenu.tsx` — context dropdown in header
+- Scoped routes: `/workspace/{id}/...`
+
+**IF `navigationPatterns.dynamicNavigation` exists:**
+- `src/data/navigationConfig.ts` — backend-driven menu config
+- Conditional nav rendering based on roles/flags
+
+**IF `navigationPatterns.ephemeralStates` exists:**
+- `src/hooks/useModalStack.ts` — modal state management
+- `src/components/Modal.tsx` — modal wrapper with back button handling
+
+**IF none exist:** Generate basic routing only. No guards, no error pages, no context switching.
+
+**Inform Scaffolder Agent via prompt (CONDITIONAL):**
 
 ```
 "Generate starter code for these application types:
@@ -287,7 +316,15 @@ Before delegating to the Scaffolder Agent, analyze the component types and provi
 - desktop (Electron, sidebar) → window setup with menu bar
 
 Use the design tokens from [design_tokens.json path] for each frontend.
-Include navigation pattern components (Sidebar.tsx, TabNav.tsx, etc.) as stubs.
+
+ONLY if navigationPatterns exist in SDL:
+- Route guards: generate ProtectedRoute.tsx, useRouteGuards.ts, AuthContext.tsx
+- Error handling: generate ErrorBoundary.tsx, ErrorPage.tsx
+- Context switching: generate ContextSwitcher.tsx and dropdown menu
+- Dynamic nav: generate navigationConfig.ts
+- Ephemeral: generate useModalStack.ts, Modal.tsx
+
+Skip patterns that don't exist in SDL.
 "
 ```
 

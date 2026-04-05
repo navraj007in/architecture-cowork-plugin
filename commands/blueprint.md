@@ -149,6 +149,28 @@ Using the **architecture-methodology** skill, ask clarifying questions to unders
 - **Budget**: Monthly infrastructure budget and/or total development budget
 - **Timeline**: When do you need this live?
 
+**Navigation & Access Control Requirements (ask only if applicable):**
+
+- **Multi-user app with roles?** If yes → "Does the app have different permission levels?" (admin, user, guest, etc.)
+  - YES → Add route guards pattern (auth checks, role-based access)
+  - NO → Skip guards
+
+- **Multiple user organizations/workspaces?** (e.g., SaaS with workspace switcher, marketplace with vendor accounts)
+  - YES → Add context scoping pattern (workspace switching, scoped routes)
+  - NO → Skip context switching
+
+- **Backend controls what users see in navigation?** (e.g., admin configures menu, role-based menu items, feature flags hide nav items)
+  - YES → Add data-driven navigation pattern
+  - NO → Skip (hardcoded nav is fine)
+
+- **Modal-heavy UI with lots of forms?** (e.g., edit dialogs, multi-step wizards, drawers)
+  - YES → Add ephemeral navigation pattern (modals don't create routes)
+  - NO → Skip (basic routing is fine)
+
+- **Error states & offline support?** (applies to nearly all apps)
+  - YES → Add error & fallback navigation (404, 403, offline pages)
+  - NO → Skip (only if ultra-simple)
+
 Ask 2-3 questions at a time, not all at once. Skip questions the user has already answered. If the user says "just build it", make reasonable assumptions and state them explicitly.
 
 ### Step 3: Build the System Manifest
@@ -170,6 +192,7 @@ Using the **manifest-structure** skill, build a structured manifest covering:
 - Observability (logging, metrics, health checks, alerting)
 - DevOps (CI/CD pipeline, branch strategy, database migrations, environment strategy)
 - Deployment targets
+- **Navigation patterns** (ONLY if detected as needed): route guards (multi-user), context scoping (multi-tenant), error handling (all apps), ephemeral nav (modal-heavy), data-driven nav (backend-controlled menus)
 
 Do not show the raw manifest to the user unless they ask. Use it internally to generate deliverables.
 
@@ -222,6 +245,13 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
    - Extract infrastructure costs from Terraform/docker-compose instance types → `costs.infrastructure.compute[]` with component, unit_cost_per_month
    - Extract backup config (RDS snapshots, S3 versioning, pg_dump cron jobs) → `backupDr.databases[].backup` with frequency, `backupDr.databases[].rpo` with target_seconds
    - Extract design tokens from tailwind config or design-tokens.json → `design.tokens.*` with colors, typography, spacing, shadows
+   
+   **Navigation & Access Control Mappings (CONDITIONAL — only if applicable):**
+   - **IF multi-user with roles:** Route guards → `product.navigationPatterns.guards[]` with type (auth, role, featureFlag), requirements, redirectOnFail
+   - **IF multi-tenant/workspace:** Context scoping → `product.navigationPatterns.contextualRouting` with scopes, routePattern, switcherPosition
+   - **IF 404/offline needed:** Error & fallback → `product.navigationPatterns.errorHandling` with trigger, fallback, UI component
+   - **IF modal-heavy UI:** Ephemeral navigation → `product.navigationPatterns.ephemeralStates` with type, priority, historyStrategy
+   - **IF backend controls nav:** Data-driven navigation → `product.navigationPatterns.dynamicNavigation` with source, strategy, cacheStrategy
    
    - Set `artifacts.generate` for a full v1.1 blueprint:
      ```
@@ -303,19 +333,22 @@ data:
   primaryDatabase: ...
 
 imports:
+  # Always included:
   - sdl/product.sdl.yaml
-  - sdl/auth.sdl.yaml
   - sdl/deployment.sdl.yaml
-  - sdl/contracts.sdl.yaml          # API contracts (OpenAPI, GraphQL, gRPC)
-  - sdl/domain.sdl.yaml             # Data model entities with field definitions
-  - sdl/features.sdl.yaml           # Feature planning and phases
-  - sdl/compliance.sdl.yaml         # Compliance frameworks and data retention
-  - sdl/slos.sdl.yaml               # SLOs, SLIs, performance targets
-  - sdl/resilience.sdl.yaml         # Retry, circuit breaker, timeout patterns
-  - sdl/costs.sdl.yaml              # Infrastructure and third-party costs
-  - sdl/backup-dr.sdl.yaml          # Backup, disaster recovery, RTO/RPO
-  - sdl/design.sdl.yaml             # Design tokens and theming
-  # (only list modules with content)
+  
+  # Conditional (only if exist):
+  - sdl/auth.sdl.yaml               # (if multi-user with auth)
+  - sdl/contracts.sdl.yaml          # (if backend services exist)
+  - sdl/domain.sdl.yaml             # (if ORM/database exists)
+  - sdl/features.sdl.yaml           # (if MVP planning needed)
+  - sdl/compliance.sdl.yaml         # (if compliance signals detected)
+  - sdl/slos.sdl.yaml               # (if performance targets defined)
+  - sdl/resilience.sdl.yaml         # (if resilience patterns needed)
+  - sdl/costs.sdl.yaml              # (if cost tracking needed)
+  - sdl/backup-dr.sdl.yaml          # (if backup/disaster recovery needed)
+  - sdl/design.sdl.yaml             # (if design system created)
+  - sdl/navigation-patterns.sdl.yaml # (if navigation patterns detected: guards, context, errors, etc.)
 ```
 
 **Modular files in `sdl/` directory (v1.1 sections):**
@@ -329,28 +362,51 @@ imports:
 - `sdl/integrations.sdl.yaml` — third-party integrations (if 2+ integrations)
 - `sdl/advanced.sdl.yaml` — shared libraries, microservices patterns (if applicable)
 
-**Extended sections (v1.1 additions):**
+**Extended sections (v1.1 additions — conditional):**
 - `sdl/contracts.sdl.yaml` — API contracts with OpenAPI specs, GraphQL, gRPC definitions (if backend services exist)
 - `sdl/domain.sdl.yaml` — domain entities with full field definitions, relationships, indexes (if ORM/database exists)
-- `sdl/features.sdl.yaml` — feature phases, MVP scope, feature flags (always generate)
+- `sdl/features.sdl.yaml` — feature phases, MVP scope, feature flags (if MVP planning needed)
 - `sdl/compliance.sdl.yaml` — compliance frameworks (GDPR, HIPAA, SOC2, etc.), data retention policies (if signals detected)
 - `sdl/slos.sdl.yaml` — SLO targets per component, SLIs, performance metrics, alerting thresholds (if production or 2+ services)
 - `sdl/resilience.sdl.yaml` — resilience patterns: retry policies, circuit breakers, timeouts, fallbacks (if patterns detected in code)
 - `sdl/costs.sdl.yaml` — infrastructure costs by component, third-party service costs, scaling cost projections (always generate)
 - `sdl/backup-dr.sdl.yaml` — backup strategy, RTO/RPO targets, disaster recovery plan, failover strategy (if database exists)
 - `sdl/design.sdl.yaml` — design system tokens, typography, colors, component library, theming (if design assets exist)
+- `sdl/navigation-patterns.sdl.yaml` — route guards, context switching, error handling, ephemeral states, data-driven navigation (ONLY if patterns detected in Step 2 questions)
 
-**Write files to disk:**
+**Write files to disk (CONDITIONAL):**
+
 1. Create `sdl/` directory
-2. Write `solution.sdl.yaml` to project root with imports list
-3. Write each module file to `sdl/` with only its section
+2. Write `solution.sdl.yaml` to project root with imports list (only list modules that have content)
+3. Write each module file to `sdl/` with only its section:
+   - **Always write:** `product.sdl.yaml`, `deployment.sdl.yaml`
+   - **Conditionally write:**
+     - `auth.sdl.yaml` — IF multi-user with auth detected
+     - `navigation-patterns.sdl.yaml` — IF ANY of these true:
+       - Multi-user with role-based access (guards needed)
+       - Multi-tenant/workspace structure (context switching)
+       - Error handling required (error pages/boundaries)
+       - Modal-heavy forms detected (ephemeral nav)
+       - Backend controls menu (data-driven nav)
+     - `contracts.sdl.yaml` — IF backend services exist
+     - `domain.sdl.yaml` — IF ORM/database exists
+     - `features.sdl.yaml` — IF MVP planning captured
+     - `compliance.sdl.yaml` — IF compliance signals detected
+     - `slos.sdl.yaml` — IF performance targets defined
+     - `resilience.sdl.yaml` — IF resilience patterns found
+     - `costs.sdl.yaml` — IF cost tracking needed
+     - `backup-dr.sdl.yaml` — IF database + backup strategy defined
+     - `design.sdl.yaml` — IF design-system phase completed
+
+4. Update imports list in `solution.sdl.yaml` to ONLY reference modules that were written
 
 **If `solution.sdl.yaml` already existed** (from a prior import or blueprint run): 
 - Merge the newly generated SDL into it
 - Preserve `x-confidence`, `x-evidence`, and other fields not covered by new blueprint
 - Rule: blueprint-generated fields (architecture decisions) take precedence; import-detected fields (implementation reality) take precedence
+- Remove imports for modules that no longer have content (e.g., if guidance in Step 2 changes)
 
-**Report to user:** "Architecture spec saved to `./solution.sdl.yaml` with 5 modules in `./sdl/`"
+**Report to user:** "Architecture spec saved to `./solution.sdl.yaml` with N modules in `./sdl/` (only applicable sections included)"
 
 **SDL drives these deliverables deterministically:**
 - 4b: Architecture Diagrams — solution architecture + service communication + agent flow (from `architecture` + `data` + `auth` + `integrations`)
@@ -951,6 +1007,79 @@ Extract from:
 - DevOps blueprint timeout configurations
 - Error handling strategy and retry definitions
 - Fallback patterns and graceful degradation rules
+
+#### 4s. Navigation Patterns SDL (CONDITIONAL)
+
+**Output file:** Write to `sdl/navigation-patterns.sdl.yaml` (ONLY if Step 2 detected any of these):
+
+```yaml
+navigationPatterns:
+  guards:
+    - type: authentication
+      description: "User must be logged in"
+      redirectOnFail: "/login"
+    - type: role
+      description: "User must be admin"
+      roles: [admin, moderator]
+      redirectOnFail: "/forbidden"
+    - type: featureFlag
+      description: "Feature must be enabled"
+      featureFlag: premium_features
+      redirectOnFail: "hide-nav-item"
+  
+  contextualRouting:
+    scopes: [workspace, organization]
+    routePattern: "/workspace/{id}/..."
+    switcherPosition: "top-left"
+    contextName: "Workspace"
+  
+  errorHandling:
+    patterns:
+      - trigger: "404"
+        fallback: "/not-found"
+        uiComponent: ErrorPage
+      - trigger: "403"
+        fallback: "/forbidden"
+        uiComponent: ErrorPage
+      - trigger: "500"
+        fallback: "/error"
+        uiComponent: ErrorPage
+      - trigger: "offline"
+        fallback: "cached-routes-only"
+        uiComponent: OfflineBanner
+  
+  ephemeralStates:
+    - type: modal
+      priority: overlay
+      history: ephemeral
+      closeOnBackButton: true
+    - type: sheet
+      priority: overlay
+      history: ephemeral
+  
+  dynamicNavigation:
+    source: "backend"  # or "static", "feature-flags"
+    strategy: "generate-from-roles"
+    cacheStrategy: "client"
+    endpoint: "/api/navigation/menu"
+    invalidateOn: "role-change"
+```
+
+**Rules:**
+- Generate ONLY if Step 2 questions resulted in "yes" answers
+- Include only the patterns that are needed:
+  - NO guards section if app is single-user
+  - NO contextualRouting if single-tenant
+  - NO errorHandling if very simple app
+  - NO ephemeralStates if no modals/sheets
+  - NO dynamicNavigation if nav is static
+- If file would be empty (no patterns needed), do NOT create it and do NOT add it to imports
+
+**Extract from:**
+- Step 2 questions about multi-user, multi-tenant, error handling, modals, backend nav
+- Auth strategy and role definitions
+- Error handling strategy
+- UI patterns detected in requirements
 
 ### Step 4.5: Write _state.json
 

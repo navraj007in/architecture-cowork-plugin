@@ -130,8 +130,85 @@ Generate and write the following files to `architecture-output/design-system/`:
 | `design-brief.md` | Human-readable design language brief — shareable with stakeholders |
 | `design-tokens.json` | Machine-readable tokens for scaffold consumption |
 | `component-inventory.md` | UI components needed, mapped to SDL architecture |
+| `navigation-patterns.md` | (CONDITIONAL) Error state styling, context switcher specs, guard feedback — ONLY if patterns exist in SDL |
 | `tailwind.config.patch.ts` | Ready-to-merge Tailwind config extensions |
 | `palette-preview.html` | Single-file visual preview of the design system |
+
+**Step 6a: Generate `navigation-patterns.md`** (ONLY if SDL has `product.navigationPatterns`):
+
+Skip this file if no patterns exist in SDL. Otherwise, document styling and component specs for:
+
+**A. Error States** (if `errorHandling` exists):
+```
+## Error Pages
+
+### 404 — Page Not Found
+- Layout: centered card on surface
+- Icon: AlertCircle or HelpCircle (primary color)
+- Heading: "Page not found" (heading font, dark variant of primary)
+- Message: "The page you're looking for doesn't exist" (body font, secondary text)
+- CTA Button: "Back to Home" (primary button)
+- Background: surface with subtle pattern/gradient optional
+
+### 403 — Forbidden
+- Icon: Lock (error color)
+- Heading: "Access Denied" (heading font, error color)
+- Message: "You don't have permission to access this resource" (secondary text)
+- CTA: "Request Access" or "Go Back"
+
+### 500 — Server Error
+- Icon: AlertTriangle (warning color)
+- Heading: "Something went wrong" (heading font, warning color)
+- Message: "An unexpected error occurred. Please try again later." (secondary text)
+- CTA: "Reload" or "Report Issue"
+
+### Offline
+- Layout: full-screen banner or modal
+- Icon: Wifi Off (warning color)
+- Heading: "You're offline"
+- Message: "Check your connection and try again"
+- CTA: "Retry"
+- Background: muted/desaturated surface color
+```
+
+**B. Context Switcher** (if `contextualRouting` exists):
+```
+## Workspace / Tenant Switcher
+
+Location: Top-left header (below logo or next to hamburger menu)
+
+Component specs:
+- Trigger: Button with current workspace name + ChevronDown icon (primary text color)
+- Dropdown: Card with list of 3-5 workspaces
+- Workspace item: 
+  - Avatar/icon (2-letter initials or logo)
+  - Workspace name (body font, bold if selected)
+  - Optional: "admin" badge if user is workspace admin
+  - Hover: surface-elevated background
+  - Selected: checkmark icon (primary color) + bold text
+- "New Workspace" link at bottom (secondary text, hover primary)
+
+Colors: Match header background (surface or surface-elevated)
+```
+
+**C. Guard UI Feedback** (if `guards` exist):
+```
+## Route Guard UX
+
+Protected route redirect flow:
+1. User tries to access admin-only page without admin role
+2. Show toast notification: "You don't have permission to access this" (error toast, 4s duration)
+3. Redirect to /forbidden page OR show inline error in current location
+
+For feature-flagged content:
+- Hide nav item entirely (don't show greyed-out)
+- If user tries deep link: 404 page ("Feature not available in your plan")
+
+For auth-required:
+- Redirect to login page
+- Show toast: "Please log in to continue" (info toast)
+- Save return URL so user returns to original page after login
+```
 
 ### Step 7: Update SDL
 
