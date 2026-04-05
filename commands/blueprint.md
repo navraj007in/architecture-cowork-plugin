@@ -12,7 +12,19 @@ description: Full architecture blueprint — diagrams, costs, complexity, specs,
 
 Follow these steps in order. Do not skip steps. Do not generate deliverables before understanding requirements.
 
+## Quick Navigation
+
+| Phase | Steps |
+|-------|-------|
+| **Detection** | [Step 0](#step-0-check-for-pre-loaded-context-headless-mode) · [Step 0.5](#step-05-detect-existing-blueprint) |
+| **Gathering** | [Step 1](#step-1-load-intent-if-available) · [Step 2](#step-2-gather-requirements-interactive-fallback) |
+| **Generation** | [Step 3](#step-3-build-the-system-manifest) · [Step 3.5](#step-35-generate-sdl-document) · [Step 4](#step-4-generate-deliverables) |
+| **Completion** | [Step 4.5](#step-45-write-_statejson) · [Step 4.6](#step-46-log-activity) · [Step 4.7](#step-47-signal-completion) |
+| **Publishing** | [Step 5](#step-5-docs-publish-optional) · [Step 6](#step-6-cta-footer) |
+
 ### Step 0: Check for Pre-loaded Context (Headless Mode)
+
+❓ **DECISION POINT:** Headless mode detection
 
 Before starting, check if a file named `.arch0-context.json` exists in the current working directory. Read it using the file system.
 
@@ -26,6 +38,8 @@ If it exists and contains an `intent` object with project requirements:
 If the file does not exist or has no `intent` field, proceed with the interactive workflow below (Steps 1 and 2).
 
 ### Step 0.5: Detect Existing Blueprint
+
+❓ **DECISION POINT:** Fresh vs. existing project (4 modes: Update / Deepen / Regenerate / Cancel)
 
 After Step 0, **before** gathering any requirements, check whether this project already has a blueprint or was previously imported:
 
@@ -102,6 +116,8 @@ The architecture hasn't changed — the user wants richer, more detailed output 
 
 ### Step 1: Load Intent (if available)
 
+❓ **DECISION POINT:** Intent detection (skip Step 2 if found)
+
 **Before asking any questions**, check if the command argument contains a JSON object (starts with `{`). If it does, parse it as the intent. The JSON contains pre-gathered requirements with this structure:
 
 ```json
@@ -174,6 +190,8 @@ Using the **architecture-methodology** skill, ask clarifying questions to unders
 Ask 2-3 questions at a time, not all at once. Skip questions the user has already answered. If the user says "just build it", make reasonable assumptions and state them explicitly.
 
 ### Step 3: Build the System Manifest
+
+🔄 **AGENT DELEGATION:** Use **manifest-structure** skill
 
 Using the **manifest-structure** skill, build a structured manifest covering:
 

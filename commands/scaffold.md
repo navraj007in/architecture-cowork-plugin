@@ -14,6 +14,16 @@ After generating a blueprint with `/architect:blueprint`, this command creates a
 
 ## Workflow
 
+## Quick Navigation
+
+| Phase | Steps |
+|-------|-------|
+| **Setup** | [Step 0.5](#step-05-load-prior-activity-context) · [Step 1](#step-1-check-for-blueprint) · [Step 2](#step-2-list-components-and-detect-existing-code) |
+| **Configuration** | [Step 3](#step-3-ask-configuration-questions) · [Step 3.5](#step-35-check-for-design-system) · [Step 3.6](#step-36-stage-aware-depth-resolution) |
+| **Pre-Scaffold** | [Step 3.7](#step-37-contract-generation-pre-scaffold) · [Step 3.8](#step-38-detect-application-types--project-structure-guidelines) |
+| **Generation** | [Step 4](#step-4-delegate-to-scaffolder-agent) · [Step 4.5](#step-45-install-dependencies--build) |
+| **Completion** | [Step 5](#step-5-log-activity) · [Step 5.5](#step-55-build-verification) · [Step 6](#step-6-print-summary) · [Step 6.5](#step-65-signal-completion) |
+
 ### Step 0.5: Load Prior Activity Context
 
 Before anything else, load two levels of activity context.
@@ -100,6 +110,8 @@ Always show the resolved framework next to each component name so the user can v
 
 ### Step 3: Ask Configuration Questions
 
+❓ **DECISION POINT:** Interactive vs. non-interactive mode
+
 **If `[non_interactive:true]` is in the command argument OR if the execution mode constraints say non-interactive**, skip all questions and use these defaults:
 - **Parent directory**: current working directory (or the path from `[workspace_dir:...]` if provided)
 - **GitHub or local**: Local directories with git init
@@ -128,6 +140,8 @@ If GitHub:
 > "Should I run `npm install` / `pip install` after scaffolding? This takes a few minutes but means projects are ready to run immediately."
 
 ### Step 3.5: Check for Design System
+
+ℹ️ **OPTIONAL PATH:** Design tokens may customize frontend scaffolds
 
 Check if the design-system phase has been completed:
 
@@ -330,6 +344,9 @@ Skip patterns that don't exist in SDL.
 
 ### Step 4: Delegate to Scaffolder Agent
 
+🔄 **AGENT DELEGATION:** Launch scaffolder agent (autonomous, file-generating)
+⚠️ **CRITICAL:** Must execute Step 4.5 yourself after agent completes
+
 **CRITICAL: This step delegates to an autonomous agent. After the agent completes, you MUST execute Step 4.5 (Install & Build) yourself — do not wait for the agent to do it.**
 
 Before delegating, build an `existing_state` map for every **EXISTS** component. For each, read:
@@ -450,6 +467,8 @@ For each **frontend component**, the scaffolder MUST:
 
 ### Step 4.5: Install Dependencies & Build
 
+⚠️ **MANDATORY STEP:** Run before Step 5.5 and [SCAFFOLD_DONE]
+
 **MANDATORY STEP — MUST execute after Scaffolder Agent completes, before emitting [SCAFFOLD_DONE].**
 
 After the Scaffolder Agent completes file generation, immediately install dependencies and build each component (if the user opted in at Step 3). Do NOT skip this step even if all files were written successfully — build verification is required.
@@ -540,6 +559,8 @@ Rules for both levels:
 - `outcome` on project entry: `completed` if all succeeded, `partial` if some failed, `failed` if none succeeded
 
 ### Step 5.5: Build Verification
+
+✅ **QUALITY GATE:** Verify compiles before [SCAFFOLD_DONE] emission
 
 After all files are written and activity logs are recorded, run a build verification pass for each scaffolded component. The goal is to surface TypeScript errors, missing imports, and config issues immediately — not after the user tries to run the project.
 
@@ -666,6 +687,8 @@ Next steps:
 If GitHub repos were created, include repo URLs in the Path column.
 
 ### Step 6.5: Signal Completion
+
+🚀 **COMPLETION GATE:** Only emit [SCAFFOLD_DONE] if all builds passed/skipped
 
 **CRITICAL: Only emit this marker if ALL build verifications passed or were skipped.**
 

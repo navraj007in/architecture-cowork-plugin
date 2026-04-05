@@ -16,6 +16,10 @@ Work directly with SDL — the structured YAML specification that captures archi
 
 ## Workflow
 
+## Quick Navigation
+
+[Detect Mode](#detect-mode) · [Mode 1: Generate](#mode-1-generate-sdl) · [Mode 2: Validate](#mode-2-validate-sdl) · [Mode 3: Diff](#mode-3-diff-sdl) · [Mode 4: Template](#mode-4-template)
+
 ### Detect Mode
 
 Determine the mode from the user's input:

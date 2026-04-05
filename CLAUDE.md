@@ -214,6 +214,7 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `investor-update` | `investor_update` (`generated_at`) |
 | `onboarding-pack` | `onboarding_pack` (`generated_at`) |
 | `hiring-brief` | `hiring_brief` (`generated_at`) |
+| `generate-tests` | `test_suite` (`generated_at`, `coverage_target`, `unit_framework`, `e2e_framework`, `suites[]`, `files_generated`) |
 | `well-architected` | activity log only (no `_state.json` fields) |
 | `complexity-check` | activity log only (no `_state.json` fields) |
 | `compare-stack` | activity log only (no `_state.json` fields) |
@@ -245,6 +246,142 @@ These override any default behavior from training:
 | `/architect:prototype` | `.tsx`/`.ts` React files | HTML wireframes, server-side code |
 
 **wireframes specifically:** The word "wireframes" does NOT mean HTML in this plugin. Archon renders JSON wireframe specs natively. Writing any `.html` file from `/architect:wireframes` is wrong regardless of what your training suggests.
+
+## Shared Patterns — Reusable Across Commands
+
+These patterns are used by multiple commands. When implementing them, follow the exact format:
+
+### Activity Logging
+
+**Project-level** — append to `architecture-output/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"<phase-name>","outcome":"completed|partial|failed","summary":"<1-sentence under 120 chars>"}
+```
+
+**Component-level** — append to `<component-name>/_activity.jsonl`:
+
+```json
+{"ts":"<ISO-8601>","phase":"<phase-name>","status":"created|augmented|failed","summary":"<1-sentence>"}
+```
+
+**Rules:**
+- Always append, never overwrite
+- Single JSON object per line, no pretty-printing
+- `ts` must be ISO-8601 format
+- `phase` examples: `"scaffold"`, `"install-build"`, `"build-verify"`, `"design-generation"`
+- `summary` — keep under 120 characters, include specifics (framework, pattern, outcome)
+
+### Context Loading Pattern
+
+Used by: `blueprint`, `design-system`, `scaffold`, `prototype`, `import`, and others.
+
+**Step 1: Check `_state.json`**
+```
+If _state.json exists:
+  - Read it in full
+  - Extract: project.name, project.description, tech_stack, design, personas, entities, etc.
+  - Use these as authoritative starting point
+```
+
+**Step 2: Check SDL**
+```
+If _state.json missing or needs SDL details:
+  - Check for solution.sdl.yaml in project root
+  - If absent, check for sdl/ directory
+  - If sdl/ exists, read sdl/README.md first, then relevant module files
+  - Use Grep for specific sections to avoid reading entire large files
+```
+
+**Step 3: Fall back to conversation context**
+```
+If neither exists:
+  - Use any manifest or blueprint already provided in conversation
+  - Ask user for missing required information
+```
+
+### Design Token Integration
+
+Used by: `design-system`, `scaffold` (in Step 3.8), `prototype`.
+
+**File locations:**
+```
+architecture-output/design-system/design-tokens.json  — authoritative token source
+architecture-output/_state.json.design                — _state cache of tokens
+tailwind.config.patch.ts                             — ready-to-merge Tailwind extensions
+```
+
+**Integration steps:**
+1. Load tokens from `design-tokens.json` if available
+2. Parse palette (primary, secondary, accent, surface colors)
+3. Parse typography (heading_font, body_font, mono_font)
+4. Generate Tailwind config merge by combining existing + tokens
+5. Generate CSS custom properties (`:root { --color-primary: ... }`) in `globals.css`
+6. Configure font imports (Next.js `next/font/google` or Vite `@fontsource`)
+7. Setup component library (shadcn, Material UI, Chakra, DaisyUI)
+
+### Build Verification
+
+Used by: `scaffold` (Step 4.5), `scaffold-component` (Step 5).
+
+**Verification command by runtime:**
+
+| Runtime | Command | Purpose |
+|---------|---------|---------|
+| TypeScript/Node.js | `npx tsc --noEmit` | Type check without emit |
+| Next.js | `npx tsc --noEmit` or `npm run build --dry-run` | Type + build dry-run |
+| Python | `python -m py_compile $(find src -name "*.py")` | Syntax check |
+| Go | `go build ./...` | Compilation check |
+| .NET | `dotnet build --no-restore` | Build without restoring |
+
+**Output parsing:**
+```
+0 exit code → ✅ Pass
+Non-zero → ❌ Fail: extract first 5 error lines, truncate rest with "...and N more errors"
+```
+
+**Activity log entry:**
+```json
+{"ts":"...","phase":"build-verify","status":"pass|fail|skipped","errors":[],"summary":"tsc --noEmit: 0 errors"}
+```
+
+### Contract Generation
+
+Used by: `scaffold` (Step 3.7), patterns referenced in `generate-data-model`.
+
+**For REST APIs** — generate OpenAPI 3.1 YAML:
+```
+architecture-output/contracts/<service-name>.openapi.yaml
+├── info: name, description, version "0.1.0"
+├── servers: [{ url: "http://localhost:{port}", description: "Local" }]
+├── security: bearer JWT or API key (based on SDL.auth)
+├── paths: one entry per SDL interface[] endpoint
+│   └── each path: request body schema, response 200/400/401/404/500
+└── components.schemas: domain entities with field names
+```
+
+**For GraphQL** — generate GraphQL SDL:
+```
+architecture-output/contracts/<service-name>.graphql
+├── type Query: one field per SDL interface endpoint
+├── type Mutation: if applicable
+└── type definitions for domain entities
+```
+
+**Cross-service clients:**
+```
+architecture-output/contracts/<caller>-calls-<dependency>.client.ts
+├── One typed function per endpoint the caller needs (based on SDL flow analysis)
+├── Type definitions from dependency's contract
+└── Place in caller's scaffold at: src/lib/clients/<dependency>-client.ts
+```
+
+**Index file** — `architecture-output/contracts/_index.md`:
+```markdown
+| Service | Contract File | Endpoints | Callers |
+|---------|--------------|-----------|---------|
+| api-server | contracts/api-server.openapi.yaml | 12 | web-app, worker-service |
+```
 
 ## Output Quality Rules
 

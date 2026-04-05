@@ -21,6 +21,10 @@ generate:
 
 ## Workflow
 
+## Quick Navigation
+
+[Step 1](#step-1-load-scan-context) · [Step 2](#step-2-deep-source-analysis) · [Step 3](#step-3-generate-sdl) · [Step 4](#step-4-generate-import-analysis) · [Step 5](#step-5-generate-intent)
+
 ### Step 1: Load Scan Context
 
 The command argument may contain a JSON object with static scan results
@@ -50,6 +54,8 @@ If no scan context is provided, scan the immediate subdirectories manually:
 check each subdirectory for a `.git` folder — any that have one are independent repos.
 
 ### Step 2: Deep Source Analysis
+
+🔍 **CODE ANALYSIS:** Parse source files, not just config
 
 Using the scan results as a guide, read the actual source code to understand
 the system architecture. Read a **representative sample** of source files —

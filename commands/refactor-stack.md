@@ -22,6 +22,15 @@ This prevents the fragmentation that happens when only a few SDL fields are upda
 
 ## Workflow
 
+## Quick Navigation
+
+| Phase | Steps |
+|-------|-------|
+| **Analysis** | [Step 1](#step-1-read-existing-sdl--validate) · [Step 2](#step-2-parse-the-change-request) · [Step 3](#step-3-plan-the-refactor) |
+| **Validation** | [Step 4](#step-4-validate-against-new-sdl-constraints) |
+| **Execution** | [Step 5](#step-5-rewrite-affected-sdl-sections) · [Step 6](#step-6-write-updated-sdl) |
+| **Completion** | [Step 7](#step-7-log-activity) · [Step 8](#step-8-signal-completion) · [Step 9](#step-9-print-summary-to-user) |
+
 ### Step 1: Read Existing SDL & Validate
 
 Check for `solution.sdl.yaml` in the current working directory.

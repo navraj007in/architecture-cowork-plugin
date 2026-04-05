@@ -18,6 +18,10 @@ Unlike `/architect:scaffold` which scaffolds everything, this command targets ex
 
 ## Workflow
 
+## Quick Navigation
+
+[Step 1](#step-1-identify-the-component) · [Step 2](#step-2-extract-component-configuration) · [Step 3](#step-3-scaffold-the-component) · [Step 4](#step-4-cross-component-wiring) · [Step 5](#step-5-verify--install-build-and-fix) · [Step 6](#step-6-print-summary)
+
 ### Step 1: Identify the Component
 
 Extract the component name from the command argument. The name corresponds to a component defined in the SDL.

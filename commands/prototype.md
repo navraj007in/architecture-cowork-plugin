@@ -20,7 +20,17 @@ A full prototype (10+ screens, 15+ components) exceeds a single output budget. G
 
 ## Workflow
 
+## Quick Navigation
+
+| Phase | Steps |
+|-------|-------|
+| **Setup** | [Step 0](#step-0-check-manifest) · [Step 1](#step-1-gather-inputs) · [Step 1.5](#step-15-figma-pull-optional) |
+| **Planning** | [Step 2](#step-2-design-direction) · [Step 2.5](#step-25-determine-application-type--layout-strategy) · [Step 3](#step-3-build-screen-inventory--write-manifest) |
+| **Generation** | [Step 4](#step-4-phase-1--foundation-files) · [Step 5](#step-5-phase-2--layout--ui-primitives) · [Step 6](#step-6-phase-3--personality-components--first-screens) · [Step 7](#step-7-phase-4--remaining-screens--verification) |
+
 ### Step 0: Check Manifest
+
+❓ **DECISION POINT:** Phase detection (continue or start fresh)
 
 Check if `prototype/_manifest.json` exists.
 
@@ -268,6 +278,8 @@ Assign screens to phases: Phase 3 gets the first 3 screens, Phase 4 gets the res
 
 ### Step 4: Phase 1 — Foundation Files
 
+📦 **PHASE 1:** Core files (config, layout, fonts) — emit [PROTOTYPE_CONTINUE] after
+
 **Before writing any files — resolve the design source (in priority order):**
 
 1. **`architecture-output/design-system/design-tokens.json` exists** → Read it in full. Use its exact values for every color, font, spacing, border-radius, and shadow in `tailwind.config.ts` and `globals.css`. Do not invent or adjust any value.
@@ -429,6 +441,8 @@ Emit: `[PROTOTYPE_CONTINUE]`
 
 ### Step 5: Phase 2 — Layout & UI Primitives
 
+🎨 **PHASE 2:** Layout shells, buttons, forms — emit [PROTOTYPE_CONTINUE] after
+
 Generate layout shell and base UI components:
 
 ```
@@ -481,6 +495,8 @@ Emit: `[PROTOTYPE_CONTINUE]`
 
 ### Step 6: Phase 3 — Personality Components & First Screens
 
+🎬 **PHASE 3:** Branded components, first 2-3 screens — emit [PROTOTYPE_CONTINUE] after
+
 Generate 3-5 personality-specific components then the first 3 screens from the manifest:
 
 **Personality-specific components (pick based on product):**
@@ -514,6 +530,8 @@ Update manifest → `phase_complete: 3`, add screen ids to a `screens_done` arra
 Emit: `[PROTOTYPE_CONTINUE]`
 
 ### Step 7: Phase 4 — Remaining Screens & Verification
+
+✅ **PHASE 4 (FINAL):** Remaining screens, verification, emit [PROTOTYPE_DONE]
 
 Generate all remaining screens from the manifest (those not in `screens_done`).
 

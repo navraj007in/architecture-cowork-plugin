@@ -278,6 +278,113 @@ export const products = pgTable('products', {
 }));
 ```
 
+### 4.5. Generate ORM-Specific Migration Scripts
+
+📦 **MIGRATION GENERATION:** Create initial migration files for production schema evolution
+
+After schema files are written, generate ORM-specific migration scripts. These enable safe schema updates across environments.
+
+**For Prisma:**
+- Create `prisma/migrations/001_initial/` directory
+- Write `migration.sql` with all table creation DDL extracted from `prisma/schema.prisma`:
+  ```sql
+  -- CreateTable users
+  CREATE TABLE "User" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "email" TEXT NOT NULL UNIQUE,
+    "displayName" TEXT NOT NULL,
+    "role" TEXT NOT NULL DEFAULT 'USER',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+  );
+
+  -- CreateIndex
+  CREATE UNIQUE INDEX "User_email_key" on "User"("email");
+  ```
+- Create `.prisma/migrations/migration_lock.toml` with provider lock
+
+**For SQLAlchemy + Alembic:**
+- Create `alembic.ini` with database URL placeholder
+- Create `alembic/versions/` directory
+- Write initial migration `001_initial.py`:
+  ```python
+  from alembic import op
+  import sqlalchemy as sa
+
+  revision = '001'
+  down_revision = None
+
+  def upgrade():
+      op.create_table('user',
+          sa.Column('id', sa.String(), nullable=False),
+          sa.Column('email', sa.String(255), nullable=False),
+          sa.UniqueConstraint('email'),
+          sa.PrimaryKeyConstraint('id')
+      )
+      op.create_index('idx_user_email', 'user', ['email'])
+
+  def downgrade():
+      op.drop_index('idx_user_email')
+      op.drop_table('user')
+  ```
+
+**For Drizzle:**
+- Create `drizzle/0001_initial.sql` with table definitions
+- Create `drizzle/migration.ts` with migration metadata
+
+**For Django ORM:**
+- Create `migrations/` directory if it doesn't exist
+- Generate `migrations/0001_initial.py` with CreateModel operations
+
+**For EF Core (.NET):**
+- Create `Migrations/` directory
+- Generate `001_Initial.cs` with CreateTable and CreateIndex method calls:
+  ```csharp
+  public partial class Initial : Migration
+  {
+      protected override void Up(MigrationBuilder migrationBuilder)
+      {
+          migrationBuilder.CreateTable(
+              name: "Users",
+              columns: table => new
+              {
+                  Id = table.Column<string>(nullable: false),
+                  Email = table.Column<string>(maxLength: 255, nullable: false),
+                  DisplayName = table.Column<string>(nullable: false),
+                  CreatedAt = table.Column<DateTime>(nullable: false, defaultValueSql: "GETUTCDATE()")
+              },
+              constraints: table =>
+              {
+                  table.PrimaryKey("PK_Users", x => x.Id);
+                  table.UniqueConstraint("UX_Users_Email", x => x.Email);
+              });
+      }
+
+      protected override void Down(MigrationBuilder migrationBuilder)
+      {
+          migrationBuilder.DropTable("Users");
+      }
+  }
+  ```
+
+**Add migration scripts to `package.json` / `Makefile`:**
+```json
+{
+  "scripts": {
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset"
+  }
+}
+```
+
+**Important:** Every migration file MUST include a warning header:
+```
+-- WARNING: Verify this migration before running in production.
+-- Test in staging environment first.
+-- Backup database before applying to production.
+```
+
 ### 5. Generate Seed File
 
 Create a seed file with realistic test data:

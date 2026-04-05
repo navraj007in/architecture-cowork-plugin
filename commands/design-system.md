@@ -14,6 +14,16 @@ After generating a blueprint with `/architect:blueprint`, this command creates a
 
 ## Workflow
 
+## Quick Navigation
+
+| Phase | Steps |
+|-------|-------|
+| **Setup** | [Step 1](#step-1-read-context--check-for-blueprint) · [Step 1.5](#step-15-figma-pull-optional) |
+| **Analysis** | [Step 2](#step-2-analyze-architecture-context) · [Step 3](#step-3-load-skills--references) |
+| **Generation** | [Step 4](#step-4-generate-or-refine-design-system) · [Step 5](#step-5-present-design-direction) · [Step 6](#step-6-generate-deliverables) |
+| **Updates** | [Step 7](#step-7-update-sdl) · [Step 7.5](#step-75-update-_statejson) |
+| **Completion** | [Step 7.6](#step-76-log-activity) · [Step 8](#step-8-print-summary) · [Step 9](#step-9-figma-push-optional) · [Step 9.5](#step-95-application-type-specific-adjustments) |
+
 ### Step 1: Read Context & Check for Blueprint
 
 **First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
@@ -34,6 +44,8 @@ If no blueprint exists:
 > "I need an architecture to design for. Run `/architect:blueprint` first to generate your architecture, then come back here to create the design system."
 
 ### Step 1.5: Figma Pull (Optional)
+
+ℹ️ **OPTIONAL PATH:** May pull existing colors/fonts from Figma
 
 Before deriving the design direction, silently attempt a lightweight Figma MCP call (e.g. `get_me`) to check if the server is connected.
 
@@ -89,6 +101,8 @@ Load:
 - **design-system-creative.md** reference — 4 creative personalities, consumer/creative domain defaults, personality × domain quick guide
 
 ### Step 4: Generate or Refine Design System
+
+🔄 **AGENT DELEGATION:** Derive or refine design direction
 
 **If SDL design section is EMPTY:**
 Run full generation — infer personality, palette, typography, motion, layout, and component inventory from domain + audience + architecture. Make bold, distinctive choices. Follow the design-system skill fully.
@@ -300,6 +314,8 @@ Next steps:
 
 ### Step 9: Figma Push (Optional)
 
+ℹ️ **OPTIONAL PATH:** May push tokens to Figma if configured
+
 If the Figma MCP server was detected in Step 1.5 (or silently re-check now), offer:
 
 > "Push these design tokens to Figma as local color and text styles? Reply with a Figma file key to update an existing file, `new` to create a new file, or `skip`."
@@ -386,6 +402,8 @@ If the user confirms, delegate to the **figma-agent** with:
 3. Note in deliverable: "Secondary design systems (mobile/web) can be generated separately"
 
 ### Step 9.5: Signal Completion
+
+🚀 **COMPLETION MARKER:** Signals end of design-system phase
 
 Emit the completion marker:
 
