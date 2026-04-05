@@ -55,9 +55,14 @@ Use the returned palette and typography values as the authoritative design input
 Extract from SDL and blueprint:
 - **Product domain** — what category is this product? (fintech, healthcare, e-commerce, etc.)
 - **Target audience** — who uses this? (enterprise users, consumers, developers, children, etc.)
+- **Application type** — **CRITICAL**: from `architecture.projects[].type`:
+  - `type: "web"` → Design for web: web component library (shadcn/ui, Material, Chakra)
+  - `type: "mobile"` → Design for mobile: mobile component library (React Native Paper, NativeBase, Material Design)
+  - `type: "desktop"` → Design for desktop: desktop component library (Electron-specific, larger sizing)
+  - If multiple types: ask which to design for (primary design system), others can be derived later
 - **Frontend components** — list all frontends from the manifest with their types and frameworks
 - **Existing design section** — is `design` already partially filled in the SDL?
-- **Component library** — is a preset already chosen? (shadcn, material, etc.)
+- **Component library** — is a preset already chosen? (shadcn, material, etc.) Should match application type
 - **Accessibility requirements** — any WCAG level specified?
 
 Present the analysis:
@@ -228,6 +233,58 @@ If the user confirms, delegate to the **figma-agent** with:
 - `figmaFileKey` — from user input (or omit for new file)
 
 **If Figma is not connected**, skip silently.
+
+### Step 9.5: Application Type-Specific Adjustments
+
+**Before finalizing the design system, adjust for the target application type:**
+
+#### Web Design System
+- **Component library reference:** shadcn/ui, Material UI, Chakra, Ant Design, etc.
+- **Spacing scale:** 8px baseline (8, 12, 16, 24, 32, 48, 64, 96px)
+- **Typography scale:** Web-optimized sizes (12px, 14px, 16px body; 20px, 24px, 32px, 40px headings)
+- **Icons:** lucide-react, heroicons, or phosphor-icons (standard SVG icons)
+- **Responsive:** Mobile-first (375px min, 1920px max)
+- **Dark mode:** Full CSS variables for light/dark toggle
+- **Animations:** CSS transitions, Framer Motion optional
+- **Output:** design-tokens.json + Figma file + Storybook optional
+
+#### Mobile Design System
+- **Component library reference:** React Native Paper, NativeBase, Gluestack, Tamagui
+- **Spacing scale:** 4px baseline (4, 8, 12, 16, 24, 32, 48px) — tighter on mobile
+- **Typography scale:** Mobile-optimized sizes (12px, 14px, 16px body; 18px, 22px, 26px headings)
+- **Touch targets:** ALL interactive elements minimum 44×44px (iOS HIG requirement)
+- **Icons:** Expo icons, react-native-vector-icons, or lucide-react-native
+- **Responsive:** Fixed viewport (not responsive — one size per device category)
+- **Safe areas:** Account for notch, home indicator, rounded corners
+- **Navigation patterns** (choose based on app structure):
+  - **Bottom Tab Bar** (3-5 main sections) — persistent, always visible, good for 2-5 main flows
+  - **Drawer Navigation** (hamburger → side drawer) — good for 5+ sections, less frequently accessed items
+  - **Stack Navigation** (push/pop) — linear flows like detail pages, forms, onboarding
+  - **Tab Bar + Drawer Hybrid** — fixed bottom tabs for main, drawer for secondary/settings
+  - **Top Tab Bar** (below header) — for tab-within-tab, less common
+  - **Segmented Control** (2-4 options) — iOS-style, for switching between views, not main navigation
+- **Output:** design-tokens.json + mobile component library + navigation pattern components + Figma file for mobile frames
+
+#### Desktop Design System
+- **Component library reference:** Electron component library, custom desktop components, or web library adapted
+- **Spacing scale:** 8px baseline, but larger comfortable defaults (16px, 24px, 32px preferred)
+- **Typography scale:** Larger sizes for desktop viewing distance (14px, 16px body; 24px, 32px, 40px headings)
+- **Icons:** Desktop-optimized icons (larger hit areas, clearer at desktop resolution)
+- **Responsive:** Fixed large window (1024px min, up to 2560px+)
+- **Dark mode:** Full support (many desktop users prefer dark)
+- **Interactions:** Keyboard shortcuts, context menus, drag-drop, window chrome
+- **Output:** design-tokens.json + desktop component library + Figma file for desktop frames
+
+**Decision logic:**
+1. If multiple application types found (web + mobile): ask which is PRIMARY
+   ```
+   "Found both web and mobile apps. Which design system should I create first?
+   1. Web (for React)
+   2. Mobile (for React Native)
+   "
+   ```
+2. Generate the primary design system
+3. Note in deliverable: "Secondary design systems (mobile/web) can be generated separately"
 
 ### Step 9.5: Signal Completion
 

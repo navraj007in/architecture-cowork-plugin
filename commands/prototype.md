@@ -44,7 +44,11 @@ Read (use what's available, don't error if missing):
    Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files. Use Grep to extract these sections only:
    - `product:` block → `screens`, `screenFlows`, `coreFlows` (screen inventory + navigation)
    - `auth:` block → which auth screens to generate (login, register, MFA, SSO)
-   - `components:` block → component types (web/mobile/api) to determine layout and screen scope
+   - `architecture.projects:` block → **CRITICAL: determine application type**:
+     * `type: "web"` + `framework: "react"/"next"/"vue"/etc` → **Web Prototype** (responsive React)
+     * `type: "mobile"` + `framework: "react-native"/"flutter"/"swift"` → **Mobile Prototype** (native-style mobile UI)
+     * `type: "desktop"` + `framework: "electron"/"tauri"` → **Desktop Prototype** (desktop-optimized layout)
+     * If multiple types (web + mobile): generate **primary type** only (ask user which to prioritize)
    - `design:` block → palette, fonts, personality if not in `_state.json`
    - `domain:` block → entity names for mock data shape — **only if `_state.json.entities` is absent** (e.g. `domain.entities: [User, Order, Product]`)
 
@@ -141,6 +145,75 @@ Pick a **distinctive heading font** paired with a readable body font. NEVER use 
 | Vibrant-social | Urbanist, Red Hat Display | DM Sans, Noto Sans |
 | Professional-structured | Figtree, General Sans | Inter, Geist Sans |
 | Modern-minimal | Sora, Space Grotesk | Geist Sans, Satoshi |
+
+### Step 2.5: Determine Application Type & Layout Strategy
+
+**Based on the component type detected in Step 1.3:**
+
+#### Web Application (React, Next.js, Vue, Angular, Svelte)
+- **Layout approach:** Desktop-first or mobile-first responsive design
+- **Viewport:** Full browser window (1920×1080 down to 375px mobile)
+- **Navigation:** Header + Sidebar (desktop) / Header + Hamburger menu (mobile)
+- **Components:** HTML/CSS via Tailwind, lucide-react icons
+- **Styling:** CSS-in-JS (Tailwind utility classes)
+- **Technology Stack:** React + Vite + Tailwind + React Router
+
+#### Mobile Application (React Native, Flutter, Swift, Kotlin)
+- **Layout approach:** Mobile-FIRST, optimized for phone screens
+- **Viewport:** Fixed phone size (375×812 for iPhone 13, 360×800 for Android)
+- **Navigation patterns** (choose one based on architecture intent):
+  - **Bottom Tab Bar** (iOS/Material) — 3-5 main sections, always visible, tap to switch
+  - **Drawer Navigation** — hamburger icon → side drawer slides in, good for many sections
+  - **Tab Bar + Drawer** — fixed bottom tabs (main) + drawer for settings/secondary
+  - **Stack Navigation** — push/pop screens (linear flows like onboarding, detail views)
+  - **Top Tab Bar** — horizontal tabs below header (less common, for tab-within-tab)
+  - **Segmented Control** — iOS-style for 2-4 options (not for main navigation)
+- **Components:** Native mobile UI components (not HTML)
+  - Use **`expo`** for React Native prototype (fastest)
+  - Or **`react-native-web`** to render RN components in browser for demo
+  - Use **`expo-router`** for file-based routing (similar to Next.js)
+- **Touch targets:** All buttons/taps minimum 44×44px (iOS HIG requirement)
+- **Safe areas:** Account for notch, home indicator, rounded corners
+- **Styling:** StyleSheet.create() instead of CSS classes
+- **Technology Stack:** React Native + Expo + Expo Router + chosen navigation pattern
+
+**Mobile Navigation Selection Logic:**
+
+| App Structure | Recommended Pattern | When to Use | Components |
+|---|---|---|---|
+| **3-5 main sections** | Bottom Tab Bar | Social, e-commerce, messaging | expo-router (tabs layout) |
+| **5-8+ sections** | Drawer Navigation | Content apps, utilities, admin | @react-navigation/drawer |
+| **Many sections + core tasks** | Tab Bar + Drawer | Dashboard apps, feature-rich | tabs layout + drawer |
+| **Linear flow** | Stack Navigation | Onboarding, checkout, forms | expo-router (stack layout) |
+| **Feature comparison** | Top Tab Bar | Filtering, sorting options | expo-router (top-tabs) |
+| **2-4 view toggle** | Segmented Control | List/grid toggle, filters | Native segmented control |
+
+**For mobile prototypes, explicitly state:**
+```
+App Type: Mobile (React Native)
+Viewport: iPhone 13 (375×812)
+Navigation Pattern: [Bottom Tabs | Drawer | Stack | Hybrid]
+Rationale: [based on section count and app structure]
+Safe Areas: Notch + Home Indicator
+Components: React Native native components
+```
+
+**Ask the user if navigation pattern is ambiguous:**
+```
+"I see 7 main sections. Would you prefer:
+1. Bottom Drawer Navigation (hamburger menu)
+2. Bottom Tab Bar + Drawer (tabs for core, drawer for secondary)
+3. Stack Navigation (push/pop between screens)
+"
+```
+
+#### Desktop Application (Electron, Tauri, PWA)
+- **Layout approach:** Desktop-optimized, full window
+- **Viewport:** Larger windows (1024×768 minimum, up to 3840×2160 for high-DPI)
+- **Navigation:** Menu bar (macOS) / Window menu (Windows), sidebar or top bar
+- **Components:** Custom desktop UI components (similar to web but larger, window-aware)
+- **Styling:** CSS with larger text, bigger buttons, desktop-focused spacing
+- **Technology Stack:** Electron/Tauri + React + Tailwind + Window management APIs
 
 ### Step 3: Build Screen Inventory & Write Manifest
 
@@ -476,6 +549,49 @@ List all generated React files in the `files` array.
 - Resizable left panel (list/tree)
 - Main content panel (detail view)
 - Optional right panel (metadata/properties)
+
+### Application Type-Specific Generation
+
+**WEB APPLICATION (React, Next.js, Vue, Angular, Svelte):**
+- Technology: React + Vite + Tailwind + React Router
+- Viewport: Responsive (375px mobile → 1920px desktop)
+- Navigation: Header + Sidebar (desktop) / Header + Hamburger (mobile)
+- Package structure: standard React SPA
+- Output: `prototype/` directory with working `npm run dev`
+
+**MOBILE APPLICATION (React Native, Flutter, Swift, Kotlin):**
+- Technology: React Native + Expo (or Tauri for web-based mobile)
+- Viewport: FIXED phone size (375×812 iPhone, 360×800 Android) — never stretches
+- Navigation: Bottom Tab Bar (iOS) or Bottom Navigation (Material Design)
+- Design system: Native mobile components, NOT HTML
+  - No sidebar (not mobile-idiomatic)
+  - No desktop layout variants (mobile-first and locked)
+  - Icons from lucide-react or expo icons
+  - Spacing scaled for touch (all taps 44×44px minimum)
+- Safe areas: Notch awareness, home indicator, rounded corners
+- Package structure: Expo project with `expo-router`
+- Output: `prototype-mobile/` directory with `eas.json` for preview
+
+**DESKTOP APPLICATION (Electron, Tauri):**
+- Technology: Electron/Tauri + React + Tailwind
+- Viewport: Large fixed window (1024×768 minimum, resizable)
+- Navigation: Menu bar (macOS) or Window menu (Windows), sidebar optional, full-size
+- UI patterns: Desktop-specific (drag-drop, resizable panes, context menus, keyboard shortcuts)
+- Typography and spacing: Larger than web (comfortable for desktop viewing distance)
+- Package structure: Electron or Tauri project with window management
+- Output: `prototype-desktop/` directory with Electron/Tauri build files
+
+**Decision Logic:**
+1. Read `architecture.projects[]` and filter by `type: "web" | "mobile" | "desktop"`
+2. If multiple types exist (e.g. web + mobile): Ask user which to generate first
+   ```
+   "Found multiple app types (web, mobile). Which should I prototype first?
+   1. Web (React)
+   2. Mobile (React Native)
+   "
+   ```
+3. Generate only the primary type in this run
+4. Mobile/desktop can be generated in follow-up runs
 
 ## Output Rules
 
