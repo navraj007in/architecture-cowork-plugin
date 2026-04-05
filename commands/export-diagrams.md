@@ -109,6 +109,33 @@ Emit the completion marker:
 
 This ensures the export-diagrams phase is marked as complete in the project state.
 
+## Error Handling
+
+### Missing Mermaid Diagrams
+
+If no `.mmd` files exist in `architecture-output/`:
+> "I need diagrams to export. Run `/architect:visualise` first, then come back here."
+
+### Mermaid CLI Not Installed
+
+If the Mermaid CLI (`mmdc`) is not available:
+- Skip PNG/SVG export
+- Report: "Mermaid CLI not installed. Install with: `npm install -g @mermaid-js/mermaid-cli`"
+- Still export `.mmd` source files
+
+### Export Format Not Supported
+
+If user requests an unsupported format (e.g., `.eps`, `.webp`):
+- Report: "Format [X] not supported. Use: PNG, SVG, or PDF"
+- Export to PNG instead
+
+### Insufficient Disk Space
+
+If export operation fails due to disk full:
+- Stop execution
+- Report: "Insufficient disk space to export diagrams: [size] required"
+- Do NOT emit completion marker
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

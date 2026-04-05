@@ -384,6 +384,88 @@ architecture-output/contracts/<caller>-calls-<dependency>.client.ts
 | api-server | contracts/api-server.openapi.yaml | 12 | web-app, worker-service |
 ```
 
+## Error Handling Standards
+
+All commands MUST handle these failure categories consistently to provide predictable, user-friendly behavior.
+
+### Missing Prerequisites
+
+Use this exact blockquote format when required inputs are absent:
+
+> "I need [X] to [do Y]. Run `/architect:[prereq-command]` first, then come back here."
+
+Do NOT partially execute — stop immediately and ask user to complete prerequisites first.
+
+**Examples:**
+- Missing `solution.sdl.yaml`: "I need an SDL to scaffold from. Run `/architect:blueprint` or `/architect:sdl` first, then come back here."
+- Missing scaffolded components: "I need a scaffolded project to generate tests for. Run `/architect:scaffold` first, then come back here."
+- Missing design tokens: "I need design tokens to apply. Run `/architect:design-system` first, then come back here."
+
+### File Read Failures
+
+If a required file (SDL, _state.json, blueprint.json) cannot be read or is malformed:
+
+1. Log a warning to activity log with status: `"failed"`
+2. Surface the error to user: "File [X] not found or corrupted. [Help: run Y to regenerate]"
+3. Offer remediation: "Run `/architect:[command]` to regenerate this file"
+4. Do NOT proceed with stale/missing data — stop execution
+
+**Activity log entry:**
+
+```json
+{"ts":"<ISO-8601>","phase":"<phase>","outcome":"failed","error":"missing_file","message":"_state.json not found","summary":"Failed: missing project state"}
+```
+
+### Agent Delegation Failures
+
+If a delegated agent returns an error:
+
+1. Surface error summary to user: "Agent [X] encountered an error: [summary]"
+2. Write failed activity log entry with `outcome: "failed"`
+3. Do NOT emit the `[COMMAND_DONE]` marker — user must fix and re-run
+4. Suggest debugging steps if applicable
+
+**Activity log entry:**
+
+```json
+{"ts":"<ISO-8601>","phase":"<phase>","outcome":"failed","agent":"<agent-name>","error_summary":"<short explanation>","summary":"Agent delegation failed: [why]"}
+```
+
+### Partial Completion
+
+If some components succeed and others fail:
+
+1. Report per-component status table:
+   ```
+   ✅ api-server — tests generated (40 files)
+   ✅ web-app — tests generated (25 files)
+   ❌ worker-service — tests failed (missing source files)
+   ```
+2. Write activity log with `outcome: "partial"` and count success/failure
+3. Do NOT emit `[COMMAND_DONE]` — tell user what failed and how to retry
+
+**Activity log entry:**
+
+```json
+{"ts":"<ISO-8601>","phase":"<phase>","outcome":"partial","components_succeeded":2,"components_failed":1,"summary":"Partial completion: 2/3 components processed; worker-service failed"}
+```
+
+### Tool Failures (MCP, Filesystem, External APIs)
+
+**Optional MCP servers unavailable** (e.g., Datadog, New Relic, Jira):
+- Skip that integration, continue processing
+- Report in summary: "Provider X unavailable; using fallback [Y]"
+- Do NOT block or fail
+
+**Required filesystem writes fail** (e.g., permission denied, disk full):
+- Stop execution immediately
+- Report: "Cannot write to [path]: [OS error]. Check permissions and disk space."
+- Do NOT emit completion marker
+
+**Required external API call fails** (e.g., cannot fetch SDL from repo):
+- Stop and report: "Cannot fetch [X] from [URL]: [error]. Check network and credentials."
+- Do NOT emit completion marker
+
 ## Output Quality Rules
 
 - Generate **complete, detailed output** — no placeholders, no "see documentation", no truncation

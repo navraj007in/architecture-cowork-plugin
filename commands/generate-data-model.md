@@ -441,6 +441,44 @@ Emit the completion marker:
 
 This ensures the generate-data-model phase is marked as complete in the project state.
 
+## Error Handling
+
+### Missing SDL or Data Section
+
+If SDL is missing or does not have a `data:` section:
+> "I need an SDL with data model to generate schemas from. Run `/architect:blueprint` first, then come back here."
+
+### Malformed Entity Definitions
+
+If an entity in SDL has no fields or invalid field types:
+- Log warning: `"entity_X_malformed"` 
+- Generate stub with TODO comments
+- Continue with other entities
+
+**Example stub:**
+```
+// TODO: Verify entity definition in SDL
+// Entity: {name} has no fields defined
+export interface {name} {
+  id: string;
+  // Add fields based on business requirements
+}
+```
+
+### Missing or Unwritable Database Directory
+
+If `<component>/db/` directory cannot be created due to permissions:
+- Stop execution
+- Report: "Cannot create db/ directory: [error]. Check file permissions."
+- Do NOT emit completion marker
+
+### Conflicting Existing Schemas
+
+If schema files already exist for a database:
+- Detect via glob: if `schema.prisma` or `db/schema-*.sql` exists
+- Report: "Existing schemas found; I'll augment them instead of overwriting"
+- Merge new entities instead of replacing file
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

@@ -106,6 +106,32 @@ Emit the completion marker:
 
 This ensures the api-docs phase is marked as complete in the project state.
 
+## Error Handling
+
+### Missing API Contracts
+
+If no OpenAPI or GraphQL contracts exist:
+> "I need API contracts to document. Run `/architect:scaffold` (which generates contracts in Step 3.7), then come back here."
+
+### Malformed OpenAPI Schema
+
+If an OpenAPI/GraphQL contract has syntax errors:
+- Report: "Contract [X] is malformed. Regenerate via `/architect:scaffold`."
+- Skip that contract, continue with others
+
+### Docs Server Unreachable
+
+If the user has specified a docs server endpoint (e.g., Swagger UI, ReDoc) and it's unreachable:
+- Report: "Docs server at [URL] is unreachable. Check network and endpoint."
+- Continue with local documentation generation
+
+### Unable to Write Documentation Files
+
+If `docs/` directory cannot be created due to permissions:
+- Stop execution
+- Report: "Cannot write documentation files: [error]. Check file permissions."
+- Do NOT emit completion marker
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

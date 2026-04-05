@@ -79,6 +79,35 @@ After writing all output files, append one line to `architecture-output/_activit
 
 List all generated files in the `files` array.
 
+## Error Handling
+
+### Missing SDL or Blueprint
+
+If SDL is missing or incomplete:
+> "I need an SDL with architecture and dependencies to visualize. Run `/architect:blueprint` or `/architect:sdl` first, then come back here."
+
+### Mermaid Syntax Error
+
+If a Mermaid diagram has syntax errors and fails to render:
+- Log warning: `"mermaid_render_failed"` 
+- Write the `.mmd` file anyway (text is valid)
+- Report: "Diagram [X] has rendering issues. You can edit the `.mmd` file or check Mermaid syntax."
+- Continue with other diagrams
+
+### Unable to Write Visualization Files
+
+If `architecture-output/` directory cannot be written due to permissions:
+- Stop execution
+- Report: "Cannot write visualization files: [error]. Check file permissions."
+- Do NOT emit completion marker
+
+### Circular Dependencies Detected
+
+If architecture has circular dependencies between services:
+- Report: "Circular dependency detected: [A] → [B] → [A]. Consider architectural refactoring."
+- Still generate diagram (highlight the cycle)
+- Continue normally
+
 ## Output Rules
 
 - Use **diagram-patterns** skill for consistent Mermaid syntax

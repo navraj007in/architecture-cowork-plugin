@@ -164,6 +164,40 @@ Also append to `architecture-output/_activity.jsonl`:
 {"ts":"<ISO-8601>","phase":"sync-backlog","outcome":"completed|partial|failed","files":[],"summary":"Backlog synced to <platform>: <N> sprints, <N> stories created."}
 ```
 
+## Error Handling
+
+### Missing Sprint Backlog
+
+If no sprint backlog file exists (e.g., `sprint-backlog.md`, `backlog/sprints.json`):
+> "I need a sprint backlog to sync. Run `/architect:mvp-scope` to generate one, then come back here."
+
+### Jira/Linear Authentication Failed
+
+If MCP server authentication fails (invalid API key, token expired):
+- Report: "Authentication to [platform] failed: [error]. Check API credentials in .env or settings."
+- Offer to continue with local backlog export only
+
+### Invalid Story Format
+
+If stories in the backlog have missing required fields (e.g., no title, invalid type):
+- Report per story: "Story [X] missing required field [Y]. Skipping."
+- Log to activity log as `outcome: "partial"`
+- Continue with valid stories
+
+### Platform Rate Limit Exceeded
+
+If the backlog sync hits API rate limits:
+- Report: "Sync paused due to rate limit. Synced N/M stories; retry in 1 hour."
+- Log as `outcome: "partial"`
+- Write progress checkpoint to allow resuming later
+
+### Unable to Write Backlog Files
+
+If `architecture-output/` or backlog directory cannot be written:
+- Stop execution
+- Report: "Cannot write backlog files: [error]. Check file permissions."
+- Do NOT emit completion marker
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

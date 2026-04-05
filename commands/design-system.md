@@ -413,6 +413,33 @@ Emit the completion marker:
 
 This ensures the design-system phase is marked as complete in the project state.
 
+## Error Handling
+
+### Missing Blueprint or Design Personality
+
+If SDL is missing or personality is undefined in `_state.json.design`:
+> "I need a blueprint with design personality to generate tokens from. Run `/architect:blueprint` first, then come back here."
+
+### Unable to Write Design Tokens File
+
+If `architecture-output/design-system/` directory cannot be created due to permissions:
+- Stop execution
+- Report: "Cannot write to design-system/ directory: [error]. Check file permissions."
+- Do NOT emit completion marker
+
+### Conflicting Color Palette
+
+If generated tokens conflict with existing CSS variables or Tailwind config:
+- Report: "Design tokens conflict with existing Tailwind config. Review and merge manually."
+- Still emit completion marker (generation succeeded; user may need to merge)
+
+### Unsupported Font Library
+
+If user requests a font from Google Fonts that is unavailable:
+- Detect via failed fetch attempt
+- Fall back to system font: "Font X unavailable; using fallback system font Y"
+- Continue generation
+
 ## Output Rules
 
 - Use the **design-system** skill for all generation logic

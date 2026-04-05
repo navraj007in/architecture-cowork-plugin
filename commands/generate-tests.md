@@ -232,6 +232,49 @@ Emit the completion marker:
 
 This ensures the test generation phase is marked as complete in the project state.
 
+## Error Handling
+
+### Missing Scaffolded Project
+
+If no scaffolded components exist:
+> "I need a scaffolded project to generate tests for. Run `/architect:scaffold` first, then come back here."
+
+### Test Framework Not Installed
+
+If a required testing framework (jest, pytest, xunit, go test) is not installed in a component:
+- Report: "Testing framework not installed for [component]. Run `npm install --save-dev jest@latest` (or equivalent) first."
+- Do NOT proceed — let user install and re-run
+
+### Existing Test Files
+
+If tests already exist for a module (detected via glob: `__tests__/`, `tests/`, `*_test.py`, `*_test.go`):
+- Report: "Existing tests found for [module]; I'll augment instead of overwriting"
+- Append new tests rather than replacing file
+
+### Source File Parsing Fails
+
+If a source file has syntax errors and cannot be analyzed:
+- Log warning: `"parse_failed_<file>"`
+- Generate stub test file with TODO comments
+- Continue to next component
+
+**Example stub:**
+```typescript
+describe('[Module]', () => {
+  // TODO: Verify module exports and generate tests accordingly
+  it('should be defined', () => {
+    // Add test case
+  });
+});
+```
+
+### Unable to Write Test Files
+
+If `__tests__/`, `tests/`, or equivalent directory cannot be created due to permissions:
+- Stop execution
+- Report: "Cannot create test directory: [error]. Check file permissions."
+- Do NOT emit completion marker
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

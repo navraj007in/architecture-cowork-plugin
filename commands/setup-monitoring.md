@@ -257,6 +257,47 @@ Emit the completion marker:
 
 This ensures the monitoring setup phase is marked as complete in the project state.
 
+## Error Handling
+
+### Missing Scaffolded Project
+
+If no scaffolded components exist:
+> "I need a scaffolded project to set up monitoring for. Run `/architect:scaffold` first, then come back here."
+
+### Observability Skill Not Available
+
+If `skills/observability/SKILL.md` cannot be read:
+- Stop execution
+- Report: "Observability skill not found. Skill file is required for generating alert rules and SLO templates."
+- Do NOT emit completion marker
+
+### Metrics Provider Authentication Fails
+
+If selected provider (Datadog, New Relic) authentication fails:
+- Report: "Cannot authenticate to [provider]: [error]. Check API key/token in environment."
+- Fall back to Prometheus stack if available
+- Log as `outcome: "partial"`
+
+### Unable to Create Monitoring Directory
+
+If `monitoring/` directory cannot be created due to permissions:
+- Stop execution
+- Report: "Cannot create monitoring directory: [error]. Check file permissions."
+- Do NOT emit completion marker
+
+### Docker Compose Not Available
+
+If user selects Prometheus stack but Docker Compose is not installed:
+- Report: "Docker Compose not installed. Install via: https://docs.docker.com/compose/install/"
+- Still generate config files (user can install Docker later)
+- Continue normally
+
+### Conflicting Existing Configs
+
+If monitoring configs already exist (prometheus.yml, grafana configs, etc.):
+- Report: "Existing monitoring configs found; I'll augment with missing pieces."
+- Merge new dashboards and alert rules instead of overwriting
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

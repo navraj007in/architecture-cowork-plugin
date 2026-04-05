@@ -113,6 +113,39 @@ Emit the completion marker:
 
 This ensures the setup-cicd phase is marked as complete in the project state.
 
+## Error Handling
+
+### Missing Project Structure
+
+If scaffolded components don't exist or `_state.json` is missing:
+> "I need a scaffolded project to set up CI/CD for. Run `/architect:scaffold` first, then come back here."
+
+### Unsupported CI Provider
+
+If user requests a CI provider that doesn't have templates:
+- Report: "Provider [X] not supported. Use: GitHub Actions, GitLab CI, CircleCI, Jenkins"
+- List supported options and continue
+
+### Existing CI Configuration Conflicts
+
+If `.github/workflows/`, `.gitlab-ci.yml`, or equivalent already exist:
+- Report: "Existing CI configuration found. I'll augment it with missing stages."
+- Merge new stages instead of overwriting
+
+### Unable to Write Workflow Files
+
+If `.github/workflows/` directory cannot be created due to permissions:
+- Stop execution
+- Report: "Cannot write CI configuration: [error]. Check file permissions."
+- Do NOT emit completion marker
+
+### Build/Test Stage Will Likely Fail
+
+If the project is not ready for CI (e.g., missing dependencies, broken tests):
+- Report: "Project may not be ready for CI. Recommendation: run `npm install && npm test` locally first to fix errors."
+- Still generate the CI configuration (user can manually trigger)
+- Log as `outcome: "completed"` (config is valid, even if tests may fail)
+
 ## Output Rules
 
 - Use the **founder-communication** skill for tone

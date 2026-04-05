@@ -674,6 +674,39 @@ List all generated React files in the `files` array.
 3. Generate only the primary type in this run
 4. Mobile/desktop can be generated in follow-up runs
 
+## Error Handling
+
+### Missing Blueprint or Design Tokens
+
+If SDL or `_state.json.design` is missing:
+> "I need a blueprint with design tokens to prototype. Run `/architect:blueprint`, then `/architect:design-system`, then come back here."
+
+### Design Tokens File Malformed
+
+If `design-tokens.json` exists but is invalid JSON:
+- Report: "design-tokens.json is corrupted. Regenerate via `/architect:design-system`."
+- Do NOT proceed
+
+### Build or npm install Fails
+
+If `npm install` or `npm run build` fails in the prototype:
+- Stop generation
+- Report: "Build failed: [error]. Check node_modules or dependencies."
+- Do NOT emit completion marker
+
+### Missing React Components
+
+If the component library (shadcn/ui, Material UI, Chakra) is not installed:
+- Report: "Component library not found. Run `npm install [library]` in prototype/ first."
+- Do NOT proceed
+
+### Unable to Write Prototype Directory
+
+If `prototype/` or `prototype-mobile/` cannot be created due to permissions:
+- Stop execution
+- Report: "Cannot write prototype directory: [error]. Check file permissions."
+- Do NOT emit completion marker
+
 ## Output Rules
 
 - **CRITICAL: The prototype must look like a REAL PRODUCT, not a developer exercise.**
