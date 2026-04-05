@@ -50,13 +50,19 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 | `/architect:hiring-brief`          | Developer hiring package with role descriptions and interview questions           |
 | `/architect:well-architected`      | Six-pillar well-architected review with scores and improvement roadmap            |
 | `/architect:design-system`         | Design system generation — 11 personalities, diverse font pairs, dark mode, unconventional layouts, consumer/creative domains |
+| `/architect:i18n-setup`            | Setup internationalization for frontend apps with multi-language support and RTL handling |
 | `/architect:generate-data-model`   | Generate ORM schemas (Prisma, SQLAlchemy, Mongoose, Drizzle) from blueprint types |
+| `/architect:database-scaling`      | Design database scaling strategy with read replicas, partitioning, sharding recommendations |
 | `/architect:setup-env`             | Walk through account setup, validate API keys, write verified .env files          |
 | `/architect:setup-cicd`            | Configure real CI/CD pipelines in GitHub Actions, Azure Pipelines, or GitLab CI   |
 | `/architect:security-scan`         | Validate scaffolded code against the blueprint's security checklist               |
 | `/architect:compliance`            | Audit code for compliance gaps (SOC2, HIPAA, GDPR, PCI DSS) with remediation plans |
+| `/architect:accessibility-audit`   | Scan frontend code for WCAG 2.1 AA compliance (contrast, ARIA, keyboard nav, screen readers) |
+| `/architect:disaster-recovery`     | Design disaster recovery strategy with RTO/RPO targets, backup config, incident runbooks |
 | `/architect:sync-backlog`          | Push sprint backlog into Azure DevOps or Jira as sprints and work items           |
 | `/architect:publish-api-docs`      | Generate interactive API documentation (Swagger UI, Redoc, AsyncAPI)              |
+| `/architect:seo`                   | Configure SEO metadata, structured data, sitemaps, robots.txt, Core Web Vitals    |
+| `/architect:analytics-setup`       | Wire analytics SDKs (GA4, PostHog, Mixpanel) with GDPR-compliant consent management |
 | `/architect:generate-docs`         | Generate deployment runbooks, architecture guides, ADRs, and incident playbooks    |
 | `/architect:export-diagrams`       | Render Mermaid diagrams to PNG/SVG with light and dark themes                     |
 | `/architect:deep-research`         | Web-verified competitor analysis, market sizing, and differentiation map          |

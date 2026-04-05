@@ -17,6 +17,14 @@ Search engine visibility drives discovery. This command generates SEO configurat
 
 ## Workflow
 
+## Quick Navigation
+
+| Phase | Steps |
+|-------|-------|
+| **Setup** | [Step 1](#step-1-read-context) |
+| **Generation** | [Step 2](#step-2-generate-seo-files) |
+| **Completion** | [Step 3](#step-3-log-activity) · [Step 4](#step-4-signal-completion) |
+
 ### Step 1: Read Context
 
 ℹ️ **CONTEXT LOADING:** _state.json → SDL → frontend type

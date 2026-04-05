@@ -18,6 +18,15 @@ Product insights drive decisions. This command wires analytics infrastructure: G
 
 ## Workflow
 
+## Quick Navigation
+
+| Phase | Steps |
+|-------|-------|
+| **Setup** | [Step 1](#step-1-read-context) |
+| **Configuration** | [Step 2](#step-2-ask-configuration) |
+| **Generation** | [Step 3](#step-3-generate-analytics-files) |
+| **Completion** | [Step 4](#step-4-log-activity) · [Step 5](#step-5-signal-completion) |
+
 ### Step 1: Read Context
 
 ℹ️ **CONTEXT LOADING:** _state.json → SDL
