@@ -241,6 +241,56 @@ Contracts generated:
   ✓ web-app-calls-api-server.client.ts — typed client (8 operations)
 ```
 
+### Step 3.8: Detect Application Types & Project Structure Guidelines
+
+Before delegating to the Scaffolder Agent, analyze the component types and provide structure guidance for each platform.
+
+**For each component, determine its application type:**
+
+1. **Web Application** (`type: "web"`)
+   - Framework: React, Next.js, Vue, Angular, Svelte, etc.
+   - **Project structure** (match navigation pattern):
+     - Dashboard pattern: `src/components/` (shared) + `src/components/layouts/Sidebar.tsx` + `src/pages/dashboard/`
+     - Marketing pattern: `src/pages/` (Next.js app router) with minimal nav component
+     - App Shell pattern: `src/navigation/` + `src/pages/` with mobile/desktop variants
+     - Docs pattern: `src/docs/` + `src/components/Navigation/TOC.tsx`
+   - **Dependencies** always include: React Router / Next.js, Tailwind CSS, lucide-react, i18next
+   - **Starter code**: `tailwind.config.js`, `globals.css` with design tokens, routing setup
+   - **Build command**: `npm run dev` (Vite) or `npm run dev` (Next.js)
+
+2. **Mobile Application** (`type: "mobile"`)
+   - Framework: React Native, Flutter, Swift, Kotlin, Expo
+   - **Project structure** (match navigation pattern):
+     - Bottom Tab Bar pattern: `app/(tabs)/home.tsx` + `app/(tabs)/profile.tsx` (Expo Router)
+     - Drawer pattern: `app/index.tsx` (drawer nav) + `app/screens/`
+     - Stack pattern: `app/_layout.tsx` (stack navigator) + `app/screens/`
+   - **Dependencies for React Native**: `expo`, `expo-router`, `react-native-paper` or `nativebase`, `expo-icons`
+   - **Starter code**: `app.json` with iOS/Android settings, `eas.json` for Expo preview, safe area config
+   - **Build command**: `expo start` (development) or `eas build` (production)
+
+3. **Desktop Application** (`type: "desktop"`)
+   - Framework: Electron, Tauri, PWA
+   - **Project structure** (match navigation pattern):
+     - Sidebar pattern: `src/main.tsx` + `src/layout/Sidebar.tsx` + `src/pages/`
+     - Ribbon pattern: `src/components/Ribbon.tsx` + `src/commands/`
+     - MDI pattern: `src/windows/` with window management
+   - **Dependencies**: `electron` or `@tauri-apps/api`, React, Tailwind, window management libraries
+   - **Starter code**: `electron-main.ts` (Electron) or `tauri.conf.json` (Tauri), window chrome setup
+   - **Build command**: `npm run dev` (dev mode) or `npm run build` (distributable)
+
+**Inform Scaffolder Agent via prompt:**
+
+```
+"Generate starter code for these application types:
+- web (React, dashboard pattern) → folder structure with Sidebar
+- mobile (React Native, bottom tabs) → Expo project with tab navigation
+- desktop (Electron, sidebar) → window setup with menu bar
+
+Use the design tokens from [design_tokens.json path] for each frontend.
+Include navigation pattern components (Sidebar.tsx, TabNav.tsx, etc.) as stubs.
+"
+```
+
 ### Step 4: Delegate to Scaffolder Agent
 
 **CRITICAL: This step delegates to an autonomous agent. After the agent completes, you MUST execute Step 4.5 (Install & Build) yourself — do not wait for the agent to do it.**
@@ -267,26 +317,36 @@ Summarise into the `existing_state` map:
 
 Pass the following to the **scaffolder** agent:
 
-- **Component list** with names, types, frameworks, and `mode` (`"new"` or `"augment"`):
+- **Component list** with names, types, frameworks, application type, and `mode` (`"new"` or `"augment"`):
+  - Include detected `application_type` for each component:
+    - `web` (React, Next.js, Vue, etc.) with `navigation_pattern` (dashboard, marketing, app-shell, docs, split-view, etc.)
+    - `mobile` (React Native, Flutter, etc.) with `navigation_pattern` (bottom-tabs, drawer, stack, etc.)
+    - `desktop` (Electron, Tauri) with `navigation_pattern` (sidebar, ribbon, mdi, etc.)
+    - `backend` (API, worker, agent) with framework details
   - **MANDATORY INSTRUCTION FOR SCAFFOLDER:** Every component gets its own directory named exactly after the component
   - For `mode: "new"` components: scaffolder MUST:
     1. Create a **new directory** named `<component-name>` in the parent directory
     2. Scaffold ALL files into that directory (never into parent root)
-    3. Example: component "api-server" → create `/Users/me/project/api-server/` directory, put all files inside it
+    3. Generate **navigation pattern components** as stubs (Sidebar.tsx, TabNav.tsx, etc.)
+    4. Example: component "api-server" → create `/Users/me/project/api-server/` directory, put all files inside it
   - For `mode: "augment"` components: scaffolder MUST:
     1. Verify directory `<parent_dir>/<component-name>/` exists
     2. Add missing files into that existing directory
+    3. Update navigation pattern components if they don't exist
   - **FORBIDDEN:** Do not scaffold into `<parent_dir>/` root. Do not merge files from different components into the same directory.
   - Real example: parent = `/Users/nexper/Code/AIeCommerce`, component = `api-server` → create and populate `/Users/nexper/Code/AIeCommerce/api-server/`
 - `existing_state` map (populated for augment-mode components)
 - Parent directory path
 - GitHub config (if applicable): org name, visibility
 - Whether to install dependencies
+- **Design system guidance**: path to `design-tokens.json` if available, or SDL design section fields
+- **Navigation patterns** for each frontend component (detected in Step 3.8)
 - Relevant integrations from the manifest (for `.env.example` files)
 - `shared` section from the manifest (types, libraries, contracts) — for creating shared packages
 - `application_patterns` section (architecture, folder_convention, principles) — for folder structure
 - `security` section (auth_strategy, api_security) — for security middleware stubs
 - `observability` section (health_checks, logging) — for health endpoints and logger setup
+- `scaffold_depth` (MVP/growth/enterprise) — determines which production hardening patterns to include
 - `devops` section (cicd, environments) — for CI/CD workflow and Docker files
 - Per-frontend config: build_tool, rendering, state_management, data_fetching, component_library, form_handling, validation, animation, api_client, backend_connections, client_auth, realtime, monitoring, deploy_target, dev_port
 - Per-mobile config: build_platform, navigation, push_notifications, deep_linking, permissions, ota_updates, realtime (protocol + provider), bundle_id, client_auth (token_storage, device_binding, biometric)
@@ -591,7 +651,17 @@ This ensures the scaffold phase is marked as complete in the project state only 
 - Always check for a blueprint first — don't scaffold without an architecture
 - Always list components and get confirmation before creating anything
 - Always ask about GitHub vs local and dependency installation
-- Report clear results for each component
+- **Application-type aware scaffolding:**
+  - **Web apps**: Generate appropriate navigation stubs (Sidebar.tsx, TopNav.tsx, MobileNav.tsx) based on detected pattern
+  - **Mobile apps**: Generate Expo/React Native project structure with tab/drawer/stack navigation setup
+  - **Desktop apps**: Generate window management setup (Electron/Tauri) with menu bar and system integration
+  - **All frontends**: Wire in design tokens from design-system if available
+  - **All backends**: Include only required production hardening patterns per stage (MVP/growth/enterprise)
+- Report clear results for each component:
+  - Directory created: `✓ /path/to/component/`
+  - Dependencies installed: `✓ npm install completed`
+  - Build verified: `✓ npm run build succeeded`
+  - Navigation pattern: `Dashboard Sidebar (collapsible)`
 - If any component fails, report the failure and continue with the rest
 - **MANDATORY: Step 4.5 (Install & Build) is always executed before completing the command**
 - **Do NOT emit [SCAFFOLD_DONE] if any component has build errors** — report failures and tell user to fix and re-run
