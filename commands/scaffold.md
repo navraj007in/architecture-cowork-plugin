@@ -190,6 +190,8 @@ Map stage to `scaffold_depth`:
 | Soft delete (`deletedAt` + ORM middleware) | Recommended — generate only if SDL has `softDelete: true` | ✓ Required | ✓ Required |
 | Queue consumers (BullMQ/Celery) | Generate only if SDL explicitly declares `data.queues` | ✓ Required if SDL has queues | ✓ Required |
 | Metrics & observability stack | Omit | ✓ Required — `/architect:setup-monitoring` fills in | ✓ Required — `/architect:setup-monitoring` fills in |
+| Caching (Redis) | Generate only if SDL declares `data.cache` | ✓ Required if SDL has cache — `src/lib/cache.ts` with cache-aside | ✓ Required |
+| Cache invalidation strategy | Omit (TTL only) | ✓ Required — event-based invalidation helpers | ✓ Required — version-based or lock-based |
 | CI/CD pipeline | Single environment (dev → build → test) | Two environments (+ staging deploy) | Full matrix (dev → staging → production, matrix runners) |
 | Docker Compose | Dev databases + services only | Dev stack + monitoring (Prometheus/Grafana) | Full stack including load balancer stub |
 | Error tracking (Sentry SDK) | Optional — add `SENTRY_DSN` to `.env.example` with comment | ✓ Required — wire SDK at app startup | ✓ Required |
