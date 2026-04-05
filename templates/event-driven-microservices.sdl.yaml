@@ -1,4 +1,4 @@
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 solution:
   name: "MyPlatform"
   description: "Event-driven microservices platform with API gateway"

@@ -614,16 +614,16 @@ Next steps:
 
 ```bash
 # Basic security audit
-/architect:security-audit
+/architect:security-scan
 
 # HIPAA compliance
-/architect:security-audit --compliance=hipaa
+/architect:security-scan --compliance=hipaa
 
 # High-risk application
-/architect:security-audit --risk=high
+/architect:security-scan --risk=high
 
 # Export to PDF
-/architect:security-audit --format=pdf
+/architect:security-scan --format=pdf
 ```
 
 ---
@@ -649,7 +649,7 @@ A comprehensive security audit checklist should:
 ### Example 1: Basic Audit
 
 ```bash
-/architect:security-audit
+/architect:security-scan
 
 # Output: security-audit-checklist.md with 287 checks
 ```
@@ -657,7 +657,7 @@ A comprehensive security audit checklist should:
 ### Example 2: HIPAA Compliance
 
 ```bash
-/architect:security-audit --compliance=hipaa
+/architect:security-scan --compliance=hipaa
 
 # Additional checks: PHI encryption, BAA vendors, audit logs
 ```
@@ -665,7 +665,7 @@ A comprehensive security audit checklist should:
 ### Example 3: PDF Export
 
 ```bash
-/architect:security-audit --format=pdf
+/architect:security-scan --format=pdf
 
 # Output: security-audit-checklist.pdf for printing
 ```

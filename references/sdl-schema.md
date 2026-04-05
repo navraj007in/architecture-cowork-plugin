@@ -1,12 +1,26 @@
-# SDL v0.1 Schema Reference
+# SDL v1.1 Schema Reference
 
 Solution Design Language (SDL) is a YAML-based specification for capturing complete software architecture decisions. This document defines every field, type, and validation rule.
+
+## Version Notes
+
+Current version: `1.1`
+
+| Version | Notes |
+|---------|-------|
+| `0.1` | Initial public schema with core architecture, deployment, and artifact sections |
+| `1.1` | Adds richer sections such as `contracts`, `domain`, `features`, `compliance`, `slos`, `resilience`, `costs`, `backupDr`, and `design` |
+
+Backward compatibility:
+- Treat existing `0.1` documents as legacy SDL.
+- When updating or regenerating SDL in this repo, write `sdlVersion: "1.1"`.
+- If a legacy `0.1` document is encountered, upgrade it before relying on v1.1-only sections.
 
 ## Required Root Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `sdlVersion` | `"0.1"` | Always `"0.1"` |
+| `sdlVersion` | `"1.1"` | Always `"1.1"` for newly generated SDL |
 | `solution` | object | Project metadata |
 | `product` | object | User context and flows |
 | `architecture` | object | System structure |

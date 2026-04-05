@@ -228,11 +228,11 @@ Use the manifest's `application_patterns.folder_convention` to organize the proj
 | `module-based` | Create `src/modules/` with a subdirectory per responsibility |
 | `flat` | Keep files directly in `src/` |
 
-**Entity source:** Use `domain.entities[]` from SDL as the entity inventory for creating model/entity placeholder files. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module (typically `sdl/data.yaml` or `sdl/domain.yaml`). If `domain.entities[]` is absent, fall back to `_state.json.entities`, then to the manifest's shared types.
+**Entity source:** Use `domain.entities[]` from SDL as the entity inventory for creating model/entity files with minimal but working implementations. Check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module (typically `sdl/data.yaml` or `sdl/domain.yaml`). If `domain.entities[]` is absent, fall back to `_state.json.entities`, then to the manifest's shared types.
 
 **Route source:** If a contract file (`architecture-output/contracts/<service>.openapi.yaml`) exists for this service, generate route handler stubs for every `operationId` declared in the spec. The spec is the authoritative route list — do not add routes that are not in it.
 
-For each responsibility listed in the manifest's `services[].responsibilities`, create placeholder files in the correct location. For example, with `feature-based` convention and responsibilities `[auth, orders, payments]`:
+For each responsibility listed in the manifest's `services[].responsibilities`, create working starter files in the correct location. For example, with `feature-based` convention and responsibilities `[auth, orders, payments]`:
 
 ```
 src/features/auth/auth.routes.ts
@@ -243,7 +243,7 @@ src/features/payments/payments.routes.ts
 src/features/payments/payments.service.ts
 ```
 
-Each file should have a minimal skeleton (exported function/class stub with a TODO comment).
+Each file should have a minimal but functional implementation. Use `// EXTEND:` comments only for optional future enhancements; do not leave TODO stubs or empty exported bodies.
 
 ### 4. Add Security Config
 
@@ -251,23 +251,23 @@ For backend services, add security middleware based on the manifest's `security`
 
 **Auth field resolution:** Read `auth.identityProvider` from SDL (check `solution.sdl.yaml` first; if absent, check `sdl/security.yaml` or `sdl/auth.yaml`) — e.g. `clerk`, `auth0`, `cognito`, `firebase`, `custom-jwt` — and `auth.serviceTokenModel` (e.g. `jwt`, `session`, `api-key`) to determine the correct token validation mechanism. The `auth.ts` stub must match the declared model — do NOT default to generic JWT if `serviceTokenModel` says `session` or `api-key`.
 
-**Rate limiting depth:** At `scaffold_depth: "mvp"`, add a `// TODO (growth): configure rate limiting` comment at the exact mount point instead of a full implementation. At `growth` or `enterprise`, add `express-rate-limit` (or equivalent) with configuration.
+**Rate limiting depth:** At `scaffold_depth: "mvp"`, add a basic working rate limiter with conservative defaults. At `growth` or `enterprise`, add `express-rate-limit` (or equivalent) with stronger configuration and extension points.
 
 **Node.js/Express:**
 - Add `helmet` to dependencies and wire it in `src/index.ts` or `src/middleware/security.ts`
-- Add `cors` config with placeholder origins from `ALLOWED_ORIGINS` env var (never hardcoded)
-- Create `src/middleware/auth.ts` with a token verification stub matching `auth.serviceTokenModel`:
+- Add `cors` config from `ALLOWED_ORIGINS` env var (never hardcoded)
+- Create `src/middleware/auth.ts` with a working baseline implementation matching `auth.serviceTokenModel`:
   - `jwt`: verify Bearer token with the correct library for `auth.identityProvider`
   - `session`: session cookie validation stub
   - `api-key`: API key header extraction and validation stub
-- Rate limiting: full implementation at `growth`/`enterprise`; stub + TODO comment at `mvp`
+- Rate limiting: working implementation at all stages; at `growth`/`enterprise`, make it more configurable and durable
 
 **Python/FastAPI:**
 - Add `CORSMiddleware` to `main.py` with origins from `ALLOWED_ORIGINS` env var
 - Create `app/middleware/auth.py` with a dependency stub matching `auth.serviceTokenModel`
-- Rate limiting: `slowapi` at `growth`/`enterprise`; stub + TODO comment at `mvp`
+- Rate limiting: working implementation at all stages; at `growth`/`enterprise`, make it more configurable and durable
 
-Keep auth stubs minimal at mvp — placeholder with TODO, not full implementations.
+Keep auth implementations minimal at MVP, but they must still run and enforce the declared access model. Use `// EXTEND:` comments for stronger provider-specific verification rather than placeholder TODOs.
 
 ### 5. Apply Frontend Configuration (for web frontends)
 

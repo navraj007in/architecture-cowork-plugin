@@ -1,4 +1,4 @@
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 solution:
   name: "AIChatApp"
   description: "AI-powered chat application with LLM integration and conversation history"

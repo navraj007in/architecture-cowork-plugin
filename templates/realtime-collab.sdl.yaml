@@ -1,4 +1,4 @@
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 solution:
   name: "CollabSpace"
   description: "Real-time collaboration platform with live editing and presence"

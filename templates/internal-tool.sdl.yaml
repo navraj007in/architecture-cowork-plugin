@@ -1,4 +1,4 @@
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 solution:
   name: "BackOffice"
   description: "Internal business tool with SSO, workflows, and approval chains"

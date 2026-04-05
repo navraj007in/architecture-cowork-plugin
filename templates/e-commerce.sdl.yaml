@@ -1,4 +1,4 @@
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 solution:
   name: "MyStore"
   description: "Online store with product catalog, cart, and checkout"

@@ -1015,7 +1015,7 @@ Renders Mermaid diagrams to PNG/SVG (light and dark themes) for presentations.
 
 **Generate Stakeholder Document** (for wider team discussions)
 ```bash
-/architect:stakeholder-doc
+Use the stakeholder presentation workflow, then export the resulting markdown as a document if needed.
 ```
 Creates a Word document (.docx) for presenting to non-technical stakeholders with:
 - Executive summary (1-page overview)

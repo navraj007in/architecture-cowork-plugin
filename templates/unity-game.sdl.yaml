@@ -1,4 +1,4 @@
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 solution:
   name: "MyGame"
   description: "Unity game with backend services, leaderboards, and live-ops admin"

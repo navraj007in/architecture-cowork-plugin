@@ -1,4 +1,4 @@
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 solution:
   name: "MyMobileApp"
   description: "Cross-platform mobile app with backend API"

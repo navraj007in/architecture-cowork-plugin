@@ -408,7 +408,7 @@ Next steps:
 1. Fix 2 errors (analytics sprint, caching upgrade)
 2. Review 8 warnings and decide which to address
 3. Re-run validation to confirm 100% pass
-4. Share with stakeholders using /architect:stakeholder-doc
+4. Share with stakeholders using the stakeholder presentation workflow after validation passes
 ```
 
 ---
@@ -434,13 +434,13 @@ All warnings treated as errors.
 
 ```bash
 # Default strict validation
-/architect:validate
+/architect:sdl validate
 
 # Relaxed (ignore warnings)
-/architect:validate --level=relaxed
+/architect:sdl validate --level=relaxed
 
 # Pedantic (all warnings = errors)
-/architect:validate --level=pedantic
+/architect:sdl validate --level=pedantic
 ```
 
 ---
@@ -451,7 +451,7 @@ Add project-specific rules:
 
 **Example**:
 ```bash
-/architect:validate --rules=custom-rules.yaml
+/architect:sdl validate --rules=custom-rules.yaml
 ```
 
 **custom-rules.yaml**:
@@ -547,7 +547,7 @@ A passing validation should:
 ### Example 1: Basic Validation
 
 ```bash
-/architect:validate
+/architect:sdl validate
 
 # Output:
 # 📊 Score: 87/100
@@ -559,7 +559,7 @@ A passing validation should:
 ### Example 2: Relaxed Mode
 
 ```bash
-/architect:validate --level=relaxed
+/architect:sdl validate --level=relaxed
 
 # Output:
 # 📊 Score: 95/100 (warnings ignored)
@@ -570,7 +570,7 @@ A passing validation should:
 ### Example 3: With Auto-Fix
 
 ```bash
-/architect:validate --auto-fix
+/architect:sdl validate --auto-fix
 
 # Interactive prompts to apply suggested fixes
 ```
@@ -578,7 +578,7 @@ A passing validation should:
 ### Example 4: Custom Rules
 
 ```bash
-/architect:validate --rules=company-standards.yaml
+/architect:sdl validate --rules=company-standards.yaml
 
 # Validates against company-specific requirements
 ```
@@ -588,7 +588,7 @@ A passing validation should:
 ```bash
 # In GitHub Actions
 - name: Validate Blueprint
-  run: /architect:validate --format=json --exit-code
+  run: /architect:sdl validate --format=json --exit-code
 
 # Exits with code 1 if validation fails
 # Output: validation-report.json

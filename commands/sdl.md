@@ -69,7 +69,7 @@ Using the **sdl-knowledge** skill:
 
 ```yaml
 # SDL generated for {solution.name}
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 # ... complete SDL document
 ```
 
@@ -130,7 +130,7 @@ sdlVersion: "0.1"
    - If parse fails, report the error with line/column if available
    - Provide fix suggestion
 
-3. **Validate** — check against the SDL v0.1 schema:
+3. **Validate** — check against the SDL v1.1 schema:
    - Check all required fields
    - Validate all enum values
    - Check the 5 conditional rules

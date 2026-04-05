@@ -17,7 +17,7 @@ SDL sits between requirements gathering and artifact generation. The manifest ca
 
 ## What SDL Is
 
-SDL is a machine-readable YAML specification (version 0.1) that captures:
+SDL is a machine-readable YAML specification (version 1.1) that captures:
 
 - Solution metadata and stage (MVP / Growth / Enterprise)
 - Product personas and core user flows
@@ -38,7 +38,7 @@ Generate SDL **after** requirements gathering and manifest building (Step 3), **
 
 ## SDL Version
 
-Current version: `0.1`. Always set `sdlVersion: "0.1"`.
+Current version: `1.1`. Always set `sdlVersion: "1.1"`.
 
 ---
 
@@ -50,7 +50,7 @@ See `references/sdl-schema.md` for the complete field-by-field schema reference 
 
 | Section | Key Required Fields |
 |---------|-------------------|
-| `sdlVersion` | Must be `"0.1"` |
+| `sdlVersion` | Must be `"1.1"` |
 | `solution` | `name`, `description`, `stage` |
 | `product` | `personas[]` (min 1, each with `name` + `goals[]`) |
 | `architecture` | `style`, `projects` |
@@ -330,7 +330,7 @@ Rules:
 When generating SDL from a conversation or manifest:
 
 0. **Save to project root** — always write the SDL file as `solution.sdl.yaml` in the project root directory (current working directory). Never place it inside `architecture/`, `artifacts/`, `output/`, or any other subfolder.
-1. **Always set** `sdlVersion: "0.1"`
+1. **Always set** `sdlVersion: "1.1"`
 2. **Infer architecture style**:
    - Single backend → `modular-monolith`
    - 2+ backends with separate concerns → `microservices`

@@ -18,7 +18,7 @@ Use this skill when you need to:
 - Embed architecture diagrams in documentation (Confluence, Notion, Google Docs)
 - Create visual assets for pitch decks or investor updates
 - Share diagrams with teams that don't have Mermaid rendering
-- Prepare diagrams before running `/architect:stakeholder-doc` or `/architect:export-docx`
+- Prepare diagrams before running any stakeholder presentation or document export workflow
 
 **Input**: Architecture blueprint (markdown file with Mermaid diagrams)
 **Output**: `diagrams/` folder with PNG files
@@ -196,7 +196,7 @@ When invoked, generate:
 Ready for presentations and documentation!
 
 Next steps:
-- Use diagrams in `/architect:stakeholder-doc`
+- Use diagrams in stakeholder presentations, docs, or exported artifacts
 - Embed in Confluence/Notion
 - Add to pitch decks or investor updates
 ```
@@ -253,11 +253,11 @@ All exported diagrams must meet these standards:
 
 ## Integration with Other Skills
 
-### Before running `/architect:stakeholder-doc`:
-Run `/architect:export-diagrams` first to generate PNGs that stakeholder-doc can embed.
+### Before generating a stakeholder presentation:
+Run `/architect:export-diagrams` first to generate PNGs that downstream documentation can embed.
 
-### Before running `/architect:export-docx`:
-Run `/architect:export-diagrams` to create diagrams for Word document.
+### Before converting markdown to DOCX or PDF:
+Run `/architect:export-diagrams` to create diagrams for the exported document.
 
 ### After running `/architect:blueprint`:
 Run `/architect:export-diagrams` to generate visual assets immediately.

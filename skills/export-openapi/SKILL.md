@@ -811,16 +811,16 @@ npx openapi-to-postmanv2 \
 
 ```bash
 # JSON format
-/architect:export-openapi --format=json
+/architect:publish-api-docs --format=json
 
 # Custom servers
-/architect:export-openapi --prod-url=https://api.prod.acme.com
+/architect:publish-api-docs --prod-url=https://api.prod.acme.com
 
 # Add contact info
-/architect:export-openapi --contact-email=api@acme.com --contact-name="API Support"
+/architect:publish-api-docs --contact-email=api@acme.com --contact-name="API Support"
 
 # Custom license
-/architect:export-openapi --license=Apache-2.0
+/architect:publish-api-docs --license=Apache-2.0
 ```
 
 ---
@@ -988,7 +988,7 @@ A successful OpenAPI export should:
 ### Example 1: Basic Export
 
 ```bash
-/architect:export-openapi
+/architect:publish-api-docs
 
 # Output:
 # ✅ Created openapi.yaml (847 lines)
@@ -998,7 +998,7 @@ A successful OpenAPI export should:
 ### Example 2: JSON Format
 
 ```bash
-/architect:export-openapi --format=json
+/architect:publish-api-docs --format=json
 
 # Output:
 # ✅ Created openapi.json
@@ -1007,7 +1007,7 @@ A successful OpenAPI export should:
 ### Example 3: With Custom Servers
 
 ```bash
-/architect:export-openapi \
+/architect:publish-api-docs \
   --prod-url=https://api.acme.com/v1 \
   --staging-url=https://staging-api.acme.com/v1
 
@@ -1018,7 +1018,7 @@ A successful OpenAPI export should:
 ### Example 4: Generate and Host Docs
 
 ```bash
-/architect:export-openapi
+/architect:publish-api-docs
 npx swagger-ui-express openapi.yaml --port 3001
 
 # Docs available at: http://localhost:3001

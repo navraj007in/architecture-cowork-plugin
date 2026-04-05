@@ -29,7 +29,7 @@ Use this skill when you need to:
 ## Supported Document Types
 
 ### 1. Stakeholder Presentations
-**Input**: `stakeholder-presentation.md` (from `/architect:stakeholder-doc`)
+**Input**: `stakeholder-presentation.md` (from the stakeholder presentation workflow)
 **Output**: `stakeholder-presentation.docx`
 
 **Formatting**:
@@ -353,20 +353,19 @@ Next steps:
 
 ### Option 1: DOCX only
 ```bash
-/architect:export-docx
-# → stakeholder-presentation.docx
+Use this skill to convert `stakeholder-presentation.md` to `stakeholder-presentation.docx`.
 ```
 
 ### Option 2: DOCX + PDF
 ```bash
-/architect:export-docx --pdf
+Use this skill with PDF export enabled.
 # → stakeholder-presentation.docx
 # → stakeholder-presentation.pdf
 ```
 
 ### Option 3: Custom styling
 ```bash
-/architect:export-docx --logo=logo.png --color=corporate --size=a4
+Use this skill with custom branding options such as logo, color theme, and A4 sizing.
 # → stakeholder-presentation.docx (A4, corporate colors, with logo)
 ```
 
@@ -458,7 +457,7 @@ pandoc stakeholder-presentation.md \
 
 ### If input markdown not found:
 - **Action**: Error with guidance
-- **Example**: "❌ stakeholder-presentation.md not found. Run `/architect:stakeholder-doc` first."
+- **Example**: "❌ stakeholder-presentation.md not found. Generate the stakeholder presentation markdown first."
 
 ---
 
@@ -470,16 +469,13 @@ pandoc stakeholder-presentation.md \
 # 1. Generate blueprint
 /architect:blueprint
 
-# 2. Create stakeholder presentation
-/architect:stakeholder-doc
-
+# 2. Create stakeholder presentation markdown
 # 3. Export diagrams to PNG
 /architect:export-diagrams
 
-# 4. Convert to Word document
-/architect:export-docx
+# 4. Use this skill to convert the markdown to DOCX
 
-# Result: stakeholder-presentation.docx ready for executives!
+# Result: stakeholder-presentation.docx ready for executives
 ```
 
 ---
@@ -527,8 +523,7 @@ Replace default template with corporate template:
 # - Apply corporate fonts, colors, logo
 # - Save as corporate-template.docx
 
-# 2. Use custom template
-/architect:export-docx --template=corporate-template.docx
+# 2. Use this skill with the custom template during conversion
 ```
 
 ### Batch Export
@@ -536,9 +531,7 @@ Replace default template with corporate template:
 Export multiple documents at once:
 
 ```bash
-# Export all markdown files in current directory
-/architect:export-docx --batch *.md
-
+# Export all markdown files in the current directory with this skill's batch workflow
 # Output:
 # ✅ blueprint.docx
 # ✅ stakeholder-presentation.docx
@@ -550,8 +543,7 @@ Export multiple documents at once:
 Automatically version documents:
 
 ```bash
-/architect:export-docx --version=2.1
-
+Use this skill with document version `2.1`.
 # Output: stakeholder-presentation-v2.1.docx
 # Footer: "Version 2.1 - Generated 2026-02-07"
 ```
@@ -563,8 +555,7 @@ Automatically version documents:
 ### Example 1: Basic Stakeholder Doc Export
 
 ```bash
-/architect:export-docx
-
+Use this skill on `stakeholder-presentation.md`.
 # Output:
 # ✅ stakeholder-presentation.docx created (47 pages, 2.4 MB)
 ```
@@ -572,8 +563,7 @@ Automatically version documents:
 ### Example 2: With Company Logo and PDF
 
 ```bash
-/architect:export-docx --logo=acme-logo.png --pdf
-
+Use this skill with a logo and PDF export enabled.
 # Output:
 # ✅ stakeholder-presentation.docx (with Acme logo)
 # ✅ stakeholder-presentation.pdf
@@ -582,8 +572,7 @@ Automatically version documents:
 ### Example 3: Full Blueprint Export
 
 ```bash
-/architect:export-docx blueprint.md --output=architecture-blueprint.docx
-
+Use this skill on `blueprint.md` with output path `architecture-blueprint.docx`.
 # Output:
 # ✅ architecture-blueprint.docx (19 sections, 87 pages)
 ```

@@ -29,46 +29,62 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 
 ## Commands
 
+The plugin currently ships **52 canonical commands**. Split implementation files such as `implement-1.md` / `implement-2.md` and `review-1.md` / `review-2.md` map to the single user-facing commands `/architect:implement` and `/architect:review`.
+
 | Command                            | Description                                                                       |
 | ---------------------------------- | --------------------------------------------------------------------------------- |
+| `/architect:accessibility-audit`   | Scan frontend code for WCAG 2.1 AA compliance (contrast, ARIA, keyboard nav, screen readers) |
+| `/architect:agent-spec`            | AI agent architecture — orchestration, tools, guardrails, token costs             |
+| `/architect:analytics-setup`       | Wire analytics SDKs (GA4, PostHog, Mixpanel) with GDPR-compliant consent management |
 | `/architect:blueprint`             | Full architecture blueprint — diagrams, costs, complexity, specs, and next steps  |
+| `/architect:check-env`             | Verify environment variables, dependencies, accounts, and local readiness         |
+| `/architect:compare-stack`         | Side-by-side technology comparison with recommendation                            |
+| `/architect:complexity-check`      | Build difficulty assessment with 10-factor scoring                                |
+| `/architect:compliance`            | Audit code for compliance gaps (SOC2, HIPAA, GDPR, PCI DSS) with remediation plans |
+| `/architect:cost-estimate`         | Infrastructure + third-party + LLM token cost breakdown                           |
+| `/architect:database-scaling`      | Design database scaling strategy with read replicas, partitioning, sharding recommendations |
+| `/architect:deep-research`         | Web-verified competitor analysis, market sizing, and differentiation map          |
+| `/architect:design-system`         | Design system generation — 11 personalities, diverse font pairs, dark mode, unconventional layouts, consumer/creative domains |
+| `/architect:disaster-recovery`     | Design disaster recovery strategy with RTO/RPO targets, backup config, incident runbooks |
+| `/architect:export-diagrams`       | Render Mermaid diagrams to PNG/SVG with light and dark themes                     |
+| `/architect:generate-data-model`   | Generate ORM schemas (Prisma, SQLAlchemy, Mongoose, Drizzle) from blueprint types |
+| `/architect:generate-docs`         | Generate deployment runbooks, architecture guides, ADRs, and incident playbooks    |
+| `/architect:generate-tests`        | Generate unit, integration, and e2e test suites following testing patterns         |
+| `/architect:hiring-brief`          | Developer hiring package with role descriptions and interview questions           |
+| `/architect:i18n-setup`            | Setup internationalization for frontend apps with multi-language support and RTL handling |
+| `/architect:implement`             | Implement a user story or feature end-to-end into an already-scaffolded codebase   |
 | `/architect:quick-spec`            | 5-minute lightweight architecture overview for idea validation                    |
 | `/architect:import`                | Import an existing codebase — analyze structure, detect stack, generate SDL        |
-| `/architect:sdl`                   | Generate, validate, diff, or browse SDL architecture specifications               |
+| `/architect:investor-update`       | Stakeholder progress update pre-filled from CRs, ADRs, costs, and scaffold data  |
+| `/architect:launch-check`          | Scan the project and report whether it is operationally ready to launch           |
+| `/architect:launch-checklist`      | Pre-launch readiness checklist — infra, security, legal, analytics, go-live      |
+| `/architect:load-test`             | Generate load testing scenarios (k6/Locust) from API contracts                     |
+| `/architect:mvp-scope`             | Define the MVP boundary with must-haves, exclusions, and prioritisation           |
+| `/architect:onboarding-pack`       | Developer onboarding package for first hire or agency handoff                     |
+| `/architect:pitch-deck`            | Generate investor or stakeholder pitch deck content from project state            |
+| `/architect:problem-validation`    | Validate the problem, assumptions, and evidence before building                   |
+| `/architect:prototype`             | Generate a clickable frontend prototype from the SDL and design system            |
+| `/architect:prototype-iterate`     | Apply focused iterations to an existing prototype                                 |
+| `/architect:publish-api-docs`      | Generate interactive API documentation (Swagger UI, Redoc, AsyncAPI)              |
 | `/architect:refactor-stack`        | Coordinated architecture refactor — database, framework, provider change with consistency |
+| `/architect:review`                | Review code changes against the project's own patterns, best practices, and security |
+| `/architect:risk-register`         | Generate and maintain an architecture risk register with severity and mitigation  |
 | `/architect:scaffold`              | Create project structure plan from a blueprint architecture                        |
 | `/architect:scaffold-component`    | Scaffold a single component from the SDL with full starter code                    |
-| `/architect:generate-tests`        | Generate unit, integration, and e2e test suites following testing patterns         |
-| `/architect:setup-monitoring`      | Configure observability stack (metrics, tracing, logging, alerts, dashboards)      |
-| `/architect:implement`             | Implement a user story or feature end-to-end into an already-scaffolded codebase   |
-| `/architect:load-test`             | Generate load testing scenarios (k6/Locust) from API contracts                     |
-| `/architect:review`                | Review code changes against the project's own patterns, best practices, and security |
-| `/architect:cost-estimate`         | Infrastructure + third-party + LLM token cost breakdown                           |
-| `/architect:complexity-check`      | Build difficulty assessment with 10-factor scoring                                |
-| `/architect:agent-spec`            | AI agent architecture — orchestration, tools, guardrails, token costs             |
-| `/architect:compare-stack`         | Side-by-side technology comparison with recommendation                            |
-| `/architect:hiring-brief`          | Developer hiring package with role descriptions and interview questions           |
-| `/architect:well-architected`      | Six-pillar well-architected review with scores and improvement roadmap            |
-| `/architect:design-system`         | Design system generation — 11 personalities, diverse font pairs, dark mode, unconventional layouts, consumer/creative domains |
-| `/architect:i18n-setup`            | Setup internationalization for frontend apps with multi-language support and RTL handling |
-| `/architect:generate-data-model`   | Generate ORM schemas (Prisma, SQLAlchemy, Mongoose, Drizzle) from blueprint types |
-| `/architect:database-scaling`      | Design database scaling strategy with read replicas, partitioning, sharding recommendations |
-| `/architect:setup-env`             | Walk through account setup, validate API keys, write verified .env files          |
-| `/architect:setup-cicd`            | Configure real CI/CD pipelines in GitHub Actions, Azure Pipelines, or GitLab CI   |
+| `/architect:sdl`                   | Generate, validate, diff, or browse SDL architecture specifications               |
 | `/architect:security-scan`         | Validate scaffolded code against the blueprint's security checklist               |
-| `/architect:compliance`            | Audit code for compliance gaps (SOC2, HIPAA, GDPR, PCI DSS) with remediation plans |
-| `/architect:accessibility-audit`   | Scan frontend code for WCAG 2.1 AA compliance (contrast, ARIA, keyboard nav, screen readers) |
-| `/architect:disaster-recovery`     | Design disaster recovery strategy with RTO/RPO targets, backup config, incident runbooks |
-| `/architect:sync-backlog`          | Push sprint backlog into Azure DevOps or Jira as sprints and work items           |
-| `/architect:publish-api-docs`      | Generate interactive API documentation (Swagger UI, Redoc, AsyncAPI)              |
 | `/architect:seo`                   | Configure SEO metadata, structured data, sitemaps, robots.txt, Core Web Vitals    |
-| `/architect:analytics-setup`       | Wire analytics SDKs (GA4, PostHog, Mixpanel) with GDPR-compliant consent management |
-| `/architect:generate-docs`         | Generate deployment runbooks, architecture guides, ADRs, and incident playbooks    |
-| `/architect:export-diagrams`       | Render Mermaid diagrams to PNG/SVG with light and dark themes                     |
-| `/architect:deep-research`         | Web-verified competitor analysis, market sizing, and differentiation map          |
-| `/architect:launch-checklist`      | Pre-launch readiness checklist — infra, security, legal, analytics, go-live      |
-| `/architect:onboarding-pack`       | Developer onboarding package for first hire or agency handoff                     |
-| `/architect:investor-update`       | Stakeholder progress update pre-filled from CRs, ADRs, costs, and scaffold data  |
+| `/architect:setup-cicd`            | Configure real CI/CD pipelines in GitHub Actions, Azure Pipelines, or GitLab CI   |
+| `/architect:setup-env`             | Walk through account setup, validate API keys, write verified .env files          |
+| `/architect:setup-monitoring`      | Configure observability stack (metrics, tracing, logging, alerts, dashboards)      |
+| `/architect:sprint-status`         | Report sprint progress and delivery status from backlog state                     |
+| `/architect:sync-backlog`          | Push sprint backlog into Azure DevOps or Jira as sprints and work items           |
+| `/architect:technical-roadmap`     | Generate a phased technical roadmap from MVP through growth and enterprise        |
+| `/architect:user-journeys`         | Map end-to-end user journeys and system touchpoints                              |
+| `/architect:user-personas`         | Generate user personas with pains, goals, and priorities                         |
+| `/architect:visualise`             | Generate visual architecture outputs and alternate views from current project state |
+| `/architect:well-architected`      | Six-pillar well-architected review with scores and improvement roadmap            |
+| `/architect:wireframes`            | Generate JSON-native wireframe specifications for screens and flows               |
 
 ## What You Get
 
@@ -184,13 +200,13 @@ Stakeholder progress report pre-filled from project data:
 
 ## Solution Design Language (SDL)
 
-SDL is the structured YAML specification that captures all architecture decisions. For the full specification, schema, and reference implementation, see the [SDL repository](https://github.com/navraj007in/solution-definition-language).
+SDL is the structured YAML specification that captures all architecture decisions. The current repo standard is **SDL v1.1**. For the full specification, schema, and reference implementation, see the [SDL repository](https://github.com/navraj007in/solution-definition-language).
 
 ### Modular SDL Structure
 
 ```yaml
 # solution.sdl.yaml (main file — core only)
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: MyProduct
@@ -320,7 +336,7 @@ architecture-cowork-plugin/
 │   ├── reviewer.md
 │   ├── scaffolder.md
 │   └── security-scanner.md
-├── commands/                        # 31 slash commands
+├── commands/                        # 52 canonical commands (including split command implementations)
 │   ├── agent-spec.md
 │   ├── blueprint.md
 │   ├── compare-stack.md
@@ -328,26 +344,45 @@ architecture-cowork-plugin/
 │   ├── cost-estimate.md
 │   ├── design-system.md
 │   ├── export-diagrams.md
+│   ├── generate-docs.md
+│   ├── generate-tests.md
 │   ├── generate-data-model.md
 │   ├── hiring-brief.md
+│   ├── i18n-setup.md
 │   ├── deep-research.md
 │   ├── implement-index.md           # split: implement-1.md, implement-2.md
 │   ├── import.md
 │   ├── investor-update.md
+│   ├── launch-check.md
 │   ├── launch-checklist.md
+│   ├── load-test.md
+│   ├── mvp-scope.md
 │   ├── onboarding-pack.md
+│   ├── pitch-deck.md
+│   ├── problem-validation.md
+│   ├── prototype-iterate.md
+│   ├── prototype.md
 │   ├── publish-api-docs.md
 │   ├── quick-spec.md
 │   ├── refactor-stack.md
 │   ├── review-index.md              # split: review-1.md, review-2.md
+│   ├── risk-register.md
 │   ├── scaffold-component.md
 │   ├── scaffold.md
 │   ├── sdl.md
 │   ├── security-scan.md
+│   ├── seo.md
 │   ├── setup-cicd.md
 │   ├── setup-env.md
+│   ├── setup-monitoring.md
+│   ├── sprint-status.md
 │   ├── sync-backlog.md
-│   └── well-architected.md
+│   ├── technical-roadmap.md
+│   ├── user-journeys.md
+│   ├── user-personas.md
+│   ├── visualise.md
+│   ├── well-architected.md
+│   └── wireframes.md
 ├── skills/                          # 31 domain knowledge skills
 │   ├── agent-architecture/
 │   ├── api-artifacts/

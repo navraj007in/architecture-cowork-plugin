@@ -24,7 +24,7 @@
 Multi-tenant SaaS application with auth, billing, and a dashboard.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "MySaaS"
@@ -142,7 +142,7 @@ artifacts:
 Multi-vendor marketplace with microservices on AWS.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "MyShop"
@@ -312,7 +312,7 @@ artifacts:
 Backend API for a cross-platform mobile app.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "MyApp"
@@ -399,7 +399,7 @@ artifacts:
 Internal business tool with SSO, RBAC, and audit logging.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "BackOffice"
@@ -478,7 +478,7 @@ artifacts:
 Developer-facing API platform with rate limiting and OpenAPI docs.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "DevAPI"
@@ -567,7 +567,7 @@ artifacts:
 AI-powered analysis tool with document processing and semantic search.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "MyAIProduct"
@@ -665,7 +665,7 @@ artifacts:
 Buyer/seller marketplace with Stripe Connect split payments.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "MyMarketplace"
@@ -758,7 +758,7 @@ artifacts:
 Lightweight internal CRUD tool with record management and reporting.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "MyInternalTool"
@@ -858,7 +858,7 @@ artifacts:
 Subscription SaaS app with team management and usage analytics.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "MyApp"
@@ -942,7 +942,7 @@ artifacts:
 Real-time collaborative app with WebSocket backend and event streaming.
 
 ```yaml
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 
 solution:
   name: "CollabSpace"

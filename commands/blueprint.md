@@ -401,7 +401,7 @@ imports:
 
 **Modular files in `sdl/` directory (v1.1 sections):**
 
-**Core sections (from v0.1):**
+**Core sections carried into v1.1:**
 - `sdl/product.sdl.yaml` — product, personas, coreFlows (if product section exists)
 - `sdl/auth.sdl.yaml` — auth, roles, integrations (if auth exists)
 - `sdl/deployment.sdl.yaml` — deployment, ci-cd (if deployment data exists)

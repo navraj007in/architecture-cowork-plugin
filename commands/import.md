@@ -115,14 +115,14 @@ Using the **sdl-knowledge** skill, build a **v1.1-compliant** SDL document.
 **The output MUST use the SDL v1.1 schema structure.** The allowed root keys are:
 
 **Required:** `sdlVersion`, `solution`, `architecture`, `data`
-**Core v0.1:** `product`, `auth`, `deployment`, `environments`, `nonFunctional`, `integrations`, `constraints`, `testing`, `observability`, `techDebt`
+**Core sections retained in v1.1:** `product`, `auth`, `deployment`, `environments`, `nonFunctional`, `integrations`, `constraints`, `testing`, `observability`, `techDebt`
 **v1.1 Additions:** `contracts`, `domain`, `features`, `compliance`, `slos`, `resilience`, `costs`, `backupDr`, `design`
 **Extension:** Any key prefixed with `x-` (e.g., `x-confidence`, `x-evidence`)
 
 **DO NOT** use these non-standard keys: `tech_stack`, `cross_cutting`, `infrastructure`,
 `services` (top-level), `shared_libraries`, `metadata`, `project`.
 
-#### 3.1 — Mapping Rules (codebase analysis → SDL v0.1)
+#### 3.1 — Mapping Rules (codebase analysis → SDL v1.1)
 
 | Discovered | SDL Location |
 |---|---|
@@ -134,7 +134,7 @@ Using the **sdl-knowledge** skill, build a **v1.1-compliant** SDL document.
 | Git remote origin URL (`subRepo.gitOrigin` or `git remote get-url origin`) | `architecture.projects.frontend[].x-gitOrigin` / `architecture.projects.backend[].x-gitOrigin` |
 | Deployable components (mark shared libs, type packages, internal-only) | `architecture.projects.*[].deployable` (false for non-deployable items) |
 | Dev/staging/production URLs and ports | `environments[].components[].{url,port,instances,deployed}` |
-| Core domain objects (entity names from ORM models, schema files, migration names) | `domain.entities[]` — PascalCase names only (v0.1); expanded with fields in v1.1 |
+| Core domain objects (entity names from ORM models, schema files, migration names) | `domain.entities[]` — PascalCase names only, with optional field-level expansion in v1.1 |
 | ORM entity fields, types, constraints, indexes from schema.prisma or migrations | `domain.entities[].fields[]` (v1.1) — type, primaryKey, unique, nullable, foreignKey |
 | ORM entity relationships from schema.prisma or migrations | `domain.entities[].relationships[]` (v1.1) — type, target, foreignKey |
 | ORM entity indexes from schema.prisma or migrations | `domain.entities[].indexes[]` (v1.1) — fields, unique |

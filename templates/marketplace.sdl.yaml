@@ -1,4 +1,4 @@
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 solution:
   name: "MyMarketplace"
   description: "Two-sided marketplace connecting buyers and sellers"

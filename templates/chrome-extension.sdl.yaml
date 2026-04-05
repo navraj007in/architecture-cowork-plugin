@@ -1,4 +1,4 @@
-sdlVersion: "0.1"
+sdlVersion: "1.1"
 solution:
   name: "MyChromeExtension"
   description: "Chrome extension with optional backend API and web dashboard"
