@@ -522,7 +522,7 @@ design:                                 # If design tokens or component library 
   x-confidence: high | medium | low
   x-evidence: "{where design tokens or palette were detected}"
 
-artifacts:
+artifacts:                     # Plugin generation metadata, optional in upstream v1.1
   generate:
     - architecture-diagram
     - data-model

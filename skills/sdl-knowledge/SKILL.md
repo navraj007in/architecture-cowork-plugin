@@ -17,7 +17,7 @@ SDL sits between requirements gathering and artifact generation. The manifest ca
 
 ## What SDL Is
 
-SDL is a machine-readable YAML specification (version 1.1) that captures:
+SDL is a machine-readable YAML specification. This plugin uses the `v1.1` path for architecture workflows. Older `v0.1` material should be treated as obsolete and upgraded rather than reused for new generation.
 
 - Solution metadata and stage (MVP / Growth / Enterprise)
 - Product personas and core user flows
@@ -38,7 +38,9 @@ Generate SDL **after** requirements gathering and manifest building (Step 3), **
 
 ## SDL Version
 
-Current version: `1.1`. Always set `sdlVersion: "1.1"`.
+Version policy:
+- Use `v1.1` for all new SDL generation in this plugin.
+- Treat `v0.1` as obsolete input that should be upgraded before use.
 
 ---
 
@@ -52,13 +54,26 @@ See `references/sdl-schema.md` for the complete field-by-field schema reference 
 |---------|-------------------|
 | `sdlVersion` | Must be `"1.1"` |
 | `solution` | `name`, `description`, `stage` |
-| `product` | `personas[]` (min 1, each with `name` + `goals[]`) |
 | `architecture` | `style`, `projects` |
 | `data` | `primaryDatabase.type`, `primaryDatabase.hosting` |
-| `nonFunctional` | `availability.target`, `scaling` |
-| `deployment` | `cloud` |
-| `artifacts` | `generate[]` (min 1 artifact type) |
-| `domain` | `entities[]` (optional — include when domain objects can be named) |
+| `product` | Core section carried forward into v1.1, include when user/persona context is known |
+| `auth` | Retained core auth section, include when identity/access details are known |
+| `deployment` | Core deployment section carried forward into v1.1, include when hosting/runtime is known |
+| `nonFunctional` | Core quality section carried forward into v1.1, include when targets or constraints are known |
+| `contracts` | v1.1 API contracts, include for formal interfaces |
+| `domain` | v1.1 entity definitions, include when domain objects can be named |
+| `features` | v1.1 feature planning, include when phase planning is needed |
+| `compliance` | v1.1 regulatory requirements, include when applicable |
+| `slos` | v1.1 service objectives, include when operational targets are defined |
+| `resilience` | v1.1 fault tolerance patterns, include when reliability design is specified |
+| `costs` | v1.1 cost model, include when financial planning is needed |
+| `backupDr` | v1.1 backup and DR strategy, include when recovery planning is needed |
+| `design` | v1.1 design system section, include for frontend/design-aware projects |
+
+Alignment note:
+- Follow `spec/SDL-v1.1.md` as the authority for v1.1 structure.
+- In v1.1, `solution`, `architecture`, and `data` are the universally required root sections beyond `sdlVersion`.
+- Other sections are added when the architecture actually needs them.
 
 ### Artifact Types
 
@@ -337,13 +352,10 @@ When generating SDL from a conversation or manifest:
    - All functions/lambdas → `serverless`
 3. **Include only sections with data** — omit empty optional sections
 4. **Let normalizer handle defaults** — do not manually set fields covered by the 15 normalization rules
-5. **Check conditional rules mentally** before outputting:
-   - Microservices → need 2+ services
-   - OIDC → need provider
-   - PII → need encryptionAtRest
-   - CloudFormation → only with AWS
-   - MongoDB → no EF Core
-6. **Set `artifacts.generate`** based on what the user needs. For a full blueprint:
+5. **Check the applicable v1.1 conditional rules mentally** before outputting:
+   - Cross-reference the rules from `spec/SDL-v1.1.md` when using v1.1 sections
+   - At minimum, check service references, feature dependencies, component references, and compatibility constraints
+6. **If plugin workflows need explicit generation metadata, set `artifacts.generate`** based on what the user needs. This is plugin metadata, not a universally required upstream v1.1 root section. For a full blueprint:
    ```yaml
    artifacts:
      generate:

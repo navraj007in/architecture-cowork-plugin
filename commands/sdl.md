@@ -52,7 +52,7 @@ Using the **sdl-knowledge** skill:
    - Set all required sections
    - Include only optional sections that have data
    - Let normalizer defaults handle the rest
-   - Validate against the 5 conditional rules
+   - Validate against the applicable v1.1 conditional rules
    - **Derive `dependsOn[]` for every component in `architecture.projects`** — list the names of other components it calls plus external integrations it uses. Rules:
      - Frontend → every backend/API service it calls
      - Backend/service → other backend services it calls + external integration names (e.g. `["stripe", "sendgrid"]`)
@@ -133,7 +133,7 @@ sdlVersion: "1.1"
 3. **Validate** — check against the SDL v1.1 schema:
    - Check all required fields
    - Validate all enum values
-   - Check the 5 conditional rules
+   - Check the applicable v1.1 conditional rules
    - If validation fails, report all errors:
 
 **SDL validation failed** ({count} error(s))
@@ -152,7 +152,7 @@ sdlVersion: "1.1"
 | `backend[0].orm` | `prisma` | nodejs + postgres |
 | ... | ... | ... |
 
-5. **Detect warnings** — check the 4 warning conditions:
+5. **Detect warnings** — check the applicable warning conditions for the sections present:
    - Report any warnings with recommendations
 
 6. **Report validation summary** (same as Mode 1)

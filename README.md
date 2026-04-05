@@ -200,7 +200,7 @@ Stakeholder progress report pre-filled from project data:
 
 ## Solution Design Language (SDL)
 
-SDL is the structured YAML specification that captures all architecture decisions. The current repo standard is **SDL v1.1**. For the full specification, schema, and reference implementation, see the [SDL repository](https://github.com/navraj007in/solution-definition-language).
+SDL is the structured YAML specification that captures all architecture decisions. This plugin uses **SDL v1.1**. Older `v0.1` material should be treated as obsolete and upgraded rather than used for new work. For the full specification, schema, and reference implementation, see the [SDL repository](https://github.com/navraj007in/solution-definition-language).
 
 ### Modular SDL Structure
 

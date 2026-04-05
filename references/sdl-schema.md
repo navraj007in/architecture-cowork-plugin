@@ -1,49 +1,50 @@
-# SDL v1.1 Schema Reference
+# SDL v1.1 Plugin Reference
 
-Solution Design Language (SDL) is a YAML-based specification for capturing complete software architecture decisions. This document defines every field, type, and validation rule.
+Solution Design Language (SDL) is a YAML-based specification for capturing complete software architecture decisions. This local reference is the plugin's v1.1-oriented guide, aligned to the upstream `spec/SDL-v1.1.md` while preserving plugin-specific generation conventions.
 
 ## Version Notes
 
-Current version: `1.1`
+- `v1.1` is the active SDL version for this plugin.
+- `v0.1` should be treated as obsolete reference material, not as a target for new generation.
+- When updating or regenerating SDL in this repo, always write `sdlVersion: "1.1"`.
 
-| Version | Notes |
-|---------|-------|
-| `0.1` | Initial public schema with core architecture, deployment, and artifact sections |
-| `1.1` | Adds richer sections such as `contracts`, `domain`, `features`, `compliance`, `slos`, `resilience`, `costs`, `backupDr`, and `design` |
-
-Backward compatibility:
-- Treat existing `0.1` documents as legacy SDL.
-- When updating or regenerating SDL in this repo, write `sdlVersion: "1.1"`.
-- If a legacy `0.1` document is encountered, upgrade it before relying on v1.1-only sections.
-
-## Required Root Fields
+## Required Root Fields (v1.1)
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `sdlVersion` | `"1.1"` | Always `"1.1"` for newly generated SDL |
 | `solution` | object | Project metadata |
-| `product` | object | User context and flows |
 | `architecture` | object | System structure |
 | `data` | object | Data layer |
-| `nonFunctional` | object | Quality attributes |
-| `deployment` | object | Hosting and infrastructure |
-| `artifacts` | object | What to generate |
 
-## Optional Root Fields
+## Core and Optional Root Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `product` | object | Core section carried forward into v1.1 |
 | `auth` | object | Authentication strategy |
+| `deployment` | object | Core deployment section carried forward into v1.1 |
+| `environments` | array | Runtime environment definitions |
+| `nonFunctional` | object | Core quality section carried forward into v1.1 |
+| `observability` | object | Logging, tracing, metrics |
 | `integrations` | object | Third-party services |
 | `constraints` | object | Budget, team, timeline |
-| `technicalDebt` | array | Known tech debt items |
-| `evolution` | object | Roadmap and cost projections |
 | `testing` | object | Test framework config |
-| `observability` | object | Logging, tracing, metrics |
-| `environments` | array | Runtime environment definitions |
-| `interServiceCommunication` | array | Service-to-service communication patterns |
-| `configuration` | object | Configuration management strategy |
-| `errorHandling` | object | Error handling patterns |
+| `technicalDebt` | array | Known tech debt items |
+| `contracts` | object/array | v1.1 API contract definitions |
+| `domain` | object | v1.1 entity definitions |
+| `features` | object | v1.1 feature planning |
+| `compliance` | object | v1.1 regulatory requirements |
+| `slos` | array | v1.1 service objectives |
+| `resilience` | object | v1.1 fault tolerance patterns |
+| `costs` | object | v1.1 cost model |
+| `backupDr` | object | v1.1 backup and disaster recovery |
+| `design` | object | v1.1 design system definition |
+
+Alignment note:
+- This mirrors the upstream `spec/SDL-v1.1.md` document structure.
+- In upstream v1.1, only `solution`, `architecture`, and `data` remain universally required beyond `sdlVersion`.
+- Additional sections are optional but recommended when their domain applies.
 
 ---
 
@@ -386,7 +387,9 @@ evolution:
     atEnterprise: string
 ```
 
-## artifacts (required)
+## artifacts (plugin extension)
+
+The upstream `spec/SDL-v1.1.md` focuses on architecture sections and does not define `artifacts` as a required root section. This plugin still supports `artifacts` as generation metadata for local workflows that need explicit artifact selection.
 
 ```yaml
 artifacts:
