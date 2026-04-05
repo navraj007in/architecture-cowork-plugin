@@ -183,6 +183,11 @@ nonFunctional:
   performance:
     apiResponseTime: string  # e.g. "<200ms"
     pageLoadTime: string
+    targetRps: number        # Target requests per second (for load testing)
+    p95LatencyMs: number     # p95 latency target in milliseconds
+    p99LatencyMs: number     # p99 latency target in milliseconds
+  caching:
+    enabled: boolean         # Use caching (Redis, CDN)? Default: false if MVP, true if Growth+
   security:
     pii: boolean             # Required within security section
     phi: boolean

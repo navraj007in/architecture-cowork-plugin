@@ -25,6 +25,15 @@ Production systems need runbooks, architecture guides, and decision records. Thi
 
 ## Workflow
 
+## Quick Navigation
+
+| Phase | Steps |
+|-------|-------|
+| **Setup** | [Step 1](#step-1-read-context) |
+| **Configuration** | [Step 2](#step-2-ask-configuration-questions) |
+| **Generation** | [Step 3](#step-3-delegate-to-docs-generator-agent) · [Step 4](#step-4-verify-generated-docs) |
+| **Completion** | [Step 5](#step-5-log-activity) · [Step 6](#step-6-update-_statejson) · [Step 7](#step-7-signal-completion) |
+
 ### Step 1: Read Context
 
 ℹ️ **CONTEXT LOADING:** _state.json → SDL → activity log
