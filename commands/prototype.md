@@ -153,7 +153,19 @@ Pick a **distinctive heading font** paired with a readable body font. NEVER use 
 #### Web Application (React, Next.js, Vue, Angular, Svelte)
 - **Layout approach:** Desktop-first or mobile-first responsive design
 - **Viewport:** Full browser window (1920×1080 down to 375px mobile)
-- **Navigation:** Header + Sidebar (desktop) / Header + Hamburger menu (mobile)
+- **Navigation patterns** (choose based on app type):
+  - **Dashboard/Admin Sidebar** — persistent left sidebar (240px, collapsible), top header with breadcrumbs, for SaaS/admin/CRM/analytics
+  - **Top Navigation Only** — horizontal nav bar, no sidebar, for marketing/brochure sites
+  - **Sidebar + Header** — left sidebar + top bar, combined navigation, for complex dashboards
+  - **Marketing/Landing** — minimal nav (logo + menu items + CTA button), hero sections, for consumer products
+  - **App Shell** — mobile-first (header + bottom nav on mobile → sidebar on desktop), for cross-platform
+  - **Editorial/Docs** — centered max-w-3xl content, side-by-side navigation tree (sticky), for documentation
+  - **Split View** — resizable left panel (list/tree) + right content + optional right panel (metadata), for email/chat/file managers
+  - **Authentication Flow** — centered card layout (max-w-sm), minimal header, for login/signup/forgot password
+  - **Wizard/Stepper** — multi-step form with progress indicator on left or top, for onboarding/checkout
+  - **Command Palette** — Cmd+K / Ctrl+K search box, keyboard-first navigation, for productivity apps
+  - **Mega Menu** — dropdown with grid layout, for e-commerce with many categories
+  - **Breadcrumbs** — hierarchical path navigation, often paired with sidebar or top nav
 - **Components:** HTML/CSS via Tailwind, lucide-react icons
 - **Styling:** CSS-in-JS (Tailwind utility classes)
 - **Technology Stack:** React + Vite + Tailwind + React Router
@@ -208,11 +220,22 @@ Components: React Native native components
 ```
 
 #### Desktop Application (Electron, Tauri, PWA)
-- **Layout approach:** Desktop-optimized, full window
-- **Viewport:** Larger windows (1024×768 minimum, up to 3840×2160 for high-DPI)
-- **Navigation:** Menu bar (macOS) / Window menu (Windows), sidebar or top bar
-- **Components:** Custom desktop UI components (similar to web but larger, window-aware)
-- **Styling:** CSS with larger text, bigger buttons, desktop-focused spacing
+- **Layout approach:** Desktop-optimized, window-aware, support for multiple documents
+- **Viewport:** Resizable windows (1024×768 minimum, up to 3840×2160 for high-DPI)
+- **Navigation patterns** (choose based on app type):
+  - **Sidebar + Top Bar** — persistent left sidebar + menu bar + toolbar, for most desktop apps (IDE, email clients)
+  - **Menu Bar + Toolbar** — macOS/Windows menu bar + toolbar with icon buttons, for productivity apps
+  - **Ribbon UI** — Microsoft Office-style ribbon with grouped commands + tabs, for feature-rich complex apps
+  - **Floating/MDI Windows** — Multiple Document Interface with tabbed or floating windows, for creative tools (design, video editors)
+  - **Tab Bar** — horizontal tabs for switching between documents/views, for text editors, IDEs
+  - **Status Bar** — bottom info bar showing state, file info, view mode, cursor position, for editors
+  - **Context Menus** — right-click menus for all major elements, ESSENTIAL for desktop
+  - **Keyboard Shortcuts** — Cmd+S, Cmd+N, Ctrl+C, etc., heavily used, must document in Help menu
+  - **Toolbar Only** — minimal UI with just toolbar icons + main canvas (for full-screen focused tools)
+  - **Sidebar + Tabbed Documents** — sidebar navigation + central tabbed editor area, for IDEs, note apps
+- **Components:** Custom desktop UI components (larger text: 14-16px, bigger buttons, generous padding)
+- **Styling:** CSS with desktop-appropriate spacing and typography
+- **Interactions:** Window resizing, minimize/maximize/close, drag-drop files, system tray (Windows), dock (macOS), keyboard-first
 - **Technology Stack:** Electron/Tauri + React + Tailwind + Window management APIs
 
 ### Step 3: Build Screen Inventory & Write Manifest

@@ -243,10 +243,18 @@ If the user confirms, delegate to the **figma-agent** with:
 - **Spacing scale:** 8px baseline (8, 12, 16, 24, 32, 48, 64, 96px)
 - **Typography scale:** Web-optimized sizes (12px, 14px, 16px body; 20px, 24px, 32px, 40px headings)
 - **Icons:** lucide-react, heroicons, or phosphor-icons (standard SVG icons)
-- **Responsive:** Mobile-first (375px min, 1920px max)
+- **Responsive:** Mobile-first (375px min, 1920px max), Tailwind breakpoints (sm, md, lg, xl, 2xl)
 - **Dark mode:** Full CSS variables for light/dark toggle
 - **Animations:** CSS transitions, Framer Motion optional
-- **Output:** design-tokens.json + Figma file + Storybook optional
+- **Navigation component patterns** (design for chosen web pattern):
+  - Dashboard Sidebar: 240px sidebar nav (collapsible to 60px), header breadcrumbs
+  - Marketing Top Nav: horizontal nav, sticky on scroll, no sidebar
+  - App Shell: hamburger menu (mobile) → sidebar (tablet+), bottom nav (mobile)
+  - Docs/Editorial: sticky side TOC, centered content column, breadcrumbs
+  - Split View: resizable left panel divider, right content panes
+  - Command Palette: modal search input, keyboard shortcut badge, filtering UI
+  - Mega Menu: large dropdown grid, category headers, subcategories
+- **Output:** design-tokens.json + Figma file + web component library + Storybook optional
 
 #### Mobile Design System
 - **Component library reference:** React Native Paper, NativeBase, Gluestack, Tamagui
@@ -266,14 +274,28 @@ If the user confirms, delegate to the **figma-agent** with:
 - **Output:** design-tokens.json + mobile component library + navigation pattern components + Figma file for mobile frames
 
 #### Desktop Design System
-- **Component library reference:** Electron component library, custom desktop components, or web library adapted
-- **Spacing scale:** 8px baseline, but larger comfortable defaults (16px, 24px, 32px preferred)
-- **Typography scale:** Larger sizes for desktop viewing distance (14px, 16px body; 24px, 32px, 40px headings)
-- **Icons:** Desktop-optimized icons (larger hit areas, clearer at desktop resolution)
-- **Responsive:** Fixed large window (1024px min, up to 2560px+)
-- **Dark mode:** Full support (many desktop users prefer dark)
-- **Interactions:** Keyboard shortcuts, context menus, drag-drop, window chrome
-- **Output:** design-tokens.json + desktop component library + Figma file for desktop frames
+- **Component library reference:** Electron UI libraries (Chakra, shadcn/ui adapted), or custom native-feeling desktop components
+- **Spacing scale:** 8px baseline, but larger defaults comfortable for desktop (12px, 16px, 24px, 32px preferred)
+- **Typography scale:** Larger sizes for comfortable desktop viewing distance (13-14px body, 16-18px body default; 22px-40px headings)
+- **Icons:** Larger icons with clear hit areas (24px minimum, 32px comfortable), desktop platform-aware
+- **Fixed layout:** Resizable windows (1024×768 minimum), NOT responsive — each window size is fixed
+- **Dark mode:** Full support (many desktop users prefer dark, sometimes as default)
+- **Window chrome:** Title bar, menu bar (macOS) / window menu (Windows), status bar if applicable
+- **Interactions:** 
+  - Keyboard shortcuts (Cmd+S, Cmd+N, Ctrl+C, etc.) with visible shortcut hints
+  - Context menus (right-click for common actions)
+  - Drag-drop for files and UI elements
+  - Window resize/minimize/maximize/close buttons
+  - System integration (system tray, dock, taskbar)
+- **Navigation component patterns** (design for chosen desktop pattern):
+  - Sidebar + Top Bar: vertical nav sidebar + menu bar + toolbar
+  - Ribbon UI: groupedcommand tabs (Microsoft Office style) + main content
+  - MDI/Floating Windows: tabbed or floating document windows + main toolbar
+  - Menu Bar Only: macOS/Windows menu bar + toolbar, minimal sidebar
+  - Context Menus: right-click patterns for all major elements
+  - Keyboard Navigation: full keyboard operability, shortcut keys everywhere
+  - Status Bar: bottom bar with mode, file info, cursor position, zoom level
+- **Output:** design-tokens.json + desktop component library + Figma file for desktop frames + keyboard shortcut reference
 
 **Decision logic:**
 1. If multiple application types found (web + mobile): ask which is PRIMARY
