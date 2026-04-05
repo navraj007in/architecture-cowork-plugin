@@ -216,6 +216,7 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `hiring-brief` | `hiring_brief` (`generated_at`) |
 | `generate-tests` | `test_suite` (`generated_at`, `coverage_target`, `unit_framework`, `e2e_framework`, `suites[]`, `files_generated`) |
 | `setup-monitoring` | `monitoring` (`generated_at`, `metrics_provider`, `tracing`, `error_tracking`, `log_aggregation`, `alert_severity`, `dashboards`, `alert_rules`, `slos`, `files_generated`) |
+| `compliance` | `compliance` (`generated_at`, `frameworks`, `gap_count`, `critical_gaps`, `high_gaps`, `controls_by_framework`, `remediation_effort_hours`, `files_generated`) |
 | `well-architected` | activity log only (no `_state.json` fields) |
 | `complexity-check` | activity log only (no `_state.json` fields) |
 | `compare-stack` | activity log only (no `_state.json` fields) |
