@@ -189,6 +189,36 @@ Using the **architecture-methodology** skill, ask clarifying questions to unders
 
 Ask 2-3 questions at a time, not all at once. Skip questions the user has already answered. If the user says "just build it", make reasonable assumptions and state them explicitly.
 
+### Step 2.5: Multi-Tenancy Detection
+
+❓ **DECISION POINT:** Architectural isolation model selection
+
+If the product is a SaaS platform (multiple customer organizations), ask:
+
+> "Does your product need to support multiple independent customer organizations (multi-tenancy)?"
+> - YES → "How should we isolate data? 
+>   - 1. Row-level security (shared DB + schema, cheapest)
+>   - 2. Schema per tenant (one DB, isolated schemas, flexible)
+>   - 3. Database per tenant (separate DB per customer, most isolated)"
+> - NO → "Single-organization product" (enterprise software)
+
+**Record the choice in SDL:**
+
+```yaml
+nonFunctional:
+  multiTenancy:
+    enabled: true # or false
+    isolationModel: "row-level-security" # or "schema-per-tenant" or "db-per-tenant"
+    tenantIdField: "tenant_id"
+    tenantOnboarding: "self-service" # or "manual"
+    customizationsPerTenant: false # or true (can tenants customize schema)
+```
+
+**If multi-tenancy enabled**, note that:
+- All entities will have a `tenant_id` field for isolation
+- Data model generator will add RLS policies (if row-level security) or schema naming conventions (if schema-per-tenant)
+- See `references/multi-tenancy-patterns.md` for detailed guidance
+
 ### Step 3: Build the System Manifest
 
 🔄 **AGENT DELEGATION:** Use **manifest-structure** skill

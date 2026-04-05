@@ -193,6 +193,12 @@ nonFunctional:
     penetrationTesting: boolean
   compliance:
     frameworks: enum[]       # gdpr | hipaa | sox | pci-dss | iso27001 | soc2
+  multiTenancy:
+    enabled: boolean         # Is this a multi-tenant SaaS? Default: false
+    isolationModel: enum     # row-level-security | schema-per-tenant | db-per-tenant
+    tenantIdField: string    # Column name for tenant identifier. Default: "tenant_id"
+    tenantOnboarding: enum   # self-service | manual. Default: self-service
+    customizationsPerTenant: boolean # Can tenants customize schema? Default: false
   backup:
     frequency: enum          # hourly | daily | weekly
     retention: string

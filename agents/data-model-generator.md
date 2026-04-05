@@ -36,6 +36,21 @@ Before doing anything else, establish the authoritative entity inventory:
 
 **Do NOT read the SDL `data:` section for entity names** — `data:` describes database infrastructure (type, hosting, indexes), not entity names. Entity names live in `domain:`.
 
+### 0.5: Check Multi-Tenancy Configuration
+
+If SDL has `nonFunctional.multiTenancy.enabled: true`:
+- Add `tenant_id UUID NOT NULL` field to EVERY entity
+- If isolation model is `schema-per-tenant`: prefix all table names with tenant schema (e.g., `CREATE TABLE tenant_${tenantId}.users (...)`)
+- If isolation model is `row-level-security`: add RLS policy to all tables:
+  ```sql
+  CREATE POLICY tenant_isolation ON users
+    USING (tenant_id = current_setting('app.current_tenant_id')::uuid);
+  ```
+- Set `tenantIdField` from SDL (default: `tenant_id`)
+
+If `nonFunctional.multiTenancy.enabled: false` (single-tenant or not specified):
+- No special handling; proceed normally
+
 ### 1. Determine ORM
 
 Select ORM based on tech stack:
