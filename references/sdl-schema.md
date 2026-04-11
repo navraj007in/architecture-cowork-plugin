@@ -834,12 +834,66 @@ solution:
 
 ## Conditional Validation Rules
 
-These are hard errors — SDL will not compile if violated:
+These are hard errors — SDL will not compile if violated (27 rules total, from spec/SDL-v1.1.md):
 
-| # | Condition | Requirement | Error Code |
-|---|-----------|-------------|------------|
-| 1 | `architecture.style = "microservices"` | `services[]` must have 2+ items | `MICROSERVICES_REQUIRES_SERVICES` |
-| 2 | `auth.strategy = "oidc"` | `auth.identityProvider` must be set | `OIDC_REQUIRES_PROVIDER` |
-| 3 | `nonFunctional.security.pii = true` | `encryptionAtRest` must be `true` | `PII_REQUIRES_ENCRYPTION` |
-| 4 | `deployment.infrastructure.iac = "cloudformation"` | `deployment.cloud` must be `"aws"` | `INCOMPATIBLE_CLOUD_IAC` |
-| 5 | `data.primaryDatabase.type = "mongodb"` | No backend may have `orm = "ef-core"` | `INCOMPATIBLE_DATABASE_ORM` |
+**Reference Integrity (9 rules)**
+
+| # | Condition | Requirement |
+|---|-----------|-------------|
+| 1 | `environments[].components` defined | Every component name must exist in `architecture.projects` |
+| 2 | `slos[].componentId` defined | Must match a component name in `architecture.projects` |
+| 3 | `costs.infrastructure[].component` defined | Must match a component name in `architecture.projects` |
+| 4 | `architecture.projects[].dependsOn[]` defined | Must not form a cycle (no circular dependencies) |
+| 5 | `contracts[].paths[].service` defined | Service must exist in `architecture.projects` |
+| 6 | `domain.entities[].relationships[].target` defined | Target entity must exist in `domain.entities` |
+| 7 | `features.phase*.features[].dependsOn[]` defined | Referenced feature IDs must exist in same or earlier phases |
+| 8 | `resilience.circuitBreaker[].service` defined | Service must exist in `architecture.projects` |
+| 9 | `backupDr.databases[].name` defined | Must match a database name in `data.databases` or `data.primaryDatabase` |
+
+**Type Compatibility (3 rules)**
+
+| # | Condition | Requirement |
+|---|-----------|-------------|
+| 10 | `data.primaryDatabase.type` + any `architecture.projects[].orm` | ORM must be compatible with database type (Prisma ✓ relational/MongoDB; Mongoose ✓ MongoDB only; EF Core ✗ MongoDB) |
+| 11 | `architecture.projects[].framework` + `.language` | Framework must match language (NestJS → node/ts; Django → python; Spring → java) |
+| 12 | `auth.provider` references an integration | Provider must exist in `integrations[]` |
+
+**Deployment Integrity (5 rules)**
+
+| # | Condition | Requirement |
+|---|-----------|-------------|
+| 13 | `architecture.style = "microservices"` | `architecture.services[]` must have 2+ items |
+| 14 | `architecture.projects[].deployable = true` | Component must appear in at least one environment |
+| 15 | Multiple components in same environment | No duplicate ports within an environment |
+| 16 | `deployment.regions[]` defined | Regions must be valid for `deployment.cloud` |
+| 17 | `deployment.infrastructure.iac = "cloudformation"` | `deployment.cloud` must be `"aws"` |
+
+**Data Model Integrity (4 rules)**
+
+| # | Condition | Requirement |
+|---|-----------|-------------|
+| 18 | `domain.entities[]` defined | Every entity must have exactly one `primaryKey: true` field |
+| 19 | `domain.entities[].relationships[].target` crosses databases | Flag as limitation — no DB-level FK enforcement |
+| 20 | All `architecture.projects` entries | Component names must be globally unique across all categories |
+| 21 | `domain.entities[]` defined | Each entity should be owned by a component (soft rule — warn if ambiguous) |
+
+**Configuration Completeness (3 rules)**
+
+| # | Condition | Requirement |
+|---|-----------|-------------|
+| 22 | `architecture.projects[].deployable = true` | Component must have `path` and `runtime` fields |
+| 23 | `auth.strategy = "oidc"` | `auth.identityProvider` must be set |
+| 24 | `compliance.frameworks[].name` defined | Must be a recognised value: `GDPR \| HIPAA \| SOC2-Type2 \| PCI-DSS \| CCPA \| ISO27001` |
+
+**Resilience & Performance (2 rules)**
+
+| # | Condition | Requirement |
+|---|-----------|-------------|
+| 25 | `resilience.circuitBreaker[].failureThreshold` or `retryPolicy[].maxAttempts` defined | Value must be > 0 |
+| 26 | `slos[].availability.target` defined | Must be between 90–99.99%; `latency.p99` must be > `latency.p50` |
+
+**PII & Security (1 rule)**
+
+| # | Condition | Requirement |
+|---|-----------|-------------|
+| 27 | Any `domain.entities[].fields[]` contains PII data | `nonFunctional.security.pii` must be `true` AND `encryptionAtRest` must be `true` |

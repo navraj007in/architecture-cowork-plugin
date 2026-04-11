@@ -1233,15 +1233,17 @@ Rules:
 - Write to `architecture-output/_state.json` (create `architecture-output/` if it doesn't exist)
 - `entities`, `personas`, `market_research`, `mvp_scope`, `top_risks` are written by other commands — do NOT add them here
 - **Design authority check (MUST DO FIRST):** Before writing the `design` field, check if `_state.json.design` is already fully populated (has `primary`, `heading_font`, `body_font`, `personality`). If yes → **preserve it verbatim, do NOT overwrite** — it was set by `/architect:design-system` and is authoritative. If no → write the design values derived from the SDL or domain below.
-- **Design value source (only when design is not already set):** If the SDL has a `design` section, read it and map to `_state.json` snake_case flat structure:
-  - `design.typography.heading` → `design.heading_font`
-  - `design.typography.body` → `design.body_font`
-  - `design.typography.mono` → `design.mono_font`
-  - `design.borderRadius` → `design.border_radius`
+- **Design value source (only when design is not already set):** If the SDL has a `design` section, read it and map to `_state.json` flat snake_case:
+  - `design.tokens.typography.headingFont` → `design.heading_font`
+  - `design.tokens.typography.bodyFont` → `design.body_font`
+  - `design.tokens.typography.monoFont` → `design.mono_font`
+  - `design.tokens.colors.primary` → `design.primary`
+  - `design.tokens.colors.secondary` → `design.secondary`
+  - `design.tokens.colors.accent` → `design.accent`
   - `design.componentLibrary` → `design.component_library`
   - `design.iconLibrary` → `design.icon_library`
   - `design.tokensFile` → `design.tokens_file`
-  - All other fields (`primary`, `secondary`, `accent`, `personality`, etc.) copy as-is
+  - `design.personality` copies as-is
   
   If the SDL has no `design` section, derive personality from the product domain using the personality table in `/architect:prototype`, then construct a matching palette.
 - `blueprint.deepen_passes` starts at `0` on first run; increment by 1 each time deepen mode completes

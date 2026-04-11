@@ -230,18 +230,57 @@ Write the complete `design` section back into SDL:
 
 ```yaml
 design:
-  preset: ...
   personality: ...
-  palette: ...
-  typography:           # Nested per sdl-schema v1.1
-    heading: "..."      # Font family for headings (e.g. "Clash Display")
-    body: "..."         # Font family for body text (e.g. "Poppins")
-    mono: "..."         # Font family for code (e.g. "JetBrains Mono")
+  preset: ...
+  tokens:               # Full token set per SDL spec v1.1
+    colors:
+      primary: "..."
+      primary-dark: "..."
+      secondary: "..."
+      success: "..."
+      warning: "..."
+      error: "..."
+    typography:         # camelCase per spec
+      headingFont: "..." # e.g. "Clash Display"
+      bodyFont: "..."    # e.g. "Poppins"
+      monoFont: "..."    # e.g. "JetBrains Mono"
+      scale:
+        h1: "32px"
+        h2: "24px"
+        h3: "20px"
+        body: "16px"
+        small: "14px"
+    spacing:
+      xs: "4px"
+      sm: "8px"
+      md: "16px"
+      lg: "24px"
+      xl: "32px"
+    radius:
+      sm: "4px"
+      md: "8px"
+      lg: "12px"
+      full: "9999px"
+    shadows:
+      sm: "..."
+      md: "..."
+      lg: "..."
+  componentLibrary: ...
+  iconLibrary: ...
+  themes:               # Light/dark theme overrides
+    - name: light
+      colors:
+        background: "#ffffff"
+        text: "#111827"
+    - name: dark
+      colors:
+        background: "#111827"
+        text: "#f9fafb"
+  layouts:              # Named layout shells
+    - name: ...
+      description: ...
   shape: ...
   motion: ...
-  layout: ...
-  iconLibrary: ...
-  componentLibrary: ...
   accessibility: ...
 ```
 

@@ -87,15 +87,69 @@ coding-rules | coding-rules-enforcement
 
 ## Conditional Validation Rules
 
-These are hard errors — SDL will not compile if violated:
+These are hard errors — SDL will not compile if violated (27 rules from spec/SDL-v1.1.md):
 
-| # | Condition | Requirement | Error Code | Fix |
-|---|-----------|-------------|------------|-----|
-| 1 | `architecture.style = "microservices"` | `services[]` must have 2+ items | `MICROSERVICES_REQUIRES_SERVICES` | Add services array with 2+ entries, or use `modular-monolith` |
-| 2 | `auth.strategy = "oidc"` | `auth.identityProvider` must be set | `OIDC_REQUIRES_PROVIDER` | Add identityProvider (auth0, cognito, entra-id, etc.) |
-| 3 | `nonFunctional.security.pii = true` | `encryptionAtRest` must be `true` | `PII_REQUIRES_ENCRYPTION` | Set `encryptionAtRest: true` |
-| 4 | `deployment.infrastructure.iac = "cloudformation"` | `deployment.cloud` must be `"aws"` | `INCOMPATIBLE_CLOUD_IAC` | Change iac to terraform/cdk, or cloud to aws |
-| 5 | `data.primaryDatabase.type = "mongodb"` | No backend may have `orm = "ef-core"` | `INCOMPATIBLE_DATABASE_ORM` | Use mongoose for MongoDB, or postgres for EF Core |
+**Reference Integrity**
+
+| # | Condition | Requirement | Fix |
+|---|-----------|-------------|-----|
+| 1 | `environments[].components` defined | Every component name must exist in `architecture.projects` | Rename or add missing component |
+| 2 | `slos[].componentId` defined | Must match a component in `architecture.projects` | Fix componentId to match project name |
+| 3 | `costs.infrastructure[].component` defined | Must match a component in `architecture.projects` | Fix component name or remove entry |
+| 4 | `architecture.projects[].dependsOn[]` defined | Must not form a cycle | Break circular dependency |
+| 5 | `contracts[].paths[].service` defined | Service must exist in `architecture.projects` | Fix service name in contract paths |
+| 6 | `domain.entities[].relationships[].target` defined | Target entity must exist in `domain.entities` | Add missing entity or fix target name |
+| 7 | `features.phase*.features[].dependsOn[]` defined | Referenced IDs must exist in same or earlier phases | Move feature to correct phase or fix ID |
+| 8 | `resilience.circuitBreaker[].service` defined | Service must exist in `architecture.projects` | Fix service name in circuit breaker config |
+| 9 | `backupDr.databases[].name` defined | Must match a name in `data.databases` or `data.primaryDatabase` | Fix database name |
+
+**Type Compatibility**
+
+| # | Condition | Requirement | Fix |
+|---|-----------|-------------|-----|
+| 10 | Any `architecture.projects[].orm` set | Must be compatible with `data.primaryDatabase.type` (Prisma ✓ relational/MongoDB; Mongoose ✓ MongoDB only; EF Core ✗ MongoDB) | Change ORM or database type |
+| 11 | `architecture.projects[].framework` + `.language` | Must be compatible (NestJS → node/ts; Django → python; Spring → java) | Fix framework or language |
+| 12 | `auth.provider` references an integration | Provider must exist in `integrations[]` | Add missing integration or fix provider name |
+
+**Deployment Integrity**
+
+| # | Condition | Requirement | Fix |
+|---|-----------|-------------|-----|
+| 13 | `architecture.style = "microservices"` | `architecture.services[]` must have 2+ items | Add services or switch to `modular-monolith` |
+| 14 | `architecture.projects[].deployable = true` | Component must appear in at least one environment | Add to environments or set deployable: false |
+| 15 | Multiple components in same environment | No duplicate ports | Change port on one component |
+| 16 | `deployment.regions[]` defined | Regions must be valid for `deployment.cloud` | Fix region for cloud provider |
+| 17 | `deployment.infrastructure.iac = "cloudformation"` | `deployment.cloud` must be `"aws"` | Use terraform/cdk or change cloud to aws |
+
+**Data Model Integrity**
+
+| # | Condition | Requirement | Fix |
+|---|-----------|-------------|-----|
+| 18 | `domain.entities[]` defined | Every entity must have exactly one `primaryKey: true` field | Add primary key field |
+| 19 | FK relationship spans different databases | Flag as limitation (no DB-level enforcement) | Use application-level FK or consolidate to one DB |
+| 20 | All `architecture.projects` entries | Component names must be globally unique | Rename duplicate component |
+| 21 | `domain.entities[]` defined | Each entity should be owned by a component (soft) | Add x-owner field to entity |
+
+**Configuration Completeness**
+
+| # | Condition | Requirement | Fix |
+|---|-----------|-------------|-----|
+| 22 | `architecture.projects[].deployable = true` | Component must have `path` and `runtime` | Add missing path/runtime fields |
+| 23 | `auth.strategy = "oidc"` | `auth.identityProvider` must be set | Add identityProvider |
+| 24 | `compliance.frameworks[].name` defined | Must be recognised: `GDPR \| HIPAA \| SOC2-Type2 \| PCI-DSS \| CCPA \| ISO27001` | Fix framework name |
+
+**Resilience & Performance**
+
+| # | Condition | Requirement | Fix |
+|---|-----------|-------------|-----|
+| 25 | `resilience.circuitBreaker[].failureThreshold` or `retryPolicy[].maxAttempts` defined | Must be > 0 | Set positive integer value |
+| 26 | `slos[].availability.target` defined | Must be 90–99.99%; `latency.p99` must be > `latency.p50` | Adjust target or latency values |
+
+**PII & Security**
+
+| # | Condition | Requirement | Fix |
+|---|-----------|-------------|-----|
+| 27 | Any entity field contains PII data | `nonFunctional.security.pii: true` AND `encryptionAtRest: true` | Set both fields |
 
 ---
 
@@ -204,6 +258,79 @@ TRIGGER: estimated monthly cost > budget ceiling
 CODE:    BUDGET_INFRASTRUCTURE_MISMATCH
 MESSAGE: "Estimated cost (~${X}/mo) may exceed {budget} ceiling (${Y}/mo)"
 FIX:     "Consider managed/serverless options or upgrade budget tier"
+```
+
+### Warning 5: Microservices with Small Team
+
+```
+TRIGGER: architecture.style = "microservices" AND team.developers < 3
+CODE:    MICROSERVICES_TEAM_TOO_SMALL
+MESSAGE: "Microservices architecture with only {N} developer(s) — operational overhead is high"
+FIX:     "Use modular-monolith for MVP; migrate to microservices as team grows"
+```
+
+### Warning 6: Cross-Database Foreign Keys
+
+```
+TRIGGER: domain.entities[].relationships[].target entity lives in different database
+CODE:    CROSS_DATABASE_FOREIGN_KEY
+MESSAGE: "{entity}.{field} → {target} spans databases — no DB-level enforcement"
+FIX:     "Enforce referential integrity at application layer; consider consolidating entities"
+```
+
+### Warning 7: Unused Integrations
+
+```
+TRIGGER: integration defined in integrations[] but not referenced in any component's dependsOn[]
+CODE:    UNUSED_INTEGRATION
+MESSAGE: "Integration '{name}' is defined but not referenced by any component"
+FIX:     "Add to relevant component's dependsOn[], or remove if not needed"
+```
+
+### Warning 8: Missing Observability for Production
+
+```
+TRIGGER: solution.stage = "growth" OR "enterprise" AND observability section absent
+CODE:    MISSING_OBSERVABILITY
+MESSAGE: "{stage}-stage project has no observability configuration"
+FIX:     "Add observability section with logging, tracing, and metrics; run /architect:setup-monitoring"
+```
+
+### Warning 9: Loose SLO Targets
+
+```
+TRIGGER: solution.stage = "growth" OR "enterprise" AND any slos[].availability.target < 99%
+CODE:    LOOSE_SLO_TARGET
+MESSAGE: "SLO target {X}% is below recommended minimum for {stage} stage"
+FIX:     "Raise availability target or document reason for lower target"
+```
+
+### Warning 10: High Cost Variance
+
+```
+TRIGGER: costs.scenarios.high > costs.scenarios.low × 10
+CODE:    HIGH_COST_VARIANCE
+MESSAGE: "Cost scenarios vary {X}x (low: ${L}/mo vs high: ${H}/mo)"
+FIX:     "Review usage assumptions; choose tiers with more predictable pricing"
+```
+
+### Warning 11: Compliance Gaps
+
+```
+TRIGGER: solution.stage = "growth" OR "enterprise" AND compliance section absent
+         OR constraints.compliance defined but compliance.frameworks[] absent
+CODE:    COMPLIANCE_NOT_ADDRESSED
+MESSAGE: "Stage or constraints suggest compliance needs but no compliance section defined"
+FIX:     "Add compliance section or run /architect:compliance for gap analysis"
+```
+
+### Warning 12: Design Tokens Missing for Production
+
+```
+TRIGGER: solution.stage = "growth" OR "enterprise" AND design section absent
+CODE:    DESIGN_TOKENS_MISSING
+MESSAGE: "{stage}-stage project has no design tokens defined"
+FIX:     "Run /architect:design-system to generate a complete design token set"
 ```
 
 ---

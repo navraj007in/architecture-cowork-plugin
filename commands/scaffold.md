@@ -149,7 +149,7 @@ Check if the design-system phase has been completed, in this priority order:
 
 2. **If `_state.json.design` is absent or incomplete**, look for `architecture-output/design-system/design-tokens.json` — load the full token set if present.
 
-3. **If neither `_state.json.design` nor `design-tokens.json` is available**, look for a `design` section in `solution.sdl.yaml` (or `sdl/design.sdl.yaml` if multi-file). Read `design.typography.heading/body/mono` for font config.
+3. **If neither `_state.json.design` nor `design-tokens.json` is available**, look for a `design` section in `solution.sdl.yaml` (or `sdl/design.sdl.yaml` if multi-file). Read `design.tokens.typography.headingFont/bodyFont/monoFont` for font config and `design.tokens.colors.primary` for palette.
 
 4. **If nothing exists**, note this in the scaffolder handoff — the scaffolder should infer domain-appropriate defaults from `design-systems.md` (NEVER default to indigo/purple).
 

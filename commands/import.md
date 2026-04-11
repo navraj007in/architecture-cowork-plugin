@@ -244,8 +244,8 @@ Using the **sdl-knowledge** skill, build a **v1.1-compliant** SDL document.
 | Rate limiting middleware | `deployment.security.rateLimit` |
 | Design tokens file detected | `design.tokensFile` + palette fields |
 | Component library (shadcn, MUI, Chakra) | `design.componentLibrary` |
-| Font families (heading + body) | `design.typography.heading` + `design.typography.body` |
-| Monospace font (code blocks, terminals) | `design.typography.mono` |
+| Font families (heading + body) | `design.tokens.typography.headingFont` + `design.tokens.typography.bodyFont` |
+| Monospace font (code blocks, terminals) | `design.tokens.typography.monoFont` |
 | Design personality inferred from palette | `design.personality` |
 | Icon library (lucide-react, heroicons) | `design.iconLibrary` |
 
@@ -584,16 +584,20 @@ errorHandling:                          # If error patterns found
   circuitBreaker: true | false
 
 design:                                 # If design tokens or component library detected
-  preset: shadcn | material | ant | chakra | daisyui | bootstrap | custom | none
   personality: "{inferred from palette — e.g. bold-commercial, soft-minimal}"
-  primary: "{hex from tailwind config or CSS vars}"
-  secondary: "{hex}"
-  accent: "{hex}"
-  typography:                           # Nested per sdl-schema v1.1
-    heading: "{font family name}"
-    body: "{font family name}"
-    mono: "{font family name — e.g. JetBrains Mono, Fira Code}"
-  borderRadius: "{e.g. 8px}"
+  preset: shadcn | material | ant | chakra | daisyui | bootstrap | custom | none
+  tokens:                               # Full token set per spec SDL-v1.1
+    colors:
+      primary: "{hex from tailwind config or CSS vars}"
+      secondary: "{hex}"
+      accent: "{hex}"
+    typography:                         # camelCase per spec
+      headingFont: "{font family name}"
+      bodyFont: "{font family name}"
+      monoFont: "{font family name — e.g. JetBrains Mono, Fira Code}"
+    radius:
+      sm: "{e.g. 4px}"
+      md: "{e.g. 8px}"
   componentLibrary: "{shadcn/ui | @mui/material | @chakra-ui/react | daisyui | none}"
   iconLibrary: lucide-react | heroicons | phosphor | radix-icons
   tokensFile: "{relative path to design-tokens.json if found}"
@@ -942,15 +946,17 @@ Full recommendations → architecture-output/import-recommendations.md
   
   **Design authority check (MUST DO FIRST):** Before writing the `design` field, check if `_state.json.design` is already fully populated (has `primary`, `heading_font`, `body_font`, `personality`). If yes → **preserve it verbatim, do NOT overwrite** — it was set by `/architect:design-system` and is authoritative. Only write design fields when `_state.json.design` is absent or missing required fields.
 
-  **IMPORTANT — SDL uses nested `typography`, `_state.json` is flat snake_case:** When writing `design` fields from SDL to `_state.json`, apply these conversions:
-  - `design.typography.heading` → `design.heading_font`
-  - `design.typography.body` → `design.body_font`
-  - `design.typography.mono` → `design.mono_font`
-  - `design.borderRadius` → `design.border_radius`
+  **IMPORTANT — SDL uses nested tokens (camelCase), `_state.json` is flat snake_case:** When writing `design` fields from SDL to `_state.json`, apply these conversions:
+  - `design.tokens.typography.headingFont` → `design.heading_font`
+  - `design.tokens.typography.bodyFont` → `design.body_font`
+  - `design.tokens.typography.monoFont` → `design.mono_font`
+  - `design.tokens.colors.primary` → `design.primary`
+  - `design.tokens.colors.secondary` → `design.secondary`
+  - `design.tokens.colors.accent` → `design.accent`
   - `design.componentLibrary` → `design.component_library`
   - `design.iconLibrary` → `design.icon_library`
   - `design.tokensFile` → `design.tokens_file`
-  - All other fields (`primary`, `secondary`, `accent`, `personality`, etc.) copy as-is.
+  - `design.personality` copies as-is.
   See Schema Enforcement Rules in CLAUDE.md for the complete canonical field list.
   
   **Design personality inference:** If no `design.personality` is found in SDL or `_state.json`, infer it from the detected primary color palette:
