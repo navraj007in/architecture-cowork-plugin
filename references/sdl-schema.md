@@ -54,7 +54,7 @@ Alignment note:
 solution:
   name: string              # Required. Project name
   description: string        # Required. What it does
-  stage: enum                # Required. MVP | Growth | Enterprise
+  stage: enum                # Required. mvp | growth | enterprise
   domain: string             # Optional. Custom domain
   regions:                   # Optional
     primary: string          # Default: "us-east-1"
@@ -376,7 +376,7 @@ evolution:
       estimatedEffort: string
       blockers: string[]
   roadmap:
-    - stage: enum            # MVP | Growth | Enterprise
+    - stage: enum            # mvp | growth | enterprise
       targetDate: string
       architectureChanges: string[]
       newCapabilities: string[]

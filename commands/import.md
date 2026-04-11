@@ -228,8 +228,8 @@ Using the **sdl-knowledge** skill, build a **v1.1-compliant** SDL document.
 | Rate limiting middleware | `deployment.security.rateLimit` |
 | Design tokens file detected | `design.tokensFile` + palette fields |
 | Component library (shadcn, MUI, Chakra) | `design.componentLibrary` |
-| Font families (heading + body) | `design.headingFont` + `design.bodyFont` |
-| Monospace font (code blocks, terminals) | `design.monoFont` |
+| Font families (heading + body) | `design.typography.heading` + `design.typography.body` |
+| Monospace font (code blocks, terminals) | `design.typography.mono` |
 | Design personality inferred from palette | `design.personality` |
 | Icon library (lucide-react, heroicons) | `design.iconLibrary` |
 
@@ -283,10 +283,23 @@ data:
     hosting: managed | self-hosted | serverless
 
 imports:
-  - sdl/product.sdl.yaml      # Product, personas, flows, screens
-  - sdl/auth.sdl.yaml         # Authentication & authorization
-  - sdl/deployment.sdl.yaml   # Cloud, CI/CD, environments
-  - sdl/nfr.sdl.yaml          # Performance, security, availability
+  # Always present:
+  - sdl/product.sdl.yaml        # Product, personas, flows, screens
+  - sdl/deployment.sdl.yaml     # Cloud, CI/CD, runtime
+  - sdl/environments.sdl.yaml   # Per-env URLs, ports, instances
+  - sdl/features.sdl.yaml       # Feature phases, flags
+  - sdl/costs.sdl.yaml          # Infrastructure + third-party costs
+  # Conditional (only if present):
+  - sdl/auth.sdl.yaml           # Authentication & authorization
+  - sdl/nfr.sdl.yaml            # Baseline performance, security, availability
+  - sdl/contracts.sdl.yaml      # API contracts (if backend exists)
+  - sdl/domain.sdl.yaml         # Entity definitions (if ORM detected)
+  - sdl/slos.sdl.yaml           # SLO targets (if production or 2+ services)
+  - sdl/resilience.sdl.yaml     # Retry, circuit breakers (if patterns detected)
+  - sdl/compliance.sdl.yaml     # Compliance frameworks (if signals detected)
+  - sdl/backup-dr.sdl.yaml      # Backup/DR (if database exists)
+  - sdl/design.sdl.yaml         # Design tokens (if tokens/tailwind detected)
+  - sdl/navigation-patterns.sdl.yaml  # Nav patterns (if detected)
 ```
 
 **Separate modules (optional sections):**
@@ -310,7 +323,7 @@ product:
 **`sdl/auth.sdl.yaml`** — Authentication & authorization:
 ```yaml
 auth:
-  strategy: oidc | passwordless | api-key | none
+  strategy: oidc | passwordless | magic-link | api-key | none
   identityProvider: cognito | auth0 | entra-id | firebase | clerk | custom
   serviceTokenModel: jwt | session | api-key
   roles: ["{role1}", "{role2}"]
@@ -319,7 +332,7 @@ auth:
 **`sdl/deployment.sdl.yaml`** — Infrastructure & CI/CD:
 ```yaml
 deployment:
-  cloud: aws | gcp | azure | vercel | railway | fly
+  cloud: azure | aws | gcp | cloudflare | vercel | railway | render | fly-io
   ciCd:
     provider: github-actions | gitlab-ci | azure-pipelines
     environments: [dev, staging, production]
@@ -404,10 +417,10 @@ sdl/
 8. **V1.1 NEW:** Move entity definitions with fields → `sdl/domain.sdl.yaml` (if ORM detected)
 9. **V1.1 NEW:** Move feature phases, flags → `sdl/features.sdl.yaml` (always generate)
 10. **V1.1 NEW:** Move compliance frameworks → `sdl/compliance.sdl.yaml` (if signals detected)
-11. **V1.1 NEW:** Move SLO targets, alert thresholds → `sdl/slos.sdl.yaml` (if production or 2+ services)
+11. **V1.1 NEW:** Move SLO targets, alert thresholds → `sdl/slos.sdl.yaml` (if production stage OR 2+ services OR explicit performance targets detected)
 12. **V1.1 NEW:** Move retry/circuit breaker patterns → `sdl/resilience.sdl.yaml` (if detected)
 13. **V1.1 NEW:** Move infrastructure + third-party costs → `sdl/costs.sdl.yaml` (always generate)
-14. **V1.1 NEW:** Move RTO/RPO, failover strategy → `sdl/backup-dr.sdl.yaml` (if database exists)
+14. **V1.1 NEW:** Move RTO/RPO, failover strategy → `sdl/backup-dr.sdl.yaml` (if primary database exists — generate with sensible defaults even if no explicit backup strategy detected)
 15. **V1.1 NEW:** Move design tokens with full scale → `sdl/design.sdl.yaml` (if tokens/tailwind config exist)
 16. Set sdlVersion as `"1.1"` (official spec version)
 
@@ -431,10 +444,10 @@ solution.sdl.yaml  # Contains only: sdlVersion, solution, architecture, data, im
 - **V1.1:** `sdl/domain.sdl.yaml` — domain section with entity definitions, fields, relationships, indexes (if ORM detected)
 - **V1.1:** `sdl/features.sdl.yaml` — features section with phase planning, feature flags, dependencies (always generate)
 - **V1.1:** `sdl/compliance.sdl.yaml` — compliance section with frameworks, requirements, data retention (if signals detected)
-- **V1.1:** `sdl/slos.sdl.yaml` — slos section with availability targets, latency, error budgets (if production stage or 2+ services)
+- **V1.1:** `sdl/slos.sdl.yaml` — slos section with availability targets, latency, error budgets (if production stage OR 2+ services OR explicit performance targets detected)
 - **V1.1:** `sdl/resilience.sdl.yaml` — resilience section with circuit breakers, retries, timeouts (if patterns detected)
 - **V1.1:** `sdl/costs.sdl.yaml` — costs section with infrastructure + third-party pricing (always generate)
-- **V1.1:** `sdl/backup-dr.sdl.yaml` — backupDr section with RTO/RPO, failover strategy (if database exists)
+- **V1.1:** `sdl/backup-dr.sdl.yaml` — backupDr section with RTO/RPO, failover strategy (if primary database exists — generate with sensible defaults even if no explicit backup strategy)
 - **V1.1:** `sdl/design.sdl.yaml` — design section with token scales, themes (if design-tokens.json or tailwind config exists)
 - `sdl/advanced.sdl.yaml` — domain entities (names only), services, shared libraries (if microservices or complex)
 
@@ -555,14 +568,15 @@ errorHandling:                          # If error patterns found
   circuitBreaker: true | false
 
 design:                                 # If design tokens or component library detected
-  preset: shadcn | material | chakra | daisyui | custom | none
+  preset: shadcn | material | ant | chakra | daisyui | bootstrap | custom | none
   personality: "{inferred from palette — e.g. bold-commercial, soft-minimal}"
   primary: "{hex from tailwind config or CSS vars}"
   secondary: "{hex}"
   accent: "{hex}"
-  headingFont: "{font family name}"
-  bodyFont: "{font family name}"
-  monoFont: "{font family name — e.g. JetBrains Mono, Fira Code}"
+  typography:                           # Nested per sdl-schema v1.1
+    heading: "{font family name}"
+    body: "{font family name}"
+    mono: "{font family name — e.g. JetBrains Mono, Fira Code}"
   borderRadius: "{e.g. 8px}"
   componentLibrary: "{shadcn/ui | @mui/material | @chakra-ui/react | daisyui | none}"
   iconLibrary: lucide-react | heroicons | phosphor | radix-icons
@@ -830,7 +844,16 @@ Write `intent.json` using the standard intent schema:
   
   **Design authority check (MUST DO FIRST):** Before writing the `design` field, check if `_state.json.design` is already fully populated (has `primary`, `heading_font`, `body_font`, `personality`). If yes → **preserve it verbatim, do NOT overwrite** — it was set by `/architect:design-system` and is authoritative. Only write design fields when `_state.json.design` is absent or missing required fields.
 
-  **IMPORTANT — SDL is camelCase, `_state.json` is snake_case:** When writing `design` fields, convert from SDL's camelCase to `_state.json`'s canonical snake_case names: `headingFont` → `heading_font`, `bodyFont` → `body_font`, `monoFont` → `mono_font`, `borderRadius` → `border_radius`, `componentLibrary` → `component_library`, `iconLibrary` → `icon_library`, `tokensFile` → `tokens_file`. See Schema Enforcement Rules in CLAUDE.md for the complete canonical field list.
+  **IMPORTANT — SDL uses nested `typography`, `_state.json` is flat snake_case:** When writing `design` fields from SDL to `_state.json`, apply these conversions:
+  - `design.typography.heading` → `design.heading_font`
+  - `design.typography.body` → `design.body_font`
+  - `design.typography.mono` → `design.mono_font`
+  - `design.borderRadius` → `design.border_radius`
+  - `design.componentLibrary` → `design.component_library`
+  - `design.iconLibrary` → `design.icon_library`
+  - `design.tokensFile` → `design.tokens_file`
+  - All other fields (`primary`, `secondary`, `accent`, `personality`, etc.) copy as-is.
+  See Schema Enforcement Rules in CLAUDE.md for the complete canonical field list.
   
   **Design personality inference:** If no `design.personality` is found in SDL or `_state.json`, infer it from the detected primary color palette:
   - Saturated orange/red/pink tones → `"bold-commercial"`

@@ -417,9 +417,9 @@ imports:
 - `sdl/contracts.sdl.yaml` — API contracts with OpenAPI specs, GraphQL, gRPC definitions (if backend services exist)
 - `sdl/domain.sdl.yaml` — domain entities with full field definitions, relationships, indexes (if ORM/database exists)
 - `sdl/compliance.sdl.yaml` — compliance frameworks (GDPR, HIPAA, SOC2, etc.), data retention policies (if signals detected)
-- `sdl/slos.sdl.yaml` — SLO targets per component, SLIs, performance metrics, alerting thresholds (if production or 2+ services)
+- `sdl/slos.sdl.yaml` — SLO targets per component, SLIs, performance metrics, alerting thresholds (if production stage OR 2+ services OR performance targets provided)
 - `sdl/resilience.sdl.yaml` — resilience patterns: retry policies, circuit breakers, timeouts, fallbacks (if resilience patterns needed)
-- `sdl/backup-dr.sdl.yaml` — backup strategy, RTO/RPO targets, disaster recovery plan, failover strategy (if database exists)
+- `sdl/backup-dr.sdl.yaml` — backup strategy, RTO/RPO targets, disaster recovery plan, failover strategy (if primary database exists — generate with sensible defaults)
 - `sdl/design.sdl.yaml` — design system tokens, typography, colors, component library, theming (if design assets exist)
 - `sdl/navigation-patterns.sdl.yaml` — route guards, context switching, error handling, ephemeral states, data-driven navigation (ONLY if patterns detected in Step 2)
 
@@ -441,10 +441,10 @@ imports:
      - `domain.sdl.yaml` — IF ORM/database exists
      - `features.sdl.yaml` — **always generate** (even if no MVP planning captured yet — create with empty phases as a placeholder)
      - `compliance.sdl.yaml` — IF compliance signals detected
-     - `slos.sdl.yaml` — IF performance targets defined
+     - `slos.sdl.yaml` — IF production stage OR 2+ services OR performance targets explicitly provided
      - `resilience.sdl.yaml` — IF resilience patterns found
      - `costs.sdl.yaml` — **always generate** (every project has infrastructure costs — create with estimates even if speculative)
-     - `backup-dr.sdl.yaml` — IF database + backup strategy defined
+     - `backup-dr.sdl.yaml` — IF primary database exists (generate with sensible defaults even if no explicit backup strategy provided)
      - `design.sdl.yaml` — IF design-system phase completed
 
 4. Update imports list in `solution.sdl.yaml` to ONLY reference modules that were written
@@ -1233,15 +1233,15 @@ Rules:
 - Write to `architecture-output/_state.json` (create `architecture-output/` if it doesn't exist)
 - `entities`, `personas`, `market_research`, `mvp_scope`, `top_risks` are written by other commands — do NOT add them here
 - **Design authority check (MUST DO FIRST):** Before writing the `design` field, check if `_state.json.design` is already fully populated (has `primary`, `heading_font`, `body_font`, `personality`). If yes → **preserve it verbatim, do NOT overwrite** — it was set by `/architect:design-system` and is authoritative. If no → write the design values derived from the SDL or domain below.
-- **Design value source (only when design is not already set):** If the SDL has a `design` section, read it and convert SDL's camelCase to `_state.json` snake_case:
-  - `headingFont` → `heading_font`
-  - `bodyFont` → `body_font`
-  - `monoFont` → `mono_font`
-  - `borderRadius` → `border_radius`
-  - `componentLibrary` → `component_library`
-  - `iconLibrary` → `icon_library`
-  - `tokensFile` → `tokens_file`
-  - All other fields (`primary`, `secondary`, `accent`, `personality`, etc.) use the same key in both SDL and `_state.json`
+- **Design value source (only when design is not already set):** If the SDL has a `design` section, read it and map to `_state.json` snake_case flat structure:
+  - `design.typography.heading` → `design.heading_font`
+  - `design.typography.body` → `design.body_font`
+  - `design.typography.mono` → `design.mono_font`
+  - `design.borderRadius` → `design.border_radius`
+  - `design.componentLibrary` → `design.component_library`
+  - `design.iconLibrary` → `design.icon_library`
+  - `design.tokensFile` → `design.tokens_file`
+  - All other fields (`primary`, `secondary`, `accent`, `personality`, etc.) copy as-is
   
   If the SDL has no `design` section, derive personality from the product domain using the personality table in `/architect:prototype`, then construct a matching palette.
 - `blueprint.deepen_passes` starts at `0` on first run; increment by 1 each time deepen mode completes
