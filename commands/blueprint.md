@@ -282,14 +282,14 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
      - For each `deployable: false` component, set `deployed: false` in all environments
    
    **v1.1 additional mappings:**
-   - Extract API contracts (OpenAPI paths, methods, request/response schemas) from backend code/docs → `contracts[].paths[]` with method, description, requestBody, responses
+   - Extract API contracts (OpenAPI paths, methods, request/response schemas) from backend code/docs → `contracts.apis[]` with name, type (rest|graphql|grpc|webhook|asyncapi), version, path, endpoints.count
    - Extract ORM entity fields (from Prisma schema, migrations, SQLAlchemy models, Mongoose schemas) → `domain.entities[].fields[]` with type, nullable, default, constraints
-   - Extract feature list from routes/pages/backlog → `features.phase1.features[]` with name, description, status
-   - Extract feature flags from codebase (LaunchDarkly, env vars) → `features.featureFlags[]` with name, enabled_by_default
-   - Extract compliance signals (GDPR consent, SOC2 audit logs, HIPAA BAA) → `compliance.frameworks[]` with name, status, controls
-   - Extract data retention policies (job schedules for data purge) → `compliance.dataRetention[]` with entity, retention_period_days, deletion_job
-   - Extract performance targets from README/NFR docs → `slos[]` with component, availability.target (e.g. 99.9%), latency.p99ms, throughput
-   - Extract resilience patterns (retry middleware, circuit breakers, timeouts) from code → `resilience.circuitBreaker[]`, `resilience.retryPolicy[]`, `resilience.timeout[]` with thresholds
+   - Extract feature list from routes/pages/backlog → `features[]` flat array — id, name, priority, stage (MVP|Growth|Enterprise), status (planned|in-progress|done|deferred), x-phase; NOT phase-keyed object
+   - Extract feature flags from codebase (LaunchDarkly, env vars) → `featureFlags[]` with name, rollout, targetAudience, x-phase
+   - Extract compliance signals (GDPR consent, SOC2 audit logs, HIPAA BAA) → `compliance.frameworks[]` with name, applicable, requirements
+   - Extract data retention policies (job schedules for data purge) → `compliance.dataRetention[]` with dataType, retentionDays, reason
+   - Extract performance targets from README/NFR docs → `slos.services[]` — name, availability (string e.g. "99.9%"), latencyP95 (string e.g. "200ms")
+   - Extract resilience patterns (retry middleware, circuit breakers, timeouts) from code → `resilience.circuitBreaker` single object (enabled, threshold, timeout) + `resilience.retryPolicy` single object (maxAttempts, backoff, initialInterval) + `resilience.timeout` single object (default); per-service detail in `x-perService[]`
    - Extract infrastructure costs from Terraform/docker-compose instance types → `costs.infrastructure.compute[]` with component, unit_cost_per_month
    - Extract backup config (RDS snapshots, S3 versioning, pg_dump cron jobs) → `backupDr.databases[].backup` with frequency, `backupDr.databases[].rpo` with target_seconds
    - Extract design tokens from tailwind config or design-tokens.json → `design.tokens.*` with colors, typography, spacing, shadows
@@ -312,10 +312,10 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
    
    **Reference Integrity:**
    - Environment components → each in `environments[].components` must exist in `architecture.projects`
-   - SLO components → each in `slos[].component` must exist in `architecture.projects`
+   - SLO components → each in `slos.services[].name` must exist in `architecture.projects`
    - Cost components → each in `costs.infrastructure[].component` must exist in `architecture.projects`
    - Circular dependencies → no cycles in `dependsOn` references
-   - API endpoints → `contracts[].paths[].service` must exist
+   - API endpoints → each `contracts.apis[].name` must reference a valid service in `architecture.projects`
    - Foreign keys → `domain.entities[].relationships[].target` entities must exist
    
    **Type Compatibility:**
@@ -385,7 +385,7 @@ imports:
   - sdl/product.sdl.yaml
   - sdl/deployment.sdl.yaml
   - sdl/environments.sdl.yaml
-  - sdl/features.sdl.yaml           # always — feature phases (empty phases if not yet planned)
+  - sdl/features.sdl.yaml           # always — flat features array with x-phase (empty array if not yet planned)
   - sdl/costs.sdl.yaml              # always — infrastructure costs (estimates if speculative)
 
   # Conditional (only if exist):
@@ -406,7 +406,7 @@ imports:
 - `sdl/product.sdl.yaml` — product, personas, coreFlows
 - `sdl/deployment.sdl.yaml` — deployment, ci-cd, infrastructure targets
 - `sdl/environments.sdl.yaml` — dev/staging/production URLs, ports, instances, scaling per component
-- `sdl/features.sdl.yaml` — feature phases, MVP scope, feature flags (empty phases if not yet planned)
+- `sdl/features.sdl.yaml` — flat features array (x-phase for grouping), featureFlags sibling array (empty if not yet planned)
 - `sdl/costs.sdl.yaml` — infrastructure and third-party costs (estimates if speculative)
 
 **Conditional sections (only if applicable):**
@@ -573,8 +573,8 @@ Include a note explaining how to use each artifact:
 
 **Also write to SDL v1.1:**
 - Serialize all OpenAPI paths, methods, request/response schemas → `sdl/contracts.sdl.yaml`
-  - Use structure: `contracts[].{type: "openapi|graphql|grpc", paths: [], schemas: []}`
-  - Include service name, endpoint definitions with status codes
+  - Use structure: `contracts: { apis: [{ name, type, version, path, endpoints: { count, baseUrl } }] }`
+  - type enum: `rest | graphql | grpc | webhook | asyncapi`
 
 #### 4f. Security Architecture
 
@@ -608,8 +608,9 @@ Scale recommendations to the project's complexity — don't prescribe Datadog + 
 
 **Also write to SDL v1.1:**
 - Serialize monitoring and alerting targets → `sdl/slos.sdl.yaml`
-  - Use structure: `slos[].{component: "api-server", availability: {target: "99.9"}, latency: {p50: 100, p99: 500}, throughput: 1000}`
-  - Include SLI definitions with alert thresholds from the observability section
+  - Use structure: `slos: { services: [{ name, availability, latencyP95, x-detail: { ... } }] }`
+  - `availability` and `latencyP95` are strings consumed by the monitoring generator (e.g. `"99.9%"`, `"200ms"`)
+  - Full SLI/alert detail goes in `x-detail` extension per service
 
 #### 4h. DevOps Blueprint
 
@@ -1009,28 +1010,43 @@ Include:
 Extract from manifest and sprint backlog:
 
 ```yaml
+# features is a FLAT ARRAY — phase grouping via x-phase, not nested objects
 features:
-  phase1:
-    description: MVP Phase
-    features:
-      - name: User Authentication
-        description: OAuth2/JWT login with email
-        status: planned
-      - name: Dashboard
-        description: Overview of user's data
-        status: planned
-  phase2:
-    description: Growth Phase
-    features:
-      - name: Advanced Reporting
-        description: Custom reports and exports
-        status: backlog
-  featureFlags:
-    - name: new_dashboard
-      description: Toggle new dashboard UI
-      enabled_by_default: false
-      targeting: percentage
+  - id: user-auth
+    name: "User Authentication"
+    description: "OAuth2/JWT login with email"
+    priority: critical
+    stage: MVP
+    status: planned
+    x-phase: phase1
+
+  - id: dashboard
+    name: "Dashboard"
+    description: "Overview of user's data"
+    priority: high
+    stage: MVP
+    status: planned
+    x-phase: phase1
+
+  - id: advanced-reporting
+    name: "Advanced Reporting"
+    description: "Custom reports and exports"
+    priority: medium
+    stage: Growth
+    status: planned
+    dependsOn: [dashboard]
+    x-phase: phase2
+
+featureFlags:
+  - name: new_dashboard
+    rollout: "0%"
+    targetAudience: beta-users
+    x-phase: phase2
 ```
+
+> Status values: `planned | in-progress | done | deferred` — **NOT** `backlog` or `completed`.
+> Stage values: `MVP | Growth | Enterprise` (Title Case) — distinct from `solution.stage` lowercase.
+> `featureFlags` is a sibling array alongside `features`, not nested inside it.
 
 **Compliance (compliance.sdl.yaml):**
 
@@ -1040,26 +1056,29 @@ Extract signals from the architecture and DevOps blueprint:
 compliance:
   frameworks:
     - name: GDPR
-      status: planned
-      controls:
-        - name: Consent Management
-          implemented: false
-        - name: Right to be Forgotten
-          implemented: false
-    - name: SOC2
-      status: not_required
+      applicable: true
+      requirements:
+        - requirement: consent-tracking
+          description: "Track explicit user consent for data processing"
+          implementation: "consent_log table with timestamps"
+        - requirement: data-deletion
+          description: "Right to erasure"
+          implementation: "Soft delete with 30-day hard-delete job"
+    - name: SOC2-Type2
+      applicable: true
+      requirements:
+        - requirement: access-control
+          implementation: "RBAC + audit logging"
+    - name: HIPAA
+      applicable: false
+      notes: "No PHI handled"
   dataRetention:
-    - entity: User
-      retention_period_days: null
-      deletion_policy: manual_only
-    - entity: AuditLog
-      retention_period_days: 365
-      deletion_job: "0 0 * * * (daily at midnight)"
-  encryption:
-    at_rest: true
-    algorithm: AES-256
-    in_transit: true
-    tls_version: "1.3"
+    - dataType: user-pii
+      retentionDays: 30
+      reason: "GDPR grace period after deletion request"
+    - dataType: audit-logs
+      retentionDays: 2555
+      reason: "SOC2 7-year requirement"
 ```
 
 #### 4r. Resilience SDL
@@ -1069,32 +1088,36 @@ compliance:
 Serialize reliability and failure handling patterns from the DevOps and security blueprints:
 
 ```yaml
+# resilience sub-sections are SINGLE OBJECTS, not arrays
+# Per-service overrides go in x-perService[] extension arrays
 resilience:
   circuitBreaker:
-    - service: api-server
-      call_to: payment-service
-      failure_threshold: 5
-      timeout_ms: 5000
-      half_open_requests: 3
+    enabled: true
+    threshold: 50         # Open when 50% of requests fail
+    timeout: 30s          # Half-open retry interval
+    x-perService:
+      - name: payment-service
+        failureThreshold: 5
+        timeout: 5s
+        fallback: "Queue payment for retry"
+
   retryPolicy:
-    - service: worker
-      call_to: email-service
-      max_retries: 3
-      backoff_type: exponential
-      backoff_ms: 100
-      max_backoff_ms: 10000
+    maxAttempts: 3
+    backoff: exponential
+    initialInterval: 100ms
+    x-perService:
+      - name: email-service
+        maxAttempts: 3
+        maxDelayMs: 10000
+
   timeout:
-    - service: web
-      call_to: api-server
-      timeout_ms: 30000
-    - service: api-server
-      call_to: database
-      timeout_ms: 5000
-  fallback:
-    - service: api-server
-      when_service_fails: payment-service
-      fallback_action: queue_for_retry
-      fallback_message: "Payment processing delayed"
+    default: 30s
+    x-perService:
+      - name: database
+        ms: 5000
+
+  rateLimit:
+    requestsPerMinute: 6000   # 100 rps global
 ```
 
 Extract from:

@@ -422,15 +422,18 @@ artifacts:
 
 API contract definitions for REST, GraphQL, and gRPC services. Contract files themselves live in `sdl/contracts/`.
 
+**Shape:** `contracts.apis[]` — the array is nested under the `contracts` object (not a root array).
+
 ```yaml
 contracts:
-  - name: api-server
-    type: enum               # Required. openapi | graphql | grpc
-    version: string          # Optional. e.g. "3.1.0"
-    path: string             # Required. Path to contract file. e.g. sdl/contracts/api-server.openapi.yaml
-    endpoints:               # Optional
-      count: number
-      baseUrl: string
+  apis:                        # Required array (nested, not root-level)
+    - name: string             # Required
+      type: enum               # Required. rest | graphql | grpc | webhook | asyncapi
+      version: string          # Optional. e.g. "3.1.0"
+      path: string             # Required. e.g. sdl/contracts/api-server.openapi.yaml
+      endpoints:               # Optional
+        count: number
+        baseUrl: string
 ```
 
 ---
@@ -479,27 +482,32 @@ domain:
 
 ## features (optional, v1.1)
 
-Feature planning, MVP phasing, feature flags. Import: only list features that EXIST in the codebase. Blueprint: list planned features.
+Feature planning, phasing, and feature flags. Import: only list features that EXIST in the codebase. Blueprint: list planned features.
+
+**Shape:** `features` is a **flat array** — phase grouping uses the `x-phase` extension field on each item. `featureFlags` is a sibling array at the same level.
 
 ```yaml
 features:
-  phase1:                    # Phase key — use phase1/phase2/phase3 or named phases
-    name: string             # Optional. e.g. "MVP"
-    deadline: string         # Optional. ISO date
-    features:
-      - id: string           # Required. kebab-case
-        name: string         # Required
-        description: string
-        priority: enum       # critical | high | medium | low
-        estimatedDays: number
-        dependsOn: string[]  # IDs of features this depends on
-        status: enum         # planned | in-progress | completed
-  featureFlags:              # Optional
-    - name: string           # Required
-      rollout: string        # e.g. "50%", "0%", "100%"
-      targetAudience: string
-      phase: string          # Phase key this flag belongs to
+  - id: string               # Required. kebab-case unique identifier
+    name: string             # Required
+    description: string      # Optional
+    priority: enum           # critical | high | medium | low
+    stage: enum              # Optional. MVP | Growth | Enterprise  (Title Case — different from solution.stage)
+    status: enum             # Optional. planned | in-progress | done | deferred  (NOT "completed")
+    estimatedDays: number    # Optional
+    dependsOn: string[]      # Optional. IDs of features this depends on (same/earlier phase only)
+    x-phase: string          # Plugin extension. e.g. "phase1", "phase2" — groups features visually
+
+featureFlags:                # Optional. Sibling to features array, not nested inside it
+  - name: string             # Required
+    rollout: string          # e.g. "50%", "0%", "100%"
+    targetAudience: string
+    x-phase: string          # Phase this flag belongs to
 ```
+
+> **Note on `stage` casing:** `features[].stage` is Title Case (`MVP | Growth | Enterprise`) — this is distinct from `solution.stage` which uses lowercase (`mvp | growth | enterprise`).
+
+> **Note on `status`:** The valid value is `done` (not `completed`). Using `completed` will fail schema validation.
 
 ---
 
@@ -537,82 +545,89 @@ compliance:
 
 Service level objectives and SLIs per component. Generated when: production stage OR 2+ services OR explicit targets defined.
 
+**Shape:** `slos.services[]` — the array is nested under the `slos` object (not a root array). The `monitoring` generator reads `services[].availability` and `services[].latencyP95` for alert thresholds.
+
 ```yaml
 slos:
-  - componentId: string      # Required. Must match a component name in architecture.projects
-    name: string             # Optional
-    availability:
-      target: string         # Required. e.g. "99.9%"
-      window: enum           # Optional. monthly | weekly | daily
-      errorBudget: string    # Optional. e.g. "43 minutes/month"
-    latency:
-      p50: string            # e.g. "50ms"
-      p95: string
-      p99: string
-      p999: string
-    throughput:
-      rps: number
-      concurrentUsers: number
-    errorRate:
-      target: string         # e.g. "0.1%"
-    slis:                    # Optional
-      - metric: string
-        description: string
-        query: string        # Prometheus/PromQL expression
-        threshold: string
-    alerts:                  # Optional
-      - name: string
-        condition: string
-        severity: enum       # critical | warning | info
-        action: string
+  services:                    # Required array (nested, not root-level)
+    - name: string             # Required. Must match a component name in architecture.projects
+      availability: string     # Optional. e.g. "99.9%" — consumed by monitoring generator
+      latencyP95: string       # Optional. e.g. "200ms" — consumed by monitoring generator
+      x-detail:                # Plugin extension — full SLO detail beyond what monitoring consumes
+        window: enum           # monthly | weekly | daily
+        errorBudget: string    # e.g. "43 minutes/month"
+        latency:
+          p50: string
+          p99: string
+          p999: string
+        throughput:
+          rps: number
+          concurrentUsers: number
+        errorRate:
+          target: string
+        slis:
+          - metric: string
+            description: string
+            query: string      # Prometheus/PromQL expression
+            threshold: string
+        alerts:
+          - name: string
+            condition: string
+            severity: enum     # critical | warning | info
+            action: string
 ```
 
 ---
 
 ## resilience (optional, v1.1)
 
-Fault tolerance patterns: circuit breakers, retries, timeouts, bulkheads, fallbacks.
+Fault tolerance patterns. The `coding-rules` generator reads these fields to emit resilience enforcement rules.
+
+**Shape:** Each sub-section is a **single typed object** (not an array). Per-service overrides go in `x-perService[]` extension arrays.
 
 ```yaml
 resilience:
-  circuitBreaker:            # Optional
-    - name: string
-      target: enum           # external | internal
-      failureThreshold: number
-      successThreshold: number
-      timeout: string        # e.g. "30s"
-      backoffMultiplier: number
-      maxBackoff: string
-      fallback: string
-  retryPolicy:               # Optional
-    - name: string
-      maxAttempts: number
-      backoff:
-        type: enum           # exponential | linear | fixed
+  circuitBreaker:            # Optional. Single object — consumed by coding-rules generator
+    enabled: boolean         # Default: true
+    threshold: number        # Failure % before opening circuit. e.g. 50
+    timeout: string          # Time before half-open retry. e.g. "30s"
+    x-perService:            # Plugin extension — per-service overrides
+      - name: string
+        failureThreshold: number
+        successThreshold: number
+        timeout: string
+        fallback: string
+
+  retryPolicy:               # Optional. Single object — consumed by coding-rules generator
+    maxAttempts: number      # e.g. 3
+    backoff: enum            # exponential | linear | fixed
+    initialInterval: string  # e.g. "500ms"
+    x-perService:            # Plugin extension — per-service overrides
+      - name: string
+        maxAttempts: number
+        backoff: enum
         initialDelayMs: number
         maxDelayMs: number
-        multiplier: number
-      retryableErrors: string[] # e.g. [500, 502, 503, "timeout"]
-  timeout:                   # Optional
-    - name: string
-      ms: number             # Required
-      description: string
-  bulkhead:                  # Optional
-    - name: string
-      threads: number
-      queue: number
-      description: string
-  rateLimit:                 # Optional
-    - name: string
-      rps: number
-      burstSize: number
-      perUser: number
-      window: string
-  fallback:                  # Optional
-    - service: string
-      failureMode: enum      # timeout | error | slow-response
-      fallbackStrategy: string
+        retryableErrors: string[]
+
+  timeout:                   # Optional. Single object — consumed by coding-rules generator
+    default: string          # Default timeout for all outbound calls. e.g. "30s"
+    x-perService:            # Plugin extension — per-operation overrides
+      - name: string
+        ms: number
+        description: string
+
+  rateLimit:                 # Optional. Single object — consumed by coding-rules generator
+    requestsPerMinute: number # Global rate limit. e.g. 120000
+    x-perEndpoint:           # Plugin extension — per-endpoint overrides
+      - name: string
+        rps: number
+        burstSize: number
+        perUser: number
+        window: string
 ```
+
+> **Key difference from v0.1:** These are **objects**, not arrays. The `coding-rules` generator reads `circuitBreaker.threshold`, `retryPolicy.maxAttempts`, etc. as single values. Detailed per-service config belongs in `x-perService[]` extension arrays.
 
 ---
 
