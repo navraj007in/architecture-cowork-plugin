@@ -1,0 +1,139 @@
+resilience:
+  circuitBreaker:
+    - name: openai-api
+      target: external
+      failureThreshold: 5
+      successThreshold: 2
+      timeout: 60s
+      backoffMultiplier: 2
+      maxBackoff: 300s
+      fallback: "Return cached insight if < 7 days old; else mark insight as 'generating'"
+
+    - name: stripe-api
+      target: external
+      failureThreshold: 3
+      successThreshold: 2
+      timeout: 30s
+      backoffMultiplier: 2
+      maxBackoff: 120s
+      fallback: "Queue billing action for retry; surface 'payment processing delayed' to user"
+
+    - name: sendgrid-api
+      target: external
+      failureThreshold: 5
+      successThreshold: 2
+      timeout: 15s
+      backoffMultiplier: 2
+      maxBackoff: 60s
+      fallback: "Queue email for retry via notification-worker; log to dead-letter queue after 3 attempts"
+
+    - name: meilisearch
+      target: internal
+      failureThreshold: 3
+      successThreshold: 2
+      timeout: 5s
+      backoffMultiplier: 2
+      maxBackoff: 30s
+      fallback: "Degrade to PostgreSQL ILIKE search; surface 'search is slower than usual' banner"
+
+  retryPolicy:
+    - name: openai-requests
+      maxAttempts: 3
+      backoff:
+        type: exponential
+        initialDelayMs: 1000
+        maxDelayMs: 30000
+        multiplier: 2
+      retryableErrors: [429, 500, 502, 503, 504, timeout]
+
+    - name: stripe-requests
+      maxAttempts: 3
+      backoff:
+        type: exponential
+        initialDelayMs: 500
+        maxDelayMs: 10000
+        multiplier: 2
+      retryableErrors: [500, 502, 503, 504, timeout]
+
+    - name: sendgrid-requests
+      maxAttempts: 5
+      backoff:
+        type: exponential
+        initialDelayMs: 500
+        maxDelayMs: 60000
+        multiplier: 3
+      retryableErrors: [429, 500, 502, 503, 504, timeout]
+
+    - name: database-queries
+      maxAttempts: 2
+      backoff:
+        type: linear
+        initialDelayMs: 100
+        maxDelayMs: 500
+        multiplier: 1
+      retryableErrors: [connection_reset, ECONNRESET, 57P03]
+
+  timeout:
+    - name: api-server-request
+      ms: 30000
+      description: "Overall API request timeout — client gets 504 beyond this"
+    - name: database-query
+      ms: 10000
+      description: "Prisma query timeout — fails fast on slow queries"
+    - name: openai-inference
+      ms: 120000
+      description: "OpenAI completion timeout — AI jobs have longer budget"
+    - name: sendgrid-send
+      ms: 15000
+      description: "SendGrid single email delivery"
+    - name: stripe-charge
+      ms: 30000
+      description: "Stripe payment intent confirmation"
+    - name: meilisearch-query
+      ms: 3000
+      description: "Search query timeout before PostgreSQL fallback"
+
+  bulkhead:
+    - name: ai-job-processing
+      threads: 10
+      queue: 200
+      description: "Isolate AI inference pool — prevents runaway OpenAI spending from starving API"
+
+    - name: webhook-delivery
+      threads: 20
+      queue: 500
+      description: "Isolate outbound webhook delivery from notification path"
+
+  rateLimit:
+    - name: api-global
+      rps: 2000
+      burstSize: 3000
+      perUser: 0
+      window: 1m
+
+    - name: api-per-org
+      rps: 200
+      burstSize: 400
+      perUser: 0
+      window: 1m
+      x-notes: "Applied at API gateway (WAF) level"
+
+    - name: ai-insights-per-org
+      rps: 5
+      burstSize: 10
+      perUser: 0
+      window: 1m
+      x-notes: "Prevents single org from exhausting OpenAI quota"
+
+  fallback:
+    - service: meilisearch
+      failureMode: timeout
+      fallbackStrategy: "PostgreSQL full-text search via ts_vector — 3-5x slower but functional"
+
+    - service: openai
+      failureMode: error
+      fallbackStrategy: "Return stale cached insight with 'last updated' timestamp; disable AI features gracefully"
+
+    - service: sendgrid
+      failureMode: error
+      fallbackStrategy: "Queue email in notification-worker dead-letter queue; retry up to 24h; alert RevOps"

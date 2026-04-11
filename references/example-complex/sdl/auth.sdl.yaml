@@ -1,0 +1,27 @@
+auth:
+  strategy: oidc
+  identityProvider: clerk
+  serviceTokenModel: jwt
+
+  roles:
+    - org_admin
+    - manager
+    - sales_rep
+    - read_only
+    - api_consumer
+
+  sessions:
+    accessToken: jwt
+    refreshToken: true
+    ttl:
+      access: 15m
+      refresh: 7d
+
+  mfa: true
+
+  socialProviders:
+    - google
+    - microsoft
+
+  x-tokenInterceptor: true
+  x-notes: "Clerk issues JWTs; api-server validates them via JWKS endpoint. org_id claim enforces RLS at DB layer."

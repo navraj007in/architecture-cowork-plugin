@@ -1,0 +1,41 @@
+integrations:
+  payments:
+    provider: stripe
+    mode: subscriptions
+    currency: usd
+    x-plans: [starter_29, growth_79, business_149, enterprise_custom]
+
+  email:
+    provider: sendgrid
+    useCase: [transactional, notifications]
+
+  analytics:
+    provider: posthog
+    x-selfHosted: false
+
+  monitoring:
+    provider: sentry
+    x-dsn: "configured via SENTRY_DSN env var"
+
+  cdn:
+    provider: cloudfront
+
+  custom:
+    - name: openai
+      apiType: rest
+      authMethod: api-key
+      rateLimit: "10k tokens/min on tier 2"
+      x-purpose: "Contact enrichment, deal scoring, talk-track generation"
+      x-scope: "ai-worker only"
+
+    - name: clerk
+      apiType: rest
+      authMethod: api-key
+      x-purpose: "User authentication, JWT issuance, organisation management"
+      x-scope: "api-server, web-app"
+
+    - name: meilisearch
+      apiType: rest
+      authMethod: api-key
+      x-purpose: "Full-text search over contacts and deals"
+      x-scope: "api-server"

@@ -1,0 +1,134 @@
+sdlVersion: "1.1"
+
+# Nexper CRM — Multi-tenant AI-powered CRM SaaS
+# Exercises all SDL v1.1 sections. Growth stage, AWS deployment.
+
+solution:
+  name: nexper-crm
+  description: "Multi-tenant AI-powered CRM for SMB sales teams — contact management, deal tracking, and AI-driven insights"
+  stage: growth
+  domain: app.nexpercrm.com
+  regions:
+    primary: us-east-1
+    secondary: [eu-west-1]
+  repository:
+    org: nexper-ai
+    naming: kebab-case
+
+architecture:
+  style: microservices
+  projects:
+    frontend:
+      - name: web-app
+        framework: nextjs
+        rendering: ssr
+        styling: tailwind
+        stateManagement: zustand
+        deployable: true
+        dependsOn: [api-server, clerk]
+        x-port: 3000
+
+    backend:
+      - name: api-server
+        framework: nodejs
+        apiStyle: rest
+        orm: prisma
+        deployable: true
+        dependsOn: [web-app, ai-worker, stripe, sendgrid, clerk, sentry]
+        x-port: 4000
+
+      - name: ai-worker
+        framework: python-fastapi
+        apiStyle: rest
+        deployable: true
+        dependsOn: [openai, sentry]
+        x-port: 8000
+
+      - name: notification-worker
+        framework: nodejs
+        apiStyle: rest
+        deployable: true
+        dependsOn: [sendgrid, sentry]
+        x-port: 4001
+
+  services:
+    - name: api-server
+      kind: backend
+      responsibilities:
+        - "REST API for all CRM operations"
+        - "Multi-tenant data access via RLS"
+        - "Webhook delivery and retry"
+        - "Auth token validation via Clerk"
+
+    - name: ai-worker
+      kind: worker
+      responsibilities:
+        - "Contact scoring and enrichment via OpenAI"
+        - "Deal win-probability predictions"
+        - "Async AI insight generation"
+
+    - name: notification-worker
+      kind: worker
+      responsibilities:
+        - "Email notification dispatch via SendGrid"
+        - "In-app notification fan-out"
+        - "Webhook event delivery with retry"
+
+  sharedLibraries:
+    - name: "@nexper/shared-types"
+      language: typescript
+      deployable: false
+      dependsOn: []
+
+data:
+  primaryDatabase:
+    type: postgres
+    hosting: managed
+    name: nexper_crm_db
+    size: medium
+    role: primary
+
+  secondaryDatabases:
+    - type: postgres
+      hosting: managed
+      name: nexper_analytics_db
+      size: small
+      role: analytics
+
+  cache:
+    type: redis
+    useCase: [session, api, query]
+
+  queues:
+    provider: redis
+    useCase: [async-jobs, notifications]
+
+  storage:
+    blobs:
+      provider: s3
+      public: false
+    files:
+      provider: s3
+
+  search:
+    provider: meilisearch
+
+imports:
+  # Always present:
+  - sdl/product.sdl.yaml
+  - sdl/auth.sdl.yaml
+  - sdl/deployment.sdl.yaml
+  - sdl/environments.sdl.yaml
+  - sdl/nfr.sdl.yaml
+  - sdl/integrations.sdl.yaml
+  - sdl/features.sdl.yaml
+  - sdl/costs.sdl.yaml
+  # v1.1 sections:
+  - sdl/contracts.sdl.yaml
+  - sdl/domain.sdl.yaml
+  - sdl/compliance.sdl.yaml
+  - sdl/slos.sdl.yaml
+  - sdl/resilience.sdl.yaml
+  - sdl/backup-dr.sdl.yaml
+  - sdl/design.sdl.yaml
+  - sdl/navigation-patterns.sdl.yaml

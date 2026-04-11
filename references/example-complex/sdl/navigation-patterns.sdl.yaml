@@ -1,0 +1,76 @@
+navigationPatterns:
+  guards:
+    - type: authentication
+      description: "All routes except /login, /signup, /pricing require an authenticated Clerk session"
+      redirectOnFail: "/login"
+
+    - type: role
+      description: "Settings routes require org_admin or manager role"
+      roles: [org_admin, manager]
+      routes: ["/settings/*"]
+      redirectOnFail: "/forbidden"
+
+    - type: role
+      description: "Billing and team management require org_admin"
+      roles: [org_admin]
+      routes: ["/settings/billing", "/settings/team"]
+      redirectOnFail: "/settings"
+
+    - type: featureFlag
+      description: "AI Insights panel hidden unless ai_contact_scoring flag is enabled"
+      featureFlag: ai_contact_scoring
+      redirectOnFail: "hide-nav-item"
+
+    - type: plan
+      description: "Export and webhook features require growth plan or higher"
+      requiredPlans: [growth, business, enterprise]
+      routes: ["/settings/webhooks", "/export"]
+      redirectOnFail: "/settings/billing?upgrade=true"
+
+  contextualRouting:
+    scopes: [organization]
+    routePattern: "/org/:slug/..."
+    switcherPosition: top-left
+    contextName: "Organisation"
+    x-notes: "Clerk organisations map 1:1 to our Organization entity. Slug embedded in route for readability."
+
+  errorHandling:
+    patterns:
+      - trigger: "404"
+        fallback: "/not-found"
+        uiComponent: NotFoundPage
+      - trigger: "403"
+        fallback: "/forbidden"
+        uiComponent: ForbiddenPage
+      - trigger: "500"
+        fallback: "/error"
+        uiComponent: ErrorPage
+      - trigger: "offline"
+        fallback: "cached-routes-only"
+        uiComponent: OfflineBanner
+      - trigger: "session-expired"
+        fallback: "/login?reason=session_expired"
+        uiComponent: SessionExpiredToast
+
+  ephemeralStates:
+    - type: modal
+      priority: overlay
+      history: ephemeral
+      closeOnBackButton: true
+      x-usage: "Contact create/edit, Deal create/edit, Invite team member, Confirm delete"
+
+    - type: sheet
+      priority: overlay
+      history: ephemeral
+      x-usage: "Contact detail quick-view, AI insights panel, Activity log drawer"
+
+    - type: command-palette
+      priority: overlay
+      history: ephemeral
+      x-usage: "Cmd+K global search across contacts, deals, and activities"
+
+  dynamicNavigation:
+    source: "static+feature-flags"
+    strategy: "filter-by-role-and-flags"
+    cacheStrategy: "client"
+    x-notes: "Nav items are statically defined; visibility toggled by role enum + LaunchDarkly-style flag evaluation in useNavItems() hook"

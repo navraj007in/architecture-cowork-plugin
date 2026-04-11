@@ -1,0 +1,37 @@
+deployment:
+  cloud: aws
+  x-confidence: high
+  x-evidence: "AWS ECS Fargate for API/workers, Vercel for Next.js frontend, RDS PostgreSQL, ElastiCache Redis"
+
+  runtime:
+    frontend: vercel
+    backend: ecs-fargate
+    worker: ecs-fargate
+
+  networking:
+    publicApi: true
+    waf: true
+    ddos: true
+    privateEndpoints: true
+    customDomain: true
+
+  ciCd:
+    provider: github-actions
+    environments:
+      - name: staging
+        autoApproval: true
+        requiresTests: true
+        secrets: [DATABASE_URL, CLERK_SECRET_KEY, STRIPE_SECRET_KEY]
+      - name: production
+        autoApproval: false
+        requiresTests: true
+        secrets: [DATABASE_URL, CLERK_SECRET_KEY, STRIPE_SECRET_KEY, OPENAI_API_KEY]
+
+  infrastructure:
+    iac: terraform
+    stateBacking: s3
+
+  security:
+    cors: true
+    csp: true
+    rateLimit: true

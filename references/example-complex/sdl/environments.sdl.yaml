@@ -1,0 +1,78 @@
+environments:
+  - name: development
+    description: Local development with Docker Compose
+    components:
+      web-app:
+        url: "http://localhost:3000"
+        port: 3000
+        instances: 1
+        deployed: true
+      api-server:
+        url: "http://localhost:4000"
+        port: 4000
+        instances: 1
+        deployed: true
+      ai-worker:
+        url: "http://localhost:8000"
+        port: 8000
+        instances: 1
+        deployed: true
+      notification-worker:
+        url: "http://localhost:4001"
+        port: 4001
+        instances: 1
+        deployed: true
+
+  - name: staging
+    description: Pre-production on AWS — mirrors prod topology at reduced scale
+    region: us-east-1
+    components:
+      web-app:
+        url: "https://staging.nexpercrm.com"
+        instances: 1
+        deployed: true
+      api-server:
+        url: "https://api.staging.nexpercrm.com"
+        instances: 2
+        deployed: true
+      ai-worker:
+        url: "https://ai.staging.nexpercrm.com"
+        instances: 1
+        deployed: true
+      notification-worker:
+        url: "https://notify.staging.nexpercrm.com"
+        instances: 1
+        deployed: true
+
+  - name: production
+    description: Multi-region production — primary us-east-1, failover eu-west-1
+    region: us-east-1
+    components:
+      web-app:
+        url: "https://app.nexpercrm.com"
+        instances: 3
+        scaling:
+          minReplicas: 2
+          maxReplicas: 10
+        deployed: true
+      api-server:
+        url: "https://api.nexpercrm.com"
+        instances: 4
+        scaling:
+          minReplicas: 3
+          maxReplicas: 20
+        deployed: true
+      ai-worker:
+        url: "https://ai.nexpercrm.com"
+        instances: 2
+        scaling:
+          minReplicas: 1
+          maxReplicas: 8
+        deployed: true
+      notification-worker:
+        url: "https://notify.nexpercrm.com"
+        instances: 2
+        scaling:
+          minReplicas: 1
+          maxReplicas: 6
+        deployed: true

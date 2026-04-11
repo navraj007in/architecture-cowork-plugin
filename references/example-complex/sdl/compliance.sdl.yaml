@@ -1,0 +1,75 @@
+compliance:
+  frameworks:
+    - name: GDPR
+      applicable: true
+      requirements:
+        - requirement: data-deletion
+          description: "Right to erasure — users can request full data deletion"
+          implementation: "Soft delete with 30-day grace period; hard delete job runs nightly via pg_cron"
+        - requirement: consent-tracking
+          description: "Explicit consent for marketing emails tracked with version and timestamp"
+          implementation: "consent_log table; Clerk stores consent metadata"
+        - requirement: data-portability
+          description: "Users can export all their personal data in JSON format"
+          implementation: "GET /v1/me/export — async job creates S3 presigned download"
+        - requirement: privacy-by-design
+          description: "Minimal data collection; PII encrypted at rest; purpose limitation enforced"
+          implementation: "AES-256 on email/phone fields; no third-party tracking pixels"
+        - requirement: data-residency
+          description: "EU users can opt into eu-west-1 data residency (Phase 3)"
+          implementation: "Region flag on Organization; enforced at DB connection level"
+
+    - name: HIPAA
+      applicable: false
+      notes: "No PHI handled — CRM contacts are sales leads, not patients"
+
+    - name: SOC2-Type2
+      applicable: true
+      requirements:
+        - requirement: access-control
+          implementation: "RBAC via Clerk + role column; RLS at PostgreSQL level"
+        - requirement: encryption-at-rest
+          implementation: "AWS RDS encryption (AES-256); S3 SSE-S3"
+        - requirement: encryption-in-transit
+          implementation: "TLS 1.2+ enforced on all endpoints; HSTS enabled"
+        - requirement: audit-logging
+          implementation: "audit_logs table — append-only; 7-year retention"
+        - requirement: incident-response
+          implementation: "Runbooks in Notion; PagerDuty on-call; 4h response SLA"
+        - requirement: vendor-management
+          implementation: "Annual review of Stripe, Clerk, OpenAI, SendGrid BAAs"
+
+    - name: PCI-DSS
+      applicable: false
+      notes: "Stripe handles all card data — we store only stripe_customer_id and plan name"
+
+  certifications:
+    - name: SOC2-Type2
+      targetDate: "2026-12-31"
+      auditor: "Vanta + external auditor TBD"
+
+  dataResidency:
+    - region: us-east-1
+      dataTypes: [user-pii, contacts, deals, activities, audit-logs]
+      compliance: [GDPR, SOC2-Type2]
+    - region: eu-west-1
+      dataTypes: [eu-user-pii, eu-contacts]
+      compliance: [GDPR]
+      x-planned: "Phase 3 — not yet deployed"
+
+  dataRetention:
+    - dataType: user-pii
+      retentionDays: 30
+      reason: "GDPR right to erasure grace period after deletion request"
+    - dataType: audit-logs
+      retentionDays: 2555
+      reason: "SOC2 Type 2 requires 7-year audit trail"
+    - dataType: ai-insights
+      retentionDays: 7
+      reason: "Insights expire and are regenerated on demand to reduce OpenAI costs"
+    - dataType: activity-logs
+      retentionDays: 1825
+      reason: "5-year retention for sales analytics"
+    - dataType: deleted-contact-data
+      retentionDays: 30
+      reason: "GDPR 30-day grace before hard deletion"

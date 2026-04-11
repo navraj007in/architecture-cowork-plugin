@@ -1,0 +1,86 @@
+backupDr:
+  strategy: active-passive
+
+  databases:
+    - name: nexper_crm_db
+      rto: 15m
+      rpo: 5m
+      backup:
+        frequency: hourly
+        retention: "30 days point-in-time + 12 months monthly snapshots"
+        type: continuous-backup
+      replication:
+        target: "Read replica in us-west-2"
+        lag: "< 2s"
+      failover:
+        automatic: true
+        manual: true
+        switchoverTime: "< 2m"
+
+    - name: nexper_analytics_db
+      rto: 1h
+      rpo: 24h
+      backup:
+        frequency: daily
+        retention: "30 days"
+        type: snapshot
+      failover:
+        automatic: false
+        manual: true
+        switchoverTime: "30m"
+
+    - name: redis-cache
+      rto: 5m
+      rpo: 0m
+      backup:
+        frequency: hourly
+        retention: "24 hours"
+        type: aof-persistence
+      x-notes: "Cache loss is acceptable — Redis is used for sessions and ephemeral queue data only. Sessions re-auth via Clerk; queue jobs are durable in PostgreSQL."
+
+  storage:
+    - name: s3-attachments
+      rto: 1h
+      rpo: 1h
+      backup:
+        type: "S3 versioning + cross-region replication to eu-west-1"
+        target: "s3://nexper-crm-attachments-backup-eu"
+        retention: "90 days versions"
+
+  siteFailover:
+    primary: us-east-1
+    secondary: us-west-2
+    healthCheck: "every 30s via Route53 health check"
+    automaticFailover: true
+    switchoverTime: "< 5m"
+    testSchedule: quarterly
+    lastTestDate: "2026-01-15"
+    x-notes: "eu-west-1 failover planned for Phase 3 (EU data residency)"
+
+  recoveryProcedures:
+    - scenario: database-corruption
+      rto: 30m
+      steps:
+        - "Alert: PagerDuty wakes on-call engineer"
+        - "Assess: check RDS event logs and table integrity"
+        - "Failover: promote read replica to primary via RDS console"
+        - "Verify: run integrity check script (scripts/verify-db.sh)"
+        - "Notify: post incident in #incidents Slack channel"
+
+    - scenario: regional-outage-us-east-1
+      rto: 10m
+      steps:
+        - "Detection: Route53 health check fails × 3 consecutive checks"
+        - "Automatic DNS failover to us-west-2 ALB"
+        - "Validate: smoke test https://api.nexpercrm.com from external"
+        - "Scale: increase us-west-2 ECS desired count to production levels"
+        - "Notify: status page update via statuspage.io"
+
+    - scenario: data-loss-pii
+      rto: 2h
+      steps:
+        - "Contain: disable affected org's access immediately"
+        - "Assess: determine scope via audit_logs table"
+        - "Legal: notify DPO within 1h (GDPR 72h breach notification clock starts)"
+        - "Restore: point-in-time recovery to last clean state"
+        - "Notify: affected users and supervisory authority if > 250 records"

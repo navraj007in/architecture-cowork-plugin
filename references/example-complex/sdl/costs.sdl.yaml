@@ -1,0 +1,137 @@
+costs:
+  model: usage-based
+
+  infrastructure:
+    compute:
+      - component: api-server
+        platform: aws-ecs-fargate
+        instanceType: "1 vCPU / 2GB RAM"
+        instances: 4
+        costPerMonth: 280
+
+      - component: ai-worker
+        platform: aws-ecs-fargate
+        instanceType: "2 vCPU / 4GB RAM"
+        instances: 2
+        costPerMonth: 220
+
+      - component: notification-worker
+        platform: aws-ecs-fargate
+        instanceType: "0.5 vCPU / 1GB RAM"
+        instances: 2
+        costPerMonth: 60
+
+      - component: web-app
+        platform: vercel
+        instanceType: "Pro plan"
+        instances: 1
+        costPerMonth: 20
+
+    database:
+      - name: nexper_crm_db
+        provider: aws-rds
+        instanceType: db.t3.medium
+        storage: 200GB
+        backup: enabled
+        costPerMonth: 180
+
+      - name: nexper_analytics_db
+        provider: aws-rds
+        instanceType: db.t3.small
+        storage: 100GB
+        backup: enabled
+        costPerMonth: 80
+
+      - name: redis-cache
+        provider: aws-elasticache
+        instanceType: cache.t3.small
+        costPerMonth: 40
+
+    storage:
+      - name: s3-attachments
+        provider: aws-s3
+        storage: 500GB
+        costPerMonth: 12
+
+    cdn:
+      - name: cloudfront
+        provider: aws-cloudfront
+        bandwidth: 500GB
+        costPerMonth: 45
+
+    networking:
+      - name: aws-waf
+        provider: aws
+        costPerMonth: 20
+      - name: data-transfer
+        provider: aws
+        costPerMonth: 30
+
+  thirdParty:
+    - name: clerk
+      category: auth
+      fee: "$0.02 per MAU"
+      expectedVolume: "800 MAU"
+      monthlyCost: 16
+
+    - name: stripe
+      category: payments
+      fee: "2.9% + $0.30 per transaction"
+      expectedVolume: "$25,000 MRR × 5% churn × 12 months"
+      monthlyCost: 725
+
+    - name: openai
+      category: ai
+      fee: "$0.002 per 1k tokens (GPT-4o-mini)"
+      expectedVolume: "5M tokens/month"
+      monthlyCost: 200
+
+    - name: sendgrid
+      category: email
+      fee: "Essentials plan"
+      volume: "50k emails/month"
+      monthlyCost: 35
+
+    - name: sentry
+      category: error-tracking
+      fee: "Team plan"
+      events: "500k/month"
+      monthlyCost: 80
+
+    - name: posthog
+      category: analytics
+      fee: "Scale plan"
+      events: "1M events/month"
+      monthlyCost: 110
+
+    - name: meilisearch
+      category: search
+      fee: "Self-hosted on ECS — compute included above"
+      monthlyCost: 0
+
+    - name: github-actions
+      category: cicd
+      fee: "Team plan"
+      monthlyCost: 40
+
+    - name: pagerduty
+      category: alerting
+      fee: "Professional plan — 5 users"
+      monthlyCost: 100
+
+  total:
+    infrastructure: 987
+    thirdParty: 1306
+    monthly: 2293
+    annual: 27516
+
+  scaling:
+    - milestone: "1,000 active users"
+      estimatedCost: 3200
+      notes: "Scale api-server to 6 instances; add RDS read replica"
+    - milestone: "5,000 active users"
+      estimatedCost: 7500
+      notes: "GPU instances for ai-worker; separate analytics DB cluster"
+    - milestone: "20,000 active users"
+      estimatedCost: 18000
+      notes: "Multi-region; dedicated Kafka for events; CDN costs dominate"

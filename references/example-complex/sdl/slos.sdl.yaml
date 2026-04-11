@@ -1,0 +1,111 @@
+slos:
+  - componentId: api-server
+    name: "API Server SLO"
+    availability:
+      target: "99.9%"
+      window: monthly
+      errorBudget: "43 minutes/month"
+    latency:
+      p50: 50ms
+      p95: 200ms
+      p99: 500ms
+      p999: 1500ms
+    throughput:
+      rps: 2000
+      concurrentUsers: 400
+    errorRate:
+      target: "0.1%"
+      maxErrors: "1 per 1000 requests"
+    slis:
+      - metric: http_request_duration_seconds
+        description: "API response time (p99)"
+        query: "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{service='api-server'}[5m]))"
+        threshold: "500ms"
+      - metric: http_requests_errors
+        description: "5xx error rate"
+        query: "rate(http_requests_total{status=~'5..',service='api-server'}[5m]) / rate(http_requests_total{service='api-server'}[5m])"
+        threshold: "0.001"
+      - metric: db_connection_pool
+        description: "Available Prisma connection pool slots"
+        query: "prisma_pool_available_connections{service='api-server'}"
+        threshold: "> 5"
+    alerts:
+      - name: ApiHighErrorRate
+        condition: "error_rate > 0.5% for 5m"
+        severity: critical
+        action: "Page on-call via PagerDuty"
+      - name: ApiHighLatency
+        condition: "p99_latency > 1000ms for 10m"
+        severity: warning
+        action: "Slack #ops-alerts"
+      - name: ApiErrorBudgetBurn
+        condition: "error_budget_remaining < 20%"
+        severity: warning
+        action: "Slack #engineering"
+
+  - componentId: web-app
+    name: "Web App SLO"
+    availability:
+      target: "99.9%"
+      window: monthly
+    latency:
+      p75: 800ms
+      p95: 2000ms
+      p99: 4000ms
+    slis:
+      - metric: core_web_vitals_lcp
+        description: "Largest Contentful Paint"
+        threshold: "< 2500ms"
+      - metric: vercel_error_rate
+        description: "Vercel function error rate"
+        threshold: "< 0.1%"
+    alerts:
+      - name: WebHighErrorRate
+        condition: "5xx rate > 1% for 5m"
+        severity: critical
+        action: "Page on-call"
+
+  - componentId: ai-worker
+    name: "AI Worker SLO"
+    availability:
+      target: "99.5%"
+      window: monthly
+      errorBudget: "216 minutes/month"
+    latency:
+      p50: 3000ms
+      p95: 15000ms
+      p99: 30000ms
+    throughput:
+      rps: 20
+      concurrentUsers: 50
+    errorRate:
+      target: "1%"
+    slis:
+      - metric: ai_job_duration_seconds
+        description: "AI insight generation time"
+        query: "histogram_quantile(0.95, rate(ai_job_duration_seconds_bucket[5m]))"
+        threshold: "15s"
+      - metric: openai_error_rate
+        description: "OpenAI API error rate"
+        threshold: "< 2%"
+    alerts:
+      - name: AiWorkerQueueBacklog
+        condition: "queue depth > 500 for 10m"
+        severity: warning
+        action: "Scale out ai-worker instances"
+
+  - componentId: notification-worker
+    name: "Notification Worker SLO"
+    availability:
+      target: "99.5%"
+      window: monthly
+    latency:
+      p95: 5000ms
+      p99: 10000ms
+    errorRate:
+      target: "0.5%"
+    alerts:
+      - name: NotificationDeliveryFailures
+        condition: "sendgrid_delivery_failures > 5% for 15m"
+        severity: warning
+        action: "Slack #ops-alerts"

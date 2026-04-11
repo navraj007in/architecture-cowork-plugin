@@ -1,0 +1,164 @@
+features:
+  phase1:
+    name: MVP
+    deadline: "2026-06-30"
+    features:
+      - id: org-onboarding
+        name: "Organisation Onboarding"
+        description: "Create org, invite first users, configure billing via Stripe"
+        priority: critical
+        estimatedDays: 5
+        status: completed
+
+      - id: contact-crud
+        name: "Contact Management"
+        description: "CRUD for contacts with search, filters, and CSV import"
+        priority: critical
+        estimatedDays: 8
+        dependsOn: [org-onboarding]
+        status: completed
+
+      - id: deal-pipeline
+        name: "Deal Pipeline (Kanban)"
+        description: "Pipeline with configurable stages, drag-and-drop deal cards"
+        priority: critical
+        estimatedDays: 10
+        dependsOn: [contact-crud]
+        status: completed
+
+      - id: activity-logging
+        name: "Activity Logging"
+        description: "Log calls, emails, meetings, notes against contacts and deals"
+        priority: critical
+        estimatedDays: 6
+        dependsOn: [contact-crud, deal-pipeline]
+        status: completed
+
+      - id: basic-reporting
+        name: "Basic Reporting"
+        description: "Pipeline summary and activity count dashboards"
+        priority: high
+        estimatedDays: 5
+        dependsOn: [deal-pipeline, activity-logging]
+        status: completed
+
+      - id: billing-stripe
+        name: "Stripe Billing"
+        description: "Subscription management, plan upgrades, invoice history"
+        priority: critical
+        estimatedDays: 6
+        dependsOn: [org-onboarding]
+        status: completed
+
+  phase2:
+    name: Growth
+    deadline: "2026-10-31"
+    features:
+      - id: ai-contact-scoring
+        name: "AI Contact Scoring"
+        description: "Async AI score (0-100) per contact based on activity and enrichment"
+        priority: high
+        estimatedDays: 12
+        dependsOn: [contact-crud, activity-logging]
+        status: in-progress
+
+      - id: ai-deal-probability
+        name: "AI Deal Win Probability"
+        description: "Real-time win probability badge on deal cards"
+        priority: high
+        estimatedDays: 10
+        dependsOn: [deal-pipeline, ai-contact-scoring]
+        status: planned
+
+      - id: ai-talk-track
+        name: "AI Talk Track Generation"
+        description: "On-demand talk track and objection handlers for a contact"
+        priority: medium
+        estimatedDays: 8
+        dependsOn: [ai-contact-scoring]
+        status: planned
+
+      - id: email-sync
+        name: "Gmail / Outlook Email Sync"
+        description: "OAuth2 email sync — auto-log inbound/outbound emails to contacts"
+        priority: high
+        estimatedDays: 15
+        dependsOn: [contact-crud, activity-logging]
+        status: planned
+
+      - id: webhook-delivery
+        name: "Webhook Delivery"
+        description: "Customer-configurable webhooks for CRM events with HMAC signing"
+        priority: medium
+        estimatedDays: 8
+        dependsOn: [contact-crud, deal-pipeline, activity-logging]
+        status: planned
+
+      - id: team-notifications
+        name: "In-App and Email Notifications"
+        description: "@mention notifications, deal updates, task reminders"
+        priority: medium
+        estimatedDays: 7
+        dependsOn: [activity-logging]
+        status: planned
+
+      - id: csv-export
+        name: "Data Export (CSV)"
+        description: "Export contacts, deals, and activities with column selection"
+        priority: medium
+        estimatedDays: 4
+        dependsOn: [contact-crud, deal-pipeline]
+        status: planned
+
+  phase3:
+    name: Enterprise
+    features:
+      - id: sso-saml
+        name: "SSO (SAML / OIDC)"
+        description: "Enterprise SSO via Okta, Azure AD, Google Workspace"
+        priority: high
+        estimatedDays: 20
+        status: backlog
+
+      - id: advanced-audit
+        name: "Advanced Audit Logging"
+        description: "Compliance-grade audit trail with export and retention controls"
+        priority: high
+        estimatedDays: 10
+        dependsOn: [sso-saml]
+        status: backlog
+
+      - id: eu-data-residency
+        name: "EU Data Residency"
+        description: "Dedicated eu-west-1 deployment with data residency guarantee"
+        priority: high
+        estimatedDays: 15
+        status: backlog
+
+      - id: mobile-app
+        name: "Mobile App (iOS + Android)"
+        description: "React Native app with contact lookup, activity logging, deal updates"
+        priority: medium
+        estimatedDays: 30
+        status: backlog
+
+  featureFlags:
+    - name: ai_contact_scoring
+      rollout: "25%"
+      targetAudience: beta-users
+      phase: phase2
+
+    - name: ai_talk_track
+      rollout: "0%"
+      targetAudience: internal
+      phase: phase2
+
+    - name: email_sync_gmail
+      rollout: "10%"
+      targetAudience: early-access
+      phase: phase2
+
+    - name: new_kanban_ui
+      rollout: "50%"
+      targetAudience: all-users
+      phase: phase2

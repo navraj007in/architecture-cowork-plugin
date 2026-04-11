@@ -1,0 +1,173 @@
+nonFunctional:
+  availability:
+    target: "99.9"
+    maintenanceWindow: "Sun 02:00-04:00 UTC"
+
+  scaling:
+    expectedUsersMonth1: 500
+    expectedUsersYear1: 8000
+    peakConcurrentUsers: 400
+    dataGrowthPerMonth: "20GB"
+
+  performance:
+    apiResponseTime: "<200ms p95"
+    pageLoadTime: "<2s LCP"
+    targetRps: 2000
+    p95LatencyMs: 200
+    p99LatencyMs: 500
+
+  caching:
+    enabled: true
+
+  security:
+    pii: true
+    phi: false
+    pci: false
+    encryptionAtRest: true
+    encryptionInTransit: true
+    auditLogging: detailed
+    penetrationTesting: true
+
+  compliance:
+    frameworks:
+      - gdpr
+      - soc2
+
+  multiTenancy:
+    enabled: true
+    isolationModel: row-level-security
+    tenantIdField: organization_id
+    tenantOnboarding: self-service
+    customizationsPerTenant: false
+    x-confidence: high
+    x-evidence: "organization_id column on all tables; Prisma middleware enforces RLS; pg_policies in migrations"
+
+  backup:
+    frequency: hourly
+    retention: "30 days"
+    pointInTimeRecovery: true
+
+observability:
+  logging:
+    provider: pino
+    structured: true
+    level: info
+    correlationId: true
+
+  tracing:
+    provider: opentelemetry
+    samplingRate: 0.1
+
+  metrics:
+    provider: prometheus
+
+  healthChecks:
+    liveness: "/health"
+    readiness: "/health/ready"
+    dbCheck: true
+    cacheCheck: true
+    x-gracefulShutdown: true
+
+constraints:
+  budget: scaleup
+  budgetAmount: "$8,000/month infrastructure"
+  team:
+    fullstack: 3
+    devops: 1
+    designer: 1
+  timeline: "6-months to GA"
+  compliance:
+    - gdpr
+    - soc2
+  skills:
+    languages: [typescript, python]
+    cloudExperience: [aws]
+
+testing:
+  unit:
+    framework: vitest
+  e2e:
+    framework: playwright
+  coverage:
+    target: 80
+    enforce: true
+
+interServiceCommunication:  # plugin extension
+  - pattern: http
+    description: "web-app → api-server REST calls via Axios with Bearer JWT"
+    from: web-app
+    to: api-server
+    protocol: "REST over HTTPS"
+    async: false
+
+  - pattern: http
+    description: "api-server → ai-worker async job dispatch via HTTP POST"
+    from: api-server
+    to: ai-worker
+    protocol: "REST over HTTPS"
+    async: true
+
+  - pattern: message-queue
+    description: "api-server → notification-worker via Bull/Redis queue"
+    from: api-server
+    to: notification-worker
+    protocol: "Bull queue over Redis"
+    async: true
+
+configuration:  # plugin extension
+  strategy: env-vars
+  provider: "AWS SSM Parameter Store"
+  secretsManagement: "AWS Secrets Manager for production; .env.local for development"
+  perEnvironment: true
+
+errorHandling:  # plugin extension
+  strategy: centralized
+  errorFormat: "RFC 7807 Problem Details JSON"
+  globalHandler: true
+  retryPolicy: "exponential backoff — 3 retries, 100ms initial, max 30s"
+  circuitBreaker: true
+
+techDebt:
+  - id: TD-001
+    decision: "Bull/Redis queue instead of SQS for notifications"
+    reason: "Faster MVP — Bull was already in the stack for AI jobs"
+    impact: "Tied to Redis; limits cross-region queue durability"
+    effort: "M"
+    priority: medium
+    triggerCondition: "When notification volume exceeds 100k/day or multi-region required"
+    mitigationPlan: "Migrate to SQS with Bull-compatible wrapper (bee-queue)"
+
+  - id: TD-002
+    decision: "Meilisearch self-hosted on ECS instead of Algolia"
+    reason: "Cost — Algolia would be $500+/month at growth scale"
+    impact: "Ops overhead for Meilisearch upgrades; no SLA"
+    effort: "S"
+    priority: low
+    triggerCondition: "When search response p99 > 500ms"
+    mitigationPlan: "Migrate to Algolia or Typesense Cloud"
+
+evolution:
+  triggers:
+    - condition: "Monthly active users > 5,000"
+      action: "Split ai-worker into dedicated GPU instances"
+      estimatedEffort: "2 weeks"
+    - condition: "EU customer base > 30% of ARR"
+      action: "Deploy eu-west-1 stack for data residency"
+      estimatedEffort: "3 weeks"
+  roadmap:
+    - stage: growth
+      targetDate: "2026-12-31"
+      architectureChanges:
+        - "Add read-replica for analytics queries"
+        - "Move AI inference to dedicated GPU nodes"
+      newCapabilities:
+        - "Email sync (Gmail/Outlook OAuth)"
+        - "Mobile app (React Native)"
+    - stage: enterprise
+      targetDate: "2027-06-30"
+      architectureChanges:
+        - "Add eu-west-1 region for GDPR data residency"
+        - "Introduce GraphQL subscription layer for real-time"
+      newCapabilities:
+        - "SSO (SAML/OIDC) for enterprise customers"
+        - "Advanced audit logging"

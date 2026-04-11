@@ -1,0 +1,624 @@
+domain:
+  entities:
+    - name: Organization
+      description: "Tenant root — all data is scoped to an organization"
+      table: organizations
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: name
+          type: string
+          nullable: false
+          maxLength: 255
+        - name: slug
+          type: string
+          nullable: false
+          unique: true
+          maxLength: 63
+        - name: plan
+          type: enum
+          enum: [starter, growth, business, enterprise]
+          default: starter
+          nullable: false
+        - name: stripe_customer_id
+          type: string
+          nullable: true
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+        - name: deleted_at
+          type: timestamp
+          nullable: true
+          description: "Soft delete — retained 30 days for GDPR grace period"
+      indexes:
+        - fields: [slug]
+          unique: true
+        - fields: [stripe_customer_id]
+      x-softDelete: true
+
+    - name: User
+      description: "Platform user — always belongs to one or more organizations"
+      table: users
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: clerk_id
+          type: string
+          nullable: false
+          unique: true
+          description: "Clerk external user ID"
+        - name: organization_id
+          type: uuid
+          nullable: false
+          foreignKey: Organization.id
+        - name: email
+          type: string
+          nullable: false
+          maxLength: 255
+          description: "PII — encrypted at rest"
+        - name: full_name
+          type: string
+          nullable: true
+          description: "PII"
+        - name: role
+          type: enum
+          enum: [org_admin, manager, sales_rep, read_only]
+          default: sales_rep
+          nullable: false
+        - name: avatar_url
+          type: string
+          nullable: true
+        - name: last_active_at
+          type: timestamp
+          nullable: true
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+        - name: deleted_at
+          type: timestamp
+          nullable: true
+      relationships:
+        - name: organization
+          type: many-to-one
+          target: Organization
+          foreignKey: organization_id
+        - name: owned_contacts
+          type: one-to-many
+          target: Contact
+          foreignKey: owner_id
+        - name: activities
+          type: one-to-many
+          target: Activity
+          foreignKey: user_id
+      indexes:
+        - fields: [organization_id]
+        - fields: [clerk_id]
+          unique: true
+        - fields: [organization_id, role]
+      x-softDelete: true
+
+    - name: Contact
+      description: "CRM contact — person tracked across deals and activities"
+      table: contacts
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: organization_id
+          type: uuid
+          nullable: false
+          foreignKey: Organization.id
+          description: "RLS partition key"
+        - name: owner_id
+          type: uuid
+          nullable: true
+          foreignKey: User.id
+        - name: first_name
+          type: string
+          nullable: false
+          maxLength: 100
+          description: "PII"
+        - name: last_name
+          type: string
+          nullable: true
+          maxLength: 100
+          description: "PII"
+        - name: email
+          type: string
+          nullable: true
+          maxLength: 255
+          description: "PII"
+        - name: phone
+          type: string
+          nullable: true
+          description: "PII"
+        - name: company
+          type: string
+          nullable: true
+        - name: job_title
+          type: string
+          nullable: true
+        - name: linkedin_url
+          type: string
+          nullable: true
+        - name: ai_score
+          type: int
+          nullable: true
+          description: "0-100 AI-generated engagement score"
+        - name: tags
+          type: json
+          nullable: true
+          description: "Array of string tags"
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+        - name: updated_at
+          type: timestamp
+          default: "NOW()"
+          onUpdate: "NOW()"
+          nullable: false
+        - name: deleted_at
+          type: timestamp
+          nullable: true
+      relationships:
+        - name: organization
+          type: many-to-one
+          target: Organization
+          foreignKey: organization_id
+        - name: owner
+          type: many-to-one
+          target: User
+          foreignKey: owner_id
+        - name: deals
+          type: many-to-many
+          target: Deal
+          foreignKey: contact_id
+        - name: activities
+          type: one-to-many
+          target: Activity
+          foreignKey: contact_id
+        - name: ai_insights
+          type: one-to-many
+          target: AiInsight
+          foreignKey: contact_id
+      indexes:
+        - fields: [organization_id]
+        - fields: [organization_id, owner_id]
+        - fields: [organization_id, email]
+        - fields: [ai_score]
+      constraints:
+        - type: check
+          expression: "ai_score IS NULL OR (ai_score >= 0 AND ai_score <= 100)"
+      x-softDelete: true
+
+    - name: Pipeline
+      description: "Named pipeline with ordered stages — each org has at least one"
+      table: pipelines
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: organization_id
+          type: uuid
+          nullable: false
+          foreignKey: Organization.id
+        - name: name
+          type: string
+          nullable: false
+          maxLength: 100
+        - name: is_default
+          type: boolean
+          default: false
+          nullable: false
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+      relationships:
+        - name: stages
+          type: one-to-many
+          target: PipelineStage
+          foreignKey: pipeline_id
+        - name: deals
+          type: one-to-many
+          target: Deal
+          foreignKey: pipeline_id
+      indexes:
+        - fields: [organization_id]
+        - fields: [organization_id, is_default]
+
+    - name: PipelineStage
+      description: "Ordered stage within a pipeline"
+      table: pipeline_stages
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: pipeline_id
+          type: uuid
+          nullable: false
+          foreignKey: Pipeline.id
+        - name: name
+          type: string
+          nullable: false
+          maxLength: 100
+        - name: position
+          type: int
+          nullable: false
+        - name: win_probability
+          type: int
+          nullable: true
+          description: "0-100 default win % for this stage"
+      relationships:
+        - name: pipeline
+          type: many-to-one
+          target: Pipeline
+          foreignKey: pipeline_id
+        - name: deals
+          type: one-to-many
+          target: Deal
+          foreignKey: stage_id
+      indexes:
+        - fields: [pipeline_id, position]
+          unique: true
+
+    - name: Deal
+      description: "Sales opportunity tracked through pipeline stages"
+      table: deals
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: organization_id
+          type: uuid
+          nullable: false
+          foreignKey: Organization.id
+        - name: owner_id
+          type: uuid
+          nullable: true
+          foreignKey: User.id
+        - name: pipeline_id
+          type: uuid
+          nullable: false
+          foreignKey: Pipeline.id
+        - name: stage_id
+          type: uuid
+          nullable: false
+          foreignKey: PipelineStage.id
+        - name: title
+          type: string
+          nullable: false
+          maxLength: 255
+        - name: value
+          type: decimal
+          precision: 15
+          scale: 2
+          nullable: true
+        - name: currency
+          type: string
+          default: "USD"
+          maxLength: 3
+          nullable: false
+        - name: close_date
+          type: timestamp
+          nullable: true
+        - name: status
+          type: enum
+          enum: [open, won, lost, archived]
+          default: open
+          nullable: false
+        - name: win_probability
+          type: int
+          nullable: true
+          description: "AI-generated win probability override"
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+        - name: updated_at
+          type: timestamp
+          default: "NOW()"
+          onUpdate: "NOW()"
+          nullable: false
+        - name: deleted_at
+          type: timestamp
+          nullable: true
+      relationships:
+        - name: organization
+          type: many-to-one
+          target: Organization
+          foreignKey: organization_id
+        - name: pipeline
+          type: many-to-one
+          target: Pipeline
+          foreignKey: pipeline_id
+        - name: stage
+          type: many-to-one
+          target: PipelineStage
+          foreignKey: stage_id
+        - name: contacts
+          type: many-to-many
+          target: Contact
+          foreignKey: deal_id
+        - name: activities
+          type: one-to-many
+          target: Activity
+          foreignKey: deal_id
+        - name: ai_insights
+          type: one-to-many
+          target: AiInsight
+          foreignKey: deal_id
+      indexes:
+        - fields: [organization_id]
+        - fields: [organization_id, owner_id]
+        - fields: [organization_id, status]
+        - fields: [stage_id]
+        - fields: [close_date]
+      x-softDelete: true
+
+    - name: Activity
+      description: "Logged interaction — call, email, meeting, note"
+      table: activities
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: organization_id
+          type: uuid
+          nullable: false
+          foreignKey: Organization.id
+        - name: user_id
+          type: uuid
+          nullable: false
+          foreignKey: User.id
+        - name: contact_id
+          type: uuid
+          nullable: true
+          foreignKey: Contact.id
+        - name: deal_id
+          type: uuid
+          nullable: true
+          foreignKey: Deal.id
+        - name: type
+          type: enum
+          enum: [call, email, meeting, note, task, linkedin]
+          nullable: false
+        - name: subject
+          type: string
+          nullable: true
+          maxLength: 500
+        - name: body
+          type: text
+          nullable: true
+        - name: duration_seconds
+          type: int
+          nullable: true
+        - name: occurred_at
+          type: timestamp
+          nullable: false
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+      relationships:
+        - name: user
+          type: many-to-one
+          target: User
+          foreignKey: user_id
+        - name: contact
+          type: many-to-one
+          target: Contact
+          foreignKey: contact_id
+        - name: deal
+          type: many-to-one
+          target: Deal
+          foreignKey: deal_id
+      indexes:
+        - fields: [organization_id, occurred_at]
+        - fields: [contact_id, occurred_at]
+        - fields: [deal_id, occurred_at]
+        - fields: [user_id, occurred_at]
+
+    - name: AiInsight
+      description: "AI-generated enrichment, scores, or recommendations"
+      table: ai_insights
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: organization_id
+          type: uuid
+          nullable: false
+          foreignKey: Organization.id
+        - name: contact_id
+          type: uuid
+          nullable: true
+          foreignKey: Contact.id
+        - name: deal_id
+          type: uuid
+          nullable: true
+          foreignKey: Deal.id
+        - name: type
+          type: enum
+          enum: [contact_score, deal_probability, enrichment, talk_track, next_action]
+          nullable: false
+        - name: content
+          type: json
+          nullable: false
+          description: "Structured AI output — schema varies by type"
+        - name: model
+          type: string
+          nullable: false
+          description: "OpenAI model version used"
+        - name: tokens_used
+          type: int
+          nullable: false
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+        - name: expires_at
+          type: timestamp
+          nullable: true
+          description: "Insights expire after 7 days — re-generated on demand"
+      relationships:
+        - name: contact
+          type: many-to-one
+          target: Contact
+          foreignKey: contact_id
+        - name: deal
+          type: many-to-one
+          target: Deal
+          foreignKey: deal_id
+      indexes:
+        - fields: [organization_id, type]
+        - fields: [contact_id, type]
+        - fields: [deal_id, type]
+        - fields: [expires_at]
+
+    - name: Notification
+      description: "In-app and email notification for a user"
+      table: notifications
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: organization_id
+          type: uuid
+          nullable: false
+          foreignKey: Organization.id
+        - name: user_id
+          type: uuid
+          nullable: false
+          foreignKey: User.id
+        - name: type
+          type: enum
+          enum: [mention, deal_update, task_due, ai_ready, team_join]
+          nullable: false
+        - name: title
+          type: string
+          nullable: false
+        - name: body
+          type: string
+          nullable: true
+        - name: link
+          type: string
+          nullable: true
+        - name: read_at
+          type: timestamp
+          nullable: true
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+      indexes:
+        - fields: [user_id, read_at]
+        - fields: [organization_id, user_id, created_at]
+
+    - name: AuditLog
+      description: "Immutable audit trail for compliance (SOC2 / GDPR)"
+      table: audit_logs
+      fields:
+        - name: id
+          type: bigint
+          primaryKey: true
+          generated: true
+          description: "Sequential ID — never UUID to preserve ordering"
+        - name: organization_id
+          type: uuid
+          nullable: false
+        - name: actor_id
+          type: uuid
+          nullable: true
+          description: "Null for system actions"
+        - name: action
+          type: string
+          nullable: false
+          maxLength: 100
+          description: "e.g. contact.created, deal.stage_changed, user.invited"
+        - name: resource_type
+          type: string
+          nullable: false
+        - name: resource_id
+          type: uuid
+          nullable: true
+        - name: diff
+          type: json
+          nullable: true
+          description: "Before/after diff for mutations"
+        - name: ip_address
+          type: string
+          nullable: true
+          description: "PII — client IP for security audit"
+        - name: user_agent
+          type: string
+          nullable: true
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+      indexes:
+        - fields: [organization_id, created_at]
+        - fields: [actor_id, created_at]
+        - fields: [resource_type, resource_id]
+      constraints:
+        - type: check
+          expression: "created_at <= NOW() + INTERVAL '1 second'"
+          description: "Prevent future-dated audit entries"
+      x-notes: "Append-only — no UPDATE or DELETE ever permitted. Retention: 2555 days (SOC2 requirement)."
+
+    - name: Webhook
+      description: "Customer-configured webhook subscription for CRM events"
+      table: webhooks
+      fields:
+        - name: id
+          type: uuid
+          primaryKey: true
+          generated: true
+        - name: organization_id
+          type: uuid
+          nullable: false
+          foreignKey: Organization.id
+        - name: url
+          type: string
+          nullable: false
+        - name: secret
+          type: string
+          nullable: false
+          description: "HMAC-SHA256 signing secret"
+        - name: events
+          type: json
+          nullable: false
+          description: "Array of subscribed event types"
+        - name: enabled
+          type: boolean
+          default: true
+          nullable: false
+        - name: last_triggered_at
+          type: timestamp
+          nullable: true
+        - name: failure_count
+          type: int
+          default: 0
+          nullable: false
+        - name: created_at
+          type: timestamp
+          default: "NOW()"
+          nullable: false
+      indexes:
+        - fields: [organization_id]
+        - fields: [enabled, failure_count]

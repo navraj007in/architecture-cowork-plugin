@@ -1,0 +1,109 @@
+design:
+  personality: professional-structured
+  preset: shadcn
+
+  tokens:
+    colors:
+      primary: "#0F766E"
+      primary-dark: "#0D5C56"
+      secondary: "#6366F1"
+      secondary-dark: "#4F46E5"
+      accent: "#F59E0B"
+      success: "#10B981"
+      warning: "#F59E0B"
+      error: "#EF4444"
+      info: "#3B82F6"
+      neutral-50: "#F8FAFC"
+      neutral-100: "#F1F5F9"
+      neutral-200: "#E2E8F0"
+      neutral-300: "#CBD5E1"
+      neutral-400: "#94A3B8"
+      neutral-500: "#64748B"
+      neutral-600: "#475569"
+      neutral-700: "#334155"
+      neutral-800: "#1E293B"
+      neutral-900: "#0F172A"
+
+    typography:
+      headingFont: "Inter"
+      bodyFont: "Inter"
+      monoFont: "JetBrains Mono"
+      scale:
+        h1: "32px"
+        h2: "24px"
+        h3: "20px"
+        h4: "16px"
+        body: "14px"
+        small: "12px"
+        xs: "11px"
+
+    spacing:
+      xs: "4px"
+      sm: "8px"
+      md: "16px"
+      lg: "24px"
+      xl: "32px"
+      2xl: "48px"
+      3xl: "64px"
+
+    radius:
+      sm: "4px"
+      md: "6px"
+      lg: "8px"
+      xl: "12px"
+      full: "9999px"
+
+    shadows:
+      sm: "0 1px 2px rgba(0,0,0,0.05)"
+      md: "0 1px 3px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06)"
+      lg: "0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06)"
+      xl: "0 10px 15px rgba(0,0,0,0.10), 0 4px 6px rgba(0,0,0,0.05)"
+      focus: "0 0 0 3px rgba(15,118,110,0.25)"
+
+  componentLibrary: "shadcn/ui"
+  iconLibrary: "lucide-react"
+
+  themes:
+    - name: light
+      colors:
+        background: "#FFFFFF"
+        surface: "#F8FAFC"
+        surface-elevated: "#FFFFFF"
+        text-primary: "#0F172A"
+        text-secondary: "#64748B"
+        text-disabled: "#CBD5E1"
+        border: "#E2E8F0"
+    - name: dark
+      colors:
+        background: "#0F172A"
+        surface: "#1E293B"
+        surface-elevated: "#334155"
+        text-primary: "#F8FAFC"
+        text-secondary: "#94A3B8"
+        text-disabled: "#475569"
+        border: "#334155"
+
+  layouts:
+    - name: app-shell
+      description: "Primary layout — left sidebar nav (240px) + top header (56px) + content area"
+    - name: settings
+      description: "Settings layout — secondary sidebar (200px) + content"
+    - name: auth
+      description: "Centered card layout for login/signup flows"
+    - name: marketing
+      description: "Full-width marketing page with sticky header — used for landing pages"
+
+  shape:
+    radius: md
+    density: default
+    shadows: subtle
+    borders: subtle
+
+  motion:
+    transitions: snappy
+    pageTransitions: false
+
+  accessibility:
+    wcag: AA
+    reducedMotion: true
+    highContrast: false

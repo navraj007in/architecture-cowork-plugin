@@ -1,0 +1,24 @@
+contracts:
+  - name: api-server
+    type: openapi
+    version: "3.1.0"
+    path: sdl/contracts/api-server.openapi.yaml
+    endpoints:
+      count: 68
+      baseUrl: "https://api.nexpercrm.com/v1"
+
+  - name: ai-worker
+    type: openapi
+    version: "3.1.0"
+    path: sdl/contracts/ai-worker.openapi.yaml
+    endpoints:
+      count: 6
+      baseUrl: "https://ai.nexpercrm.com/v1"
+
+  - name: notification-worker
+    type: openapi
+    version: "3.1.0"
+    path: sdl/contracts/notification-worker.openapi.yaml
+    endpoints:
+      count: 4
+      baseUrl: "https://notify.nexpercrm.com/v1"

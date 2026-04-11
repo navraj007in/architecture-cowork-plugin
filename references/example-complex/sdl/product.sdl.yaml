@@ -1,0 +1,110 @@
+product:
+  valueProposition: "Close more deals — AI surfaces who to call, when, and what to say"
+
+  personas:
+    - name: Sales Rep
+      goals:
+        - "Log calls and emails without switching apps"
+        - "See AI-suggested next actions for each contact"
+        - "Track deal progress across pipeline stages"
+      accessLevel: authenticated
+      x-priority: P0
+
+    - name: Sales Manager
+      goals:
+        - "Monitor team pipeline health and forecast accuracy"
+        - "Review deal win/loss reasons and coaching opportunities"
+        - "Configure pipelines, stages, and team permissions"
+      accessLevel: authenticated
+      x-priority: P0
+
+    - name: Revenue Operations
+      goals:
+        - "Export CRM data for BI tools"
+        - "Manage integrations and webhook destinations"
+        - "Audit user activity and data access logs"
+      accessLevel: admin
+      x-priority: P1
+
+    - name: Organization Admin
+      goals:
+        - "Manage team members, roles, and billing"
+        - "Configure SSO and security policies"
+        - "Set data retention and GDPR compliance policies"
+      accessLevel: admin
+      x-priority: P1
+
+  coreFlows:
+    - name: Contact Management
+      priority: critical
+      steps:
+        - "Import contacts via CSV or Gmail/Outlook sync"
+        - "View unified contact timeline (calls, emails, meetings, notes)"
+        - "Search and filter contacts with saved views"
+        - "See AI-generated contact score and recommended next action"
+
+    - name: Deal Pipeline
+      priority: critical
+      steps:
+        - "Create deal linked to contact and company"
+        - "Drag deal cards across kanban pipeline stages"
+        - "View deal win-probability badge from AI worker"
+        - "Log activities (call, email, meeting) against deal"
+
+    - name: AI Insights
+      priority: high
+      steps:
+        - "Trigger async AI analysis on contact or deal"
+        - "Receive enrichment: company data, LinkedIn summary, news"
+        - "View AI-generated talk track and objection handlers"
+
+    - name: Team Activity Feed
+      priority: high
+      steps:
+        - "View organisation-wide activity stream"
+        - "Filter by rep, contact, deal, or activity type"
+        - "Receive in-app and email notifications on @mentions"
+
+    - name: Reporting & Export
+      priority: medium
+      steps:
+        - "View pre-built dashboards: pipeline, activity, forecast"
+        - "Export contacts, deals, activities to CSV"
+        - "Share dashboard links with read-only stakeholders"
+
+    - name: Workspace Onboarding
+      priority: critical
+      steps:
+        - "Create organisation and invite first team members"
+        - "Connect Gmail or Outlook for email sync"
+        - "Import initial contacts from CSV"
+        - "Configure first pipeline with custom stages"
+
+  screens:
+    - id: contacts-list
+      name: Contacts List
+      route: /contacts
+    - id: contact-detail
+      name: Contact Detail
+      route: /contacts/[id]
+    - id: deals-kanban
+      name: Deals Pipeline
+      route: /deals
+    - id: deal-detail
+      name: Deal Detail
+      route: /deals/[id]
+    - id: ai-insights
+      name: AI Insights Panel
+      route: /contacts/[id]/insights
+    - id: activity-feed
+      name: Activity Feed
+      route: /activity
+    - id: reports-dashboard
+      name: Reports Dashboard
+      route: /reports
+    - id: settings-team
+      name: Team Settings
+      route: /settings/team
+    - id: settings-billing
+      name: Billing & Plan
+      route: /settings/billing
