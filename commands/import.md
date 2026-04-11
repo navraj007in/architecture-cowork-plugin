@@ -37,7 +37,7 @@ generate:
 
 ## Quick Navigation
 
-[Step 1](#step-1-load-scan-context) · [Step 2](#step-2-deep-source-analysis) · [Step 3](#step-3-generate-sdl) · [Step 4](#step-4-generate-import-analysis) · [Step 5](#step-5-generate-intent)
+[Step 1](#step-1-load-scan-context) · [Step 2](#step-2-deep-source-analysis) · [Step 3](#step-3-generate-sdl) · [Step 4](#step-4-generate-import-analysis) · [Step 5](#step-5-generate-intent) · [Step 6](#step-6-generate-recommendations)
 
 ### Step 1: Load Scan Context
 
@@ -850,6 +850,88 @@ Write `intent.json` using the standard intent schema:
 }
 ```
 
+### Step 6: Generate Recommendations
+
+Write `architecture-output/import-recommendations.md` and print a compact summary in the conversation.
+
+#### 6.1 — Build the recommendations
+
+**Hardening gaps** — take every pattern from Section 9 of the import analysis that scored ❌ (missing) or ⚠️ (partial):
+
+| # | Pattern | Status | Fix | Effort |
+|---|---------|--------|-----|--------|
+| 4 | Health check endpoints | ❌ missing | Add `GET /health` returning `{ status: "ok" }` and `GET /health/ready` with DB/cache probe | S |
+| 6 | Rate limiting | ❌ missing | Add `express-rate-limit` (or equivalent) to API router — 100 req/15min per IP | S |
+| 3 | Structured logging | ⚠️ partial | Replace `console.log` with Winston or Pino; output JSON in production | S |
+| 9 | Retry + timeout | ❌ missing | Add `AbortController` with 10s timeout + exponential backoff to outbound HTTP calls | M |
+
+Use this exact table structure. Only include patterns that are missing or partial. Omit patterns that are fully present.
+
+**Lifecycle next steps** — evaluate each condition below and include the row only if the condition is true:
+
+| Condition | Priority | Command | Why |
+|-----------|----------|---------|-----|
+| No `design-tokens.json` AND frontend component exists | 1 | `/architect:design-system` | No design tokens detected — generate a visual identity before scaffold |
+| Entities detected but no full field-level schema / migrations | 2 | `/architect:generate-data-model` | `<N>` entities found — generate ORM schema, migrations, and seed data |
+| No test files detected OR test-to-source ratio < 0.2 | 3 | `/architect:generate-tests` | No test suite detected |
+| No monitoring provider detected (no Sentry/Datadog/Prometheus) | 4 | `/architect:setup-monitoring` | No observability stack — add health dashboards and alerting |
+| No CI/CD pipeline detected | 5 | `/architect:setup-cicd` | No CI/CD pipeline found |
+| Compliance signals detected (GDPR/HIPAA/SOC2 keywords) | 6 | `/architect:compliance` | Compliance signals found — run a gap analysis |
+| `solution.stage` is `growth` or `enterprise` AND no risk register in `architecture-output/` | 7 | `/architect:risk-register` | Growth/enterprise project with no risk register |
+| `solution.stage` is `growth` or `enterprise` AND no `architecture-output/load-test*` exists | 8 | `/architect:load-test` | No load testing configuration found |
+| No `architecture-output/docs/` exists | 9 | `/architect:generate-docs` | No documentation generated yet |
+
+Assign final priority order based on what was detected — re-number sequentially starting at 1, skipping rows whose condition is false.
+
+#### 6.2 — Write `import-recommendations.md`
+
+```markdown
+# Import Recommendations: {Project Name}
+Generated: {ISO-8601 date}
+Hardening score: {x}/9 | Components: {N} | Stage: {stage}
+
+## Hardening Gaps
+
+{hardening gap table — omit section entirely if score is 9/9}
+
+## Recommended Next Steps
+
+{lifecycle next steps table — omit section entirely if no steps apply}
+
+## Summary
+
+{1–2 sentences: most critical gap and single most important next action}
+```
+
+Write to `architecture-output/import-recommendations.md`.
+
+#### 6.3 — Print in-conversation summary
+
+After writing the file, print this block directly in the conversation (not inside a code fence):
+
+```
+────────────────────────────────────────────────────
+Import complete: {Project Name}
+{N} component(s) · {style} architecture · hardening {x}/9
+────────────────────────────────────────────────────
+{IF any hardening gaps:}
+⚠ Hardening gaps ({9 - x} missing)
+  {one line per missing/partial pattern: emoji + name + one-sentence fix}
+
+{IF any lifecycle steps:}
+Recommended next steps
+  {N}  {command}  {why — one phrase}
+
+Full recommendations → architecture-output/import-recommendations.md
+────────────────────────────────────────────────────
+```
+
+**Rules:**
+- Only show hardening gaps that are ❌ or ⚠️ — never show ✅ patterns
+- Only show lifecycle commands whose condition was true
+- Keep each line under 80 characters
+- If hardening score is 9/9 and no lifecycle steps apply, print: `✅ No critical gaps detected.`
+
 ## Output Requirements
 
 - Create `architecture-output/` directory if it does not exist
@@ -879,13 +961,12 @@ Write `intent.json` using the standard intent schema:
   - Monochrome + high contrast → `"technical-precise"`
   
   **Icon library detection:** Grep for `lucide-react`, `@heroicons/react`, `@phosphor-icons/react`, `@radix-ui/react-icons` imports. Map to `design.icon_library` using provider name (e.g. `"lucide-react"`).
-- After writing all files, return a brief summary listing every file created
-  and key findings — including the production hardening score (x/9)
+- After writing all files, print the in-conversation summary block from Step 6.3
 - If the codebase is too large to fully analyze, state assumptions explicitly
   and focus on the most architecturally significant parts
 - **Append to `architecture-output/_activity.jsonl`** after all files are written:
   ```json
-  {"ts":"<ISO-8601>","phase":"import","outcome":"completed","files":["solution.sdl.yaml","intent.json","architecture-output/import-analysis.md","architecture-output/_state.json"],"summary":"Import complete: <N> components detected, <style> architecture, hardening <x>/9."}
+  {"ts":"<ISO-8601>","phase":"import","outcome":"completed","files":["solution.sdl.yaml","intent.json","architecture-output/import-analysis.md","architecture-output/import-recommendations.md","architecture-output/_state.json"],"summary":"Import complete: <N> components, <style> architecture, hardening <x>/9, <M> recommendations."}
   ```
 
 ### Signal Completion
@@ -900,7 +981,7 @@ This ensures the import phase is marked as complete in the project state.
 
 ## Output Rules
 
-- **SDL must contain no advisory prose.** Never write recommendations, missing-pattern notes, or "Run /architect:xxx" suggestions inside `solution.sdl.yaml`. All assessments, gaps, and action items belong exclusively in `architecture-output/import-analysis.md` Section 15.
+- **SDL must contain no advisory prose.** Never write recommendations, missing-pattern notes, or "Run /architect:xxx" suggestions inside `solution.sdl.yaml`. All gaps belong in `architecture-output/import-recommendations.md`; the prioritised action table in Section 15 of `import-analysis.md` should point to that file rather than duplicate it.
 - Use the **founder-communication** skill for tone — plain English, no jargon without explanation
 - Use tables and structured sections for scannability
 - Include confidence levels for all inferred architecture decisions

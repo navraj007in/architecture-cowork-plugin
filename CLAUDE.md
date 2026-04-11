@@ -194,7 +194,7 @@ Commands that generate output MUST update `_state.json` after writing their mark
 
 | Command | Fields it writes |
 |---------|-----------------|
-| `import` | `project`, `tech_stack`, `components`, `design` (from reverse-engineered SDL) |
+| `import` | `project`, `tech_stack`, `components`, `design` (from reverse-engineered SDL); also writes `architecture-output/import-recommendations.md` |
 | `blueprint` | `project`, `tech_stack`, `components`, `design` (initial values from SDL), `blueprint.deepen_passes` |
 | `sdl` | `project`, `tech_stack` (Mode 1 generate only) |
 | `design-system` | `design` (full palette, fonts, tokens — overwrites blueprint's initial values) |
