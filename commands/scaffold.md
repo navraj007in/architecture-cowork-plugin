@@ -143,16 +143,17 @@ If GitHub:
 
 ℹ️ **OPTIONAL PATH:** Design tokens may customize frontend scaffolds
 
-Check if the design-system phase has been completed:
+Check if the design-system phase has been completed, in this priority order:
 
-1. Look for `architecture-output/design-system/design-tokens.json` in the blueprint directory
-2. Look for a `design` section in `solution.sdl.yaml` (or `sdl/design.yaml` if using multi-file SDL)
+1. **Check `architecture-output/_state.json`.`design`** — if it is fully populated (has `primary`, `heading_font`, `body_font`, `personality`), it is **authoritative**. Use it verbatim for all design decisions. Do NOT re-derive or override any fields. Pass `_state.json.design` directly to the scaffolder.
 
-**If design tokens exist**, load them — the scaffolder will use these to configure frontend projects with the correct palette, typography, shape, and motion settings.
+2. **If `_state.json.design` is absent or incomplete**, look for `architecture-output/design-system/design-tokens.json` — load the full token set if present.
 
-**If no design tokens exist but SDL has a `design` section**, use the SDL design fields directly and load the **design-systems.md** reference for implementation patterns.
+3. **If neither `_state.json.design` nor `design-tokens.json` is available**, look for a `design` section in `solution.sdl.yaml` (or `sdl/design.sdl.yaml` if multi-file). Read `design.typography.heading/body/mono` for font config.
 
-**If neither exists**, note this in the scaffolder handoff — the scaffolder should infer domain-appropriate defaults from `design-systems.md` (NEVER default to indigo/purple).
+4. **If nothing exists**, note this in the scaffolder handoff — the scaffolder should infer domain-appropriate defaults from `design-systems.md` (NEVER default to indigo/purple).
+
+**When design tokens exist** (from any source), the scaffolder will use these to configure frontend projects with the correct palette, typography, shape, and motion settings.
 
 Also load `skills/production-hardening/SKILL.md` — the scaffolder applies production hardening patterns to every Node.js backend and React/Next.js frontend during scaffold generation. Which patterns are required vs deferred depends on `solution.stage` (resolved in Step 3.6 below).
 
