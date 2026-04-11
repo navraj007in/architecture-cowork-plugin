@@ -308,7 +308,7 @@ After building the system manifest, convert it to a validated SDL (Solution Desi
      cost-estimate, backup-plan, design-tokens
      ```
 
-2. **Validate mentally** against 20+ conditional rules:
+2. **Validate mentally** against the 27 conditional rules (see `references/sdl-schema.md` for the full list):
    
    **Reference Integrity:**
    - Environment components → each in `environments[].components` must exist in `architecture.projects`

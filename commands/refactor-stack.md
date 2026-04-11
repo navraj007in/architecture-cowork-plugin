@@ -105,7 +105,7 @@ If user says no, stop.
 
 ### Step 4: Validate Against New SDL Constraints
 
-Before writing changes, validate the **proposed new SDL** against the 20+ conditional rules.
+Before writing changes, validate the **proposed new SDL** against the 27 conditional rules (see `references/sdl-schema.md` for the full list).
 
 **Check:**
 1. ORM-Database compatibility (Mongoose only with MongoDB, EF Core only with relational, etc.)

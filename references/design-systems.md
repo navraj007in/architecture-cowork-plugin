@@ -281,7 +281,7 @@ colors: {
 
 ## Typography Setup
 
-When `typography.heading` or `typography.body` specifies a Google Font:
+When `design.tokens.typography.headingFont` or `design.tokens.typography.bodyFont` specifies a Google Font (or when `_state.json.design.heading_font` / `body_font` is set):
 
 ```typescript
 // app/layout.tsx (Next.js) or equivalent
