@@ -209,13 +209,13 @@ If any verification step failed and could not be fixed, list the remaining error
 **Project-level** — append to `architecture-output/_activity.jsonl`:
 
 ```json
-{"ts":"<ISO-8601>","phase":"implement","story":"<story_id>","feature":"<feature_slug>","outcome":"completed|partial","components":["<name>"],"files_new":["<component>/path"],"files_modified":["<component>/path"],"summary":"Implemented <story_title>. <N> new files, <M> modified. Build and tests pass."}
+{"ts":"<ISO-8601>","phase":"implement","outcome":"completed|partial","files":["<component>/path/new-file.ts","<component>/path/modified-file.ts"],"summary":"[<story_id>] <story_title>: <N> new files, <M> modified across <components>. Build and tests pass."}
 ```
 
 **Component-level** — append to `<component>/_activity.jsonl` for each affected component:
 
 ```json
-{"ts":"<ISO-8601>","phase":"implement","story":"<story_id>","feature":"<feature_slug>","outcome":"completed|partial","files_new":["path"],"files_modified":["path"],"summary":"<story_title> — <N> new files, <M> modified. Build and tests pass."}
+{"ts":"<ISO-8601>","phase":"implement","status":"augmented","files":["path/new-file.ts","path/modified-file.ts"],"summary":"[<story_id>] <story_title> — <N> new, <M> modified. Build and tests pass."}
 ```
 
 Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.

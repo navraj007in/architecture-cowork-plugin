@@ -516,12 +516,12 @@ After the Scaffolder Agent completes file generation, immediately install depend
 
 Success case:
 ```json
-{"ts":"<ISO-8601>","phase":"install-build","status":"success","installer":"npm","installTime":"45s","dependencyCount":156,"buildCommand":"npm run build","buildOutput":"dist/","summary":"Installed 156 deps (45s), built successfully"}
+{"ts":"<ISO-8601>","phase":"install-build","status":"pass","summary":"Installed 156 deps (45s) via npm, built successfully to dist/"}
 ```
 
 Failure case:
 ```json
-{"ts":"<ISO-8601>","phase":"install-build","status":"failed","installer":"npm","installTime":"12s","error":{"code":"BUILD_FAILED","message":"3 TypeScript errors","location":"src/index.ts","details":["src/index.ts(12,5): error TS2304: Cannot find name 'x'","src/index.ts(28,7): error TS2345: Argument of type..."]},"summary":"Build failed: 3 errors in src/index.ts"}
+{"ts":"<ISO-8601>","phase":"install-build","status":"fail","summary":"Build failed: 3 TypeScript errors in src/index.ts (TS2304, TS2345)"}
 ```
 
 **6. Skip If Dependencies Were Not Installed** — if user selected "no" at Step 3:
