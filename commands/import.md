@@ -108,6 +108,38 @@ do not attempt to read every file. Focus on architecturally significant code:
 - **Observability depth**: structured logging, health checks, metrics/tracing setup
 - **Security primitives**: CORS config (ALLOWED_ORIGINS), Helmet/CSP rules, rate limiting, input validation scope
 
+**Navigation & Access Control Detection** (detect from code, do not ask user):
+
+Look for these patterns in routes, middleware, and component code — map each detected pattern to `sdl/navigation-patterns.sdl.yaml`:
+
+- **Route guards** (auth/role checks): Look for `useAuth`, `PrivateRoute`, `AuthGuard`, `[Authorize]` attribute, role middleware — signals `guards[]` with type `auth` or `role`
+- **Context scoping** (workspaces/orgs): Look for `/workspace/{id}/`, `/org/{slug}/`, `tenant_id` in route params, workspace switcher components — signals `contextualRouting`
+- **Error & fallback pages**: Look for `app/not-found.tsx`, `pages/404.tsx`, `ErrorBoundary`, `useRouteError` — signals `errorHandling` patterns
+- **Ephemeral navigation** (modals/sheets): Look for `Dialog`, `Sheet`, `Modal`, `Drawer` components used for CRUD operations — signals `ephemeralStates`
+- **Data-driven navigation**: Look for `/api/navigation`, `/api/menu`, role-based nav item filtering, feature-flag-gated nav items — signals `dynamicNavigation`
+
+Only generate `sdl/navigation-patterns.sdl.yaml` if at least one pattern is detected. If none detected, skip the file.
+
+**Multi-Tenancy Detection** (detect from code, do not ask user):
+
+Look for these signals to determine the isolation model. Record in SDL `nonFunctional.multiTenancy`:
+
+- **Row-level security**: `tenant_id` column in database models/migrations, RLS policies in `.sql` files, Prisma `@@index([tenantId])`, Drizzle `where(eq(table.tenantId, ...))` patterns
+- **Schema-per-tenant**: Dynamic schema names in connection strings, `SET search_path TO tenant_${id}` patterns, per-tenant migration runners
+- **Database-per-tenant**: Multiple database connection strings parameterized by tenant, `getTenantConnection(tenantId)` factory functions
+- **No multi-tenancy**: Single `users` table with no tenant isolation signals → set `multiTenancy.enabled: false`
+
+If multi-tenancy detected, record:
+```yaml
+nonFunctional:
+  multiTenancy:
+    enabled: true
+    isolationModel: "row-level-security" # or "schema-per-tenant" or "db-per-tenant"
+    tenantIdField: "tenant_id"           # or detected field name
+    x-confidence: high | medium | low
+    x-evidence: "tenant_id in User/Order/Product models + RLS migration detected"
+```
+
 ### Step 3: Generate SDL
 
 Using the **sdl-knowledge** skill, build a **v1.1-compliant** SDL document.
@@ -200,6 +232,22 @@ Using the **sdl-knowledge** skill, build a **v1.1-compliant** SDL document.
 | Monospace font (code blocks, terminals) | `design.monoFont` |
 | Design personality inferred from palette | `design.personality` |
 | Icon library (lucide-react, heroicons) | `design.iconLibrary` |
+
+**Hardening pattern → SDL mapping** (map detected patterns to existing SDL sections — do NOT create new top-level keys):
+
+| Hardening Pattern Detected | SDL Location |
+|---|---|
+| Correlation ID middleware (`x-correlation-id`, `correlationId()`) | `observability.logging.correlationId: true` |
+| Graceful shutdown (SIGTERM/SIGINT + `server.close()`) | `observability.healthChecks.x-gracefulShutdown: true` |
+| Structured logging (Winston/Pino/Serilog with JSON output) | `observability.logging.structured: true` + `observability.logging.provider` |
+| Health check endpoints (GET /health, /health/ready) | `observability.healthChecks.liveness` + `observability.healthChecks.readiness` + `observability.healthChecks.dbCheck` |
+| Auth token interceptor (Bearer injection, 401 retry) | `auth.x-tokenInterceptor: true` |
+| Rate limiting middleware | `deployment.security.rateLimit` (strategy: per-IP / per-user / global) |
+| CORS configuration | `deployment.security.cors` (allowedOrigins from ALLOWED_ORIGINS env) |
+| Security headers (Helmet, CSP) | `deployment.security.csp` |
+| Input validation (Zod/Joi/FluentValidation at API boundary) | `nonFunctional.security.x-inputValidation: true` + validation library name |
+| Retry + timeout patterns (AbortController, exponential backoff) | `resilience.retryPolicy[]` + `resilience.timeout[]` |
+| Soft delete pattern (`deletedAt` field, ORM middleware) | `domain.entities[].x-softDelete: true` on affected entities |
 
 #### 3.2 — SDL Output: Modular Structure
 
@@ -779,7 +827,19 @@ Write `intent.json` using the standard intent schema:
 - Write analysis to `architecture-output/import-analysis.md`
 - Write intent to `intent.json` in the project root
 - **Update `architecture-output/_state.json`** after writing all files: read existing (or start with `{}`), then merge `project`, `tech_stack`, `components`, and `design` fields derived from the SDL. Follow the write rules in CLAUDE.md.
+  
+  **Design authority check (MUST DO FIRST):** Before writing the `design` field, check if `_state.json.design` is already fully populated (has `primary`, `heading_font`, `body_font`, `personality`). If yes → **preserve it verbatim, do NOT overwrite** — it was set by `/architect:design-system` and is authoritative. Only write design fields when `_state.json.design` is absent or missing required fields.
+
   **IMPORTANT — SDL is camelCase, `_state.json` is snake_case:** When writing `design` fields, convert from SDL's camelCase to `_state.json`'s canonical snake_case names: `headingFont` → `heading_font`, `bodyFont` → `body_font`, `monoFont` → `mono_font`, `borderRadius` → `border_radius`, `componentLibrary` → `component_library`, `iconLibrary` → `icon_library`, `tokensFile` → `tokens_file`. See Schema Enforcement Rules in CLAUDE.md for the complete canonical field list.
+  
+  **Design personality inference:** If no `design.personality` is found in SDL or `_state.json`, infer it from the detected primary color palette:
+  - Saturated orange/red/pink tones → `"bold-commercial"`
+  - Muted blue/grey/white tones → `"soft-minimal"`
+  - Deep purple/dark navy themes → `"premium-dark"`
+  - Green/teal/nature tones → `"fresh-organic"`
+  - Monochrome + high contrast → `"technical-precise"`
+  
+  **Icon library detection:** Grep for `lucide-react`, `@heroicons/react`, `@phosphor-icons/react`, `@radix-ui/react-icons` imports. Map to `design.icon_library` using provider name (e.g. `"lucide-react"`).
 - After writing all files, return a brief summary listing every file created
   and key findings — including the production hardening score (x/9)
 - If the codebase is too large to fully analyze, state assumptions explicitly

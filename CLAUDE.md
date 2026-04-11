@@ -266,8 +266,10 @@ These patterns are used by multiple commands. When implementing them, follow the
 **Project-level** — append to `architecture-output/_activity.jsonl`:
 
 ```json
-{"ts":"<ISO-8601>","phase":"<phase-name>","outcome":"completed|partial|failed","summary":"<1-sentence under 120 chars>"}
+{"ts":"<ISO-8601>","phase":"<phase-name>","outcome":"completed|partial|failed","files":["<file1>","<file2>"],"summary":"<1-sentence under 120 chars>"}
 ```
+
+The `files` field is **optional** — include it when the phase writes named output files (e.g., `import`, `blueprint`, `scaffold`). Omit it for phases that do not write files.
 
 **Component-level** — append to `<component-name>/_activity.jsonl`:
 

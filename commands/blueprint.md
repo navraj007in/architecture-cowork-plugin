@@ -385,15 +385,17 @@ imports:
   - sdl/product.sdl.yaml
   - sdl/deployment.sdl.yaml
   
+  # Always included:
+  - sdl/features.sdl.yaml           # always — feature phases (empty phases if not yet planned)
+  - sdl/costs.sdl.yaml              # always — infrastructure costs (estimates if speculative)
+
   # Conditional (only if exist):
   - sdl/auth.sdl.yaml               # (if multi-user with auth)
   - sdl/contracts.sdl.yaml          # (if backend services exist)
   - sdl/domain.sdl.yaml             # (if ORM/database exists)
-  - sdl/features.sdl.yaml           # (if MVP planning needed)
   - sdl/compliance.sdl.yaml         # (if compliance signals detected)
   - sdl/slos.sdl.yaml               # (if performance targets defined)
   - sdl/resilience.sdl.yaml         # (if resilience patterns needed)
-  - sdl/costs.sdl.yaml              # (if cost tracking needed)
   - sdl/backup-dr.sdl.yaml          # (if backup/disaster recovery needed)
   - sdl/design.sdl.yaml             # (if design system created)
   - sdl/navigation-patterns.sdl.yaml # (if navigation patterns detected: guards, context, errors, etc.)
@@ -438,11 +440,11 @@ imports:
        - Backend controls menu (data-driven nav)
      - `contracts.sdl.yaml` — IF backend services exist
      - `domain.sdl.yaml` — IF ORM/database exists
-     - `features.sdl.yaml` — IF MVP planning captured
+     - `features.sdl.yaml` — **always generate** (even if no MVP planning captured yet — create with empty phases as a placeholder)
      - `compliance.sdl.yaml` — IF compliance signals detected
      - `slos.sdl.yaml` — IF performance targets defined
      - `resilience.sdl.yaml` — IF resilience patterns found
-     - `costs.sdl.yaml` — IF cost tracking needed
+     - `costs.sdl.yaml` — **always generate** (every project has infrastructure costs — create with estimates even if speculative)
      - `backup-dr.sdl.yaml` — IF database + backup strategy defined
      - `design.sdl.yaml` — IF design-system phase completed
 
@@ -481,6 +483,8 @@ Generate each deliverable in this order:
 
 #### 4a. Executive Summary
 
+**Output file:** `architecture-output/executive-summary.md`
+
 One-page overview containing:
 - What the product does (2-3 sentences, plain English)
 - Key components (bulleted list)
@@ -491,6 +495,8 @@ One-page overview containing:
 - Recommended build approach
 
 #### 4b. Architecture Diagrams
+
+**Output file:** `architecture-output/architecture-diagrams.md`
 
 Using the **diagram-patterns** skill, generate the following diagrams:
 
@@ -507,6 +513,8 @@ For all diagrams:
 
 #### 4c. Application Architecture & Patterns
 
+**Output file:** `architecture-output/application-architecture.md`
+
 Using the **manifest-structure** skill's architecture pattern and folder convention types:
 
 - **Architecture pattern** — Which pattern fits this product (clean architecture, hexagonal, modular monolith, etc.) and why. Explain in plain English first, then technical rationale.
@@ -518,6 +526,8 @@ Using the **manifest-structure** skill's architecture pattern and folder convent
 If multiple services share the same codebase pattern, state it once and note which services follow it. If a service needs a different pattern (e.g. a worker vs an API), explain why.
 
 #### 4d. Shared Types & Cross-Service Contracts
+
+**Output file:** `architecture-output/shared-types.md`
 
 Using the **manifest-structure** skill's shared section:
 
@@ -569,6 +579,8 @@ Include a note explaining how to use each artifact:
 
 #### 4f. Security Architecture
 
+**Output file:** `architecture-output/security-architecture.md`
+
 Using the **operational-patterns** skill:
 
 - **Auth strategy** — Read `auth.identityProvider` for the external IdP (Cognito, Auth0, Clerk) and `auth.serviceTokenModel` for how services validate tokens (jwt, session, api-key). Explain both in plain English — they are often different (e.g. Cognito issues tokens, services validate them as JWTs).
@@ -582,6 +594,8 @@ Present the security checklist as a table:
 |-----------|---------------|------------|----------|
 
 #### 4g. Observability & Monitoring
+
+**Output file:** `architecture-output/observability.md`
 
 Using the **operational-patterns** skill:
 
@@ -599,6 +613,8 @@ Scale recommendations to the project's complexity — don't prescribe Datadog + 
   - Include SLI definitions with alert thresholds from the observability section
 
 #### 4h. DevOps Blueprint
+
+**Output file:** `architecture-output/devops-blueprint.md`
 
 Using the **operational-patterns** skill:
 
@@ -631,6 +647,8 @@ Present environments as a table:
 
 #### 4i. Cost Estimate
 
+**Output file:** `architecture-output/cost-estimate.md`
+
 Using the **cost-knowledge** skill:
 
 **Infrastructure & Services Breakdown** (show as detailed table):
@@ -662,6 +680,8 @@ Using the **cost-knowledge** skill:
   - Include scaling cost projections for each service
 
 #### 4j. Complexity Assessment
+
+**Output file:** `architecture-output/complexity-assessment.md`
 
 Using the **complexity-factors** skill:
 
@@ -699,6 +719,8 @@ Using the **complexity-factors** skill:
 - Suggest full-time vs part-time commitment
 
 #### 4k. Well-Architected Review
+
+**Output file:** `architecture-output/well-architected-review.md`
 
 Using the **well-architected** skill, evaluate the architecture across all 6 pillars:
 
@@ -770,7 +792,29 @@ End with a prioritized **Improvement Roadmap** table (minimum 8-12 items):
 
 Match expectations to the project's stage — an MVP targeting 3/5 overall is healthy. A production system should target 4/5+.
 
+**Production Hardening Checklist** (append at the end of the well-architected review):
+
+Assess all 9 mandatory hardening patterns against the designed architecture. Mark each as planned (will be included in scaffold/sprint), deferred (not in MVP), or N/A (doesn't apply):
+
+| # | Pattern | Status | Implementation Plan | Priority |
+|---|---------|--------|-------------------|----------|
+| 1 | Correlation ID propagation | planned / deferred / N/A | x-correlation-id middleware + frontend propagation | P0 if multi-service |
+| 2 | Graceful shutdown | planned / deferred / N/A | SIGTERM/SIGINT + connection drain | P0 for any service |
+| 3 | Structured logging | planned / deferred / N/A | JSON logging library (Winston/Pino/Serilog) | P0 for production |
+| 4 | Health check endpoints | planned / deferred / N/A | /health + /health/ready with DB probe | P0 for any service |
+| 5 | Auth token interceptor | planned / deferred / N/A | Bearer injection + 401 retry logic | P0 if auth exists |
+| 6 | Rate limiting | planned / deferred / N/A | middleware + strategy (per-IP/user/API key) | P1 for public APIs |
+| 7 | CORS + security headers | planned / deferred / N/A | ALLOWED_ORIGINS env + Helmet/CSP | P0 for web APIs |
+| 8 | Input validation | planned / deferred / N/A | Zod/Joi/FluentValidation at API boundary | P0 for all services |
+| 9 | Retry + timeout | planned / deferred / N/A | AbortController + exponential backoff | P1 for external calls |
+
+**Hardening score: {x}/9 patterns planned for MVP**
+
+Any pattern marked "deferred" for a production-stage project should be escalated to P0 in the Improvement Roadmap above.
+
 #### 4l. Plain English Specifications
+
+**Output file:** `architecture-output/plain-english-specs.md`
 
 Using the **founder-communication** skill:
 - Group features by component (frontend, backend, database, integrations)
@@ -780,6 +824,8 @@ Using the **founder-communication** skill:
 
 #### 4m. Required Accounts
 
+**Output file:** `architecture-output/required-accounts.md`
+
 Using the **known-services** skill:
 - List every third-party service needed
 - For each: service name, signup URL, what credentials you'll get, free tier details
@@ -787,6 +833,8 @@ Using the **known-services** skill:
 - Estimate total setup time
 
 #### 4n. Next Steps Guide
+
+**Output file:** `architecture-output/next-steps.md`
 
 Provide 3 paths forward:
 
@@ -1159,10 +1207,22 @@ Write or merge:
     { "name": "<component name>", "type": "<type>", "port": <port>, "framework": "<framework>" }
   ],
   "design": {
-    "personality": "<personality from SDL design section or derived from domain>",
+    "personality": "<personality>",
     "primary": "<hex>",
+    "primary_dark": "<hex>",
+    "secondary": "<hex>",
+    "accent": "<hex>",
+    "surface": "<hex>",
+    "surface_elevated": "<hex>",
+    "text_primary": "<hex>",
+    "text_secondary": "<hex>",
+    "border_radius": "<e.g. 8px>",
+    "shadow": "<CSS shadow value>",
     "heading_font": "<font name>",
-    "body_font": "<font name>"
+    "body_font": "<font name>",
+    "mono_font": "<font name>",
+    "icon_library": "<e.g. lucide-react>",
+    "component_library": "<e.g. shadcn/ui>"
   },
   "blueprint": {
     "deepen_passes": 0
@@ -1173,7 +1233,18 @@ Write or merge:
 Rules:
 - Write to `architecture-output/_state.json` (create `architecture-output/` if it doesn't exist)
 - `entities`, `personas`, `market_research`, `mvp_scope`, `top_risks` are written by other commands — do NOT add them here
-- If the SDL has a `design` section, use those values; otherwise derive from the product domain using the personality table in `/architect:prototype`
+- **Design authority check (MUST DO FIRST):** Before writing the `design` field, check if `_state.json.design` is already fully populated (has `primary`, `heading_font`, `body_font`, `personality`). If yes → **preserve it verbatim, do NOT overwrite** — it was set by `/architect:design-system` and is authoritative. If no → write the design values derived from the SDL or domain below.
+- **Design value source (only when design is not already set):** If the SDL has a `design` section, read it and convert SDL's camelCase to `_state.json` snake_case:
+  - `headingFont` → `heading_font`
+  - `bodyFont` → `body_font`
+  - `monoFont` → `mono_font`
+  - `borderRadius` → `border_radius`
+  - `componentLibrary` → `component_library`
+  - `iconLibrary` → `icon_library`
+  - `tokensFile` → `tokens_file`
+  - All other fields (`primary`, `secondary`, `accent`, `personality`, etc.) use the same key in both SDL and `_state.json`
+  
+  If the SDL has no `design` section, derive personality from the product domain using the personality table in `/architect:prototype`, then construct a matching palette.
 - `blueprint.deepen_passes` starts at `0` on first run; increment by 1 each time deepen mode completes
 
 ### Step 4.6: Log Activity
