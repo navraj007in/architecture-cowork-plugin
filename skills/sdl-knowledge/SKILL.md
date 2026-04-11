@@ -113,7 +113,7 @@ The normalizer applies 15 auto-inference defaults. **Do not manually set these**
 | 6 | `deployment.runtime.backend` | From cloud mapping | See table below |
 | 7 | `deployment.networking.publicApi` | `true` | If undefined |
 | 8 | `deployment.ciCd.provider` | `"github-actions"` | If ciCd missing |
-| 9 | `nonFunctional.availability.target` | Stage-based | MVP→99.9, Growth→99.95, Enterprise→99.99 |
+| 9 | `nonFunctional.availability.target` | Stage-based | concept/mvp→99%, growth→99.9%, enterprise→99.99% |
 | 10 | `security.encryptionAtRest` | `true` | If pii=true |
 | 11 | `security.encryptionInTransit` | `true` | If undefined |
 | 12 | (reserved) | — | — |
@@ -533,6 +533,7 @@ All SDL operations are exposed via REST endpoints at `/api/sdl/*`. All routes re
 
 | Stage | Default Availability Target |
 |---|---|
-| `MVP` | 99.9% |
-| `Growth` | 99.95% |
-| `Enterprise` | 99.99% |
+| `concept` | 99% |
+| `mvp` | 99% |
+| `growth` | 99.9% |
+| `enterprise` | 99.99% |

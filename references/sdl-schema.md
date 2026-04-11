@@ -54,7 +54,7 @@ Alignment note:
 solution:
   name: string              # Required. Project name
   description: string        # Required. What it does
-  stage: enum                # Required. mvp | growth | enterprise
+  stage: enum                # Required. concept | mvp | growth | enterprise (lowercase; uppercase variants MVP/Growth/Enterprise also accepted)
   domain: string             # Optional. Custom domain
   regions:                   # Optional
     primary: string          # Default: "us-east-1"
@@ -83,7 +83,7 @@ product:
 
 ```yaml
 architecture:
-  style: enum                # Required. modular-monolith | microservices | serverless
+  style: enum                # Required. modular-monolith | microservices | serverless | hybrid
   projects:                  # Required
     frontend:                # Optional
       - name: string         # Required
@@ -110,6 +110,11 @@ architecture:
   sharedLibraries:           # Optional
     - name: string
       language: string
+
+# Plugin extensions on architecture.projects entries (not in upstream spec):
+#   deployable: boolean      # true for services/frontends, false for shared libs/type packages
+#   dependsOn: string[]      # Names of other components this component calls, plus external integrations
+#                            # Every component must have this field; shared libs use dependsOn: []
 ```
 
 ## auth (optional)
@@ -319,7 +324,7 @@ environments:
     x-features: string[]      # Optional. Feature flags or capabilities enabled
 ```
 
-## interServiceCommunication (optional)
+## interServiceCommunication (plugin extension — not in upstream spec)
 
 ```yaml
 interServiceCommunication:
@@ -331,7 +336,7 @@ interServiceCommunication:
     async: boolean             # Optional. Whether communication is async. Default: false
 ```
 
-## configuration (optional)
+## configuration (plugin extension — not in upstream spec)
 
 ```yaml
 configuration:
@@ -341,7 +346,7 @@ configuration:
   perEnvironment: boolean      # Optional. Whether config varies per environment. Default: true
 ```
 
-## errorHandling (optional)
+## errorHandling (plugin extension — not in upstream spec)
 
 ```yaml
 errorHandling:
@@ -413,47 +418,397 @@ artifacts:
 
 ---
 
-## design (optional)
+## contracts (optional, v1.1)
+
+API contract definitions for REST, GraphQL, and gRPC services. Contract files themselves live in `sdl/contracts/`.
+
+```yaml
+contracts:
+  - name: api-server
+    type: enum               # Required. openapi | graphql | grpc
+    version: string          # Optional. e.g. "3.1.0"
+    path: string             # Required. Path to contract file. e.g. sdl/contracts/api-server.openapi.yaml
+    endpoints:               # Optional
+      count: number
+      baseUrl: string
+```
+
+---
+
+## domain (optional, v1.1)
+
+Entity definitions with fields, types, relationships, indexes, and constraints. Drives ORM schema generation.
+
+```yaml
+domain:
+  entities:
+    - name: string           # Required. PascalCase entity name
+      description: string    # Optional
+      table: string          # Optional. DB table name (snake_case default)
+      fields:                # Optional
+        - name: string       # Required
+          type: enum         # Required. uuid | string | int | bigint | decimal | boolean | timestamp | json | enum | text
+          primaryKey: boolean
+          generated: boolean # Auto-generated (sequences, UUID defaults)
+          unique: boolean
+          nullable: boolean  # Default: false
+          default: string
+          maxLength: number
+          precision: number
+          scale: number
+          enum: string[]     # If type: enum
+          foreignKey: string # e.g. "Users.id"
+          onUpdate: string   # e.g. "NOW()"
+          description: string
+      relationships:         # Optional
+        - name: string
+          type: enum         # one-to-one | one-to-many | many-to-one | many-to-many
+          target: string     # Target entity name
+          foreignKey: string
+      indexes:               # Optional
+        - name: string       # Optional
+          fields: string[]   # Required
+          unique: boolean
+      constraints:           # Optional
+        - type: enum         # check | unique | foreign-key
+          fields: string[]
+          expression: string # For check constraints
+```
+
+---
+
+## features (optional, v1.1)
+
+Feature planning, MVP phasing, feature flags. Import: only list features that EXIST in the codebase. Blueprint: list planned features.
+
+```yaml
+features:
+  phase1:                    # Phase key — use phase1/phase2/phase3 or named phases
+    name: string             # Optional. e.g. "MVP"
+    deadline: string         # Optional. ISO date
+    features:
+      - id: string           # Required. kebab-case
+        name: string         # Required
+        description: string
+        priority: enum       # critical | high | medium | low
+        estimatedDays: number
+        dependsOn: string[]  # IDs of features this depends on
+        status: enum         # planned | in-progress | completed
+  featureFlags:              # Optional
+    - name: string           # Required
+      rollout: string        # e.g. "50%", "0%", "100%"
+      targetAudience: string
+      phase: string          # Phase key this flag belongs to
+```
+
+---
+
+## compliance (optional, v1.1)
+
+Regulatory requirements, data retention policies, and certifications.
+
+```yaml
+compliance:
+  frameworks:
+    - name: enum             # Required. GDPR | HIPAA | SOC2-Type2 | PCI-DSS | CCPA | ISO27001
+      applicable: boolean    # Required
+      requirements:          # Optional
+        - requirement: string
+          description: string
+          implementation: string
+      notes: string          # Optional. Reason if not applicable
+  certifications:            # Optional
+    - name: string
+      targetDate: string
+      auditor: string
+  dataResidency:             # Optional
+    - region: string
+      dataTypes: string[]
+      compliance: string[]
+  dataRetention:             # Optional
+    - dataType: string
+      retentionDays: number
+      reason: string
+```
+
+---
+
+## slos (optional, v1.1)
+
+Service level objectives and SLIs per component. Generated when: production stage OR 2+ services OR explicit targets defined.
+
+```yaml
+slos:
+  - componentId: string      # Required. Must match a component name in architecture.projects
+    name: string             # Optional
+    availability:
+      target: string         # Required. e.g. "99.9%"
+      window: enum           # Optional. monthly | weekly | daily
+      errorBudget: string    # Optional. e.g. "43 minutes/month"
+    latency:
+      p50: string            # e.g. "50ms"
+      p95: string
+      p99: string
+      p999: string
+    throughput:
+      rps: number
+      concurrentUsers: number
+    errorRate:
+      target: string         # e.g. "0.1%"
+    slis:                    # Optional
+      - metric: string
+        description: string
+        query: string        # Prometheus/PromQL expression
+        threshold: string
+    alerts:                  # Optional
+      - name: string
+        condition: string
+        severity: enum       # critical | warning | info
+        action: string
+```
+
+---
+
+## resilience (optional, v1.1)
+
+Fault tolerance patterns: circuit breakers, retries, timeouts, bulkheads, fallbacks.
+
+```yaml
+resilience:
+  circuitBreaker:            # Optional
+    - name: string
+      target: enum           # external | internal
+      failureThreshold: number
+      successThreshold: number
+      timeout: string        # e.g. "30s"
+      backoffMultiplier: number
+      maxBackoff: string
+      fallback: string
+  retryPolicy:               # Optional
+    - name: string
+      maxAttempts: number
+      backoff:
+        type: enum           # exponential | linear | fixed
+        initialDelayMs: number
+        maxDelayMs: number
+        multiplier: number
+      retryableErrors: string[] # e.g. [500, 502, 503, "timeout"]
+  timeout:                   # Optional
+    - name: string
+      ms: number             # Required
+      description: string
+  bulkhead:                  # Optional
+    - name: string
+      threads: number
+      queue: number
+      description: string
+  rateLimit:                 # Optional
+    - name: string
+      rps: number
+      burstSize: number
+      perUser: number
+      window: string
+  fallback:                  # Optional
+    - service: string
+      failureMode: enum      # timeout | error | slow-response
+      fallbackStrategy: string
+```
+
+---
+
+## costs (optional, v1.1)
+
+Infrastructure and third-party cost model. Always generated; import: from Terraform/compose only; blueprint: estimated projections.
+
+```yaml
+costs:
+  model: enum                # Optional. usage-based | flat-rate | hybrid
+  infrastructure:
+    compute:                 # Optional
+      - component: string    # Component name
+        platform: string     # e.g. "aws-ec2", "vercel", "railway"
+        instanceType: string
+        instances: number
+        costPerMonth: number
+    database:                # Optional
+      - name: string
+        provider: string
+        instanceType: string
+        storage: string
+        costPerMonth: number
+    storage:                 # Optional
+      - name: string
+        provider: string
+        storage: string
+        costPerMonth: number
+    cdn:                     # Optional
+      - name: string
+        provider: string
+        bandwidth: string
+        costPerMonth: number
+  thirdParty:                # Optional
+    - name: string
+      category: string
+      fee: string
+      expectedVolume: string
+      monthlyCost: number
+  total:                     # Optional
+    infrastructure: number
+    thirdParty: number
+    monthly: number
+    annual: number
+  scaling:                   # Optional
+    - milestone: string
+      estimatedCost: number
+```
+
+---
+
+## backupDr (optional, v1.1)
+
+Backup strategy, RTO/RPO, replication, and disaster recovery procedures. Generated when primary database exists.
+
+```yaml
+backupDr:
+  strategy: enum             # Optional. active-passive | active-active | pilot-light | warm-standby
+  databases:                 # Optional
+    - name: string
+      rto: string            # Recovery Time Objective. e.g. "15m"
+      rpo: string            # Recovery Point Objective. e.g. "5m"
+      backup:
+        frequency: enum      # hourly | daily | weekly
+        retention: string
+        type: string         # e.g. "continuous-backup", "snapshot"
+      replication:           # Optional
+        target: string
+        lag: string
+      failover:
+        automatic: boolean
+        manual: boolean
+        switchoverTime: string
+  storage:                   # Optional
+    - name: string
+      rto: string
+      rpo: string
+      backup:
+        type: string
+        target: string
+        retention: string
+  siteFailover:              # Optional
+    primary: string          # Primary region
+    secondary: string        # Failover region
+    healthCheck: string
+    automaticFailover: boolean
+    switchoverTime: string
+    testSchedule: string
+    lastTestDate: string
+  recoveryProcedures:        # Optional
+    - scenario: string
+      rto: string
+      steps: string[]
+```
+
+---
+
+## design (optional, v1.1)
 
 Defines the visual design language for frontend components. When present, scaffold prompts MUST follow these constraints instead of defaulting to generic styles.
 
+**Structure note:** The upstream spec (SDL-v1.1.md) stores font families under `design.tokens.typography.headingFont/bodyFont/monoFont` (camelCase, nested under `tokens`). This plugin simplifies to `design.typography.heading/body/mono` for SDL generation. The `_state.json` flattens further to `heading_font/body_font/mono_font`. Both representations are valid; use the plugin form when generating.
+
 ```yaml
 design:
+  personality: string        # Optional. e.g. "professional-structured", "bold-commercial", "soft-minimal"
   preset: enum               # Optional. shadcn | material | ant | chakra | daisyui | bootstrap | custom
-  personality: enum           # Optional. minimal | corporate | playful | bold | brutalist | editorial | luxury
-  palette:                    # Optional
-    primary: string           # CSS color or Tailwind name. e.g. "#0F766E", "teal-700"
-    secondary: string         # e.g. "#F59E0B", "amber-500"
-    accent: string            # e.g. "#EC4899", "pink-500"
-    neutral: enum             # Tailwind neutral scale. slate | gray | zinc | neutral | stone
-    surface: enum             # light | dark | auto
-    semantic:                 # Optional. Override success/warning/error/info colors
+  
+  # Simplified palette (plugin form — flat fields):
+  palette:                   # Optional
+    primary: string          # CSS hex. e.g. "#0066cc"
+    secondary: string
+    accent: string
+    neutral: enum            # slate | gray | zinc | neutral | stone
+    surface: enum            # light | dark | auto
+    semantic:
       success: string
       warning: string
       error: string
       info: string
-  typography:                 # Optional
-    heading: string           # Font family for headings. e.g. "DM Sans", "Playfair Display"
-    body: string              # Font family for body text. e.g. "Inter", "IBM Plex Sans"
-    mono: string              # Font family for code. e.g. "JetBrains Mono", "Fira Code"
-    scale: enum               # compact | default | spacious
-  shape:                      # Optional
-    radius: enum              # none | sm | md | lg | full
-    density: enum             # compact | default | relaxed
-    shadows: enum             # flat | subtle | elevated | dramatic
-    borders: enum             # none | subtle | visible | bold
-  motion:                     # Optional
-    transitions: enum         # none | snappy | smooth | expressive
-    pageTransitions: boolean  # Default: false
-  layout:                     # Optional
-    maxWidth: number          # Max content width in px. e.g. 1280
-    style: enum               # dashboard | marketing | editorial | app-shell | saas
-  iconLibrary: string         # Optional. e.g. "lucide", "heroicons", "phosphor", "tabler"
-  componentLibrary: string    # Optional. e.g. "shadcn/ui", "Radix UI", "Headless UI", "Chakra UI"
-  accessibility:              # Optional
-    wcag: enum                # A | AA | AAA
-    reducedMotion: boolean    # Default: true
-    highContrast: boolean     # Default: false
+  
+  # Full token set (upstream spec form — use when capturing detailed design systems):
+  tokens:                    # Optional. Preferred over flat fields when full token scale is available
+    colors:                  # Named color tokens
+      primary: string        # e.g. "#0066cc"
+      primary-dark: string
+      secondary: string
+      success: string
+      warning: string
+      error: string
+      neutral-50: string
+      neutral-900: string
+    typography:              # Upstream spec uses camelCase here
+      headingFont: string    # e.g. "Figtree"
+      bodyFont: string       # e.g. "Inter"
+      monoFont: string       # e.g. "JetBrains Mono"
+      scale:                 # Pixel sizes
+        h1: string           # e.g. "32px"
+        h2: string
+        h3: string
+        body: string
+        small: string
+    spacing:
+      xs: string
+      sm: string
+      md: string
+      lg: string
+      xl: string
+    radius:
+      sm: string             # e.g. "4px"
+      md: string
+      lg: string
+      full: string           # e.g. "9999px"
+    shadows:
+      sm: string             # CSS shadow value
+      md: string
+      lg: string
+  
+  # Plugin simplified typography (use when tokens not available):
+  typography:                # Optional. Simplified font-family-only form
+    heading: string          # Font family. e.g. "DM Sans"
+    body: string             # e.g. "Inter"
+    mono: string             # e.g. "JetBrains Mono"
+    scale: enum              # compact | default | spacious
+
+  shape:                     # Optional
+    radius: enum             # none | sm | md | lg | full
+    density: enum            # compact | default | relaxed
+    shadows: enum            # flat | subtle | elevated | dramatic
+    borders: enum            # none | subtle | visible | bold
+  motion:                    # Optional
+    transitions: enum        # none | snappy | smooth | expressive
+    pageTransitions: boolean # Default: false
+  layout:                    # Optional
+    maxWidth: number         # Max content width in px. e.g. 1280
+    style: enum              # dashboard | marketing | editorial | app-shell | saas
+  iconLibrary: string        # Optional. e.g. "lucide-react", "heroicons", "phosphor"
+  componentLibrary: string   # Optional. e.g. "shadcn/ui", "Radix UI", "Chakra UI"
+  
+  # Multi-theme support (v1.1 spec):
+  themes:                    # Optional. Define light/dark/custom themes
+    - name: string           # Required. e.g. "light", "dark", "high-contrast"
+      colors:                # Theme-specific color overrides
+        background: string
+        text: string
+        [key]: string
+  
+  # Layout variants (v1.1 spec):
+  layouts:                   # Optional. Named layout shells available in the app
+    - name: string           # Required. e.g. "dashboard", "marketing", "app-shell"
+      description: string
+  
+  accessibility:             # Optional
+    wcag: enum               # A | AA | AAA
+    reducedMotion: boolean   # Default: true
+    highContrast: boolean    # Default: false
 ```
 
 **Behavior rules:**
