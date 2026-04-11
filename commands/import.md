@@ -37,7 +37,22 @@ generate:
 
 ## Quick Navigation
 
-[Step 1](#step-1-load-scan-context) · [Step 2](#step-2-deep-source-analysis) · [Step 3](#step-3-generate-sdl) · [Step 4](#step-4-generate-import-analysis) · [Step 5](#step-5-generate-intent) · [Step 6](#step-6-generate-recommendations)
+[Step 0](#step-0-detect-scan-mode) · [Step 1](#step-1-load-scan-context) · [Step 2](#step-2-deep-source-analysis) · [Step 3](#step-3-generate-sdl) · [Step 4](#step-4-generate-import-analysis) · [Step 5](#step-5-generate-intent) · [Step 6](#step-6-generate-recommendations)
+
+### Step 0: Detect Scan Mode
+
+Determine scan mode from the command argument or user context:
+
+| Mode | Trigger | Behaviour |
+|------|---------|-----------|
+| `discovery` | Default — no mode flag or `--mode discovery` | Moderate inference, service boundary detection. Full SDL + analysis. |
+| `inventory` | `--mode inventory` | Conservative. Assert only what is directly evidenced. No inferred relationships, no guessed topology. Fewer SDL sections. |
+| `monorepo` | `--mode monorepo` | Same as `discovery` but apply monorepo heuristics: detect workspace managers (yarn workspaces, pnpm, lerna, gradle multi-project), treat each workspace package as a component, resolve cross-package imports as `dependsOn[]`. |
+
+**Inference rules per mode:**
+- `discovery` — Allowed to infer: service boundaries, dependency relationships, SLOs, resilience patterns from code signals.
+- `inventory` — Only assert: tech stack, file structure, package dependencies declared in manifests. Set `x-confidence: low` on everything not directly evidenced. Skip `slos`, `resilience`, `compliance` unless explicitly declared in config files.
+- `monorepo` — Same as `discovery` but: detect workspace root (`package.json workspaces`, `pnpm-workspace.yaml`, `lerna.json`, `nx.json`), enumerate workspace packages, map each to a component in `architecture.projects`.
 
 ### Step 1: Load Scan Context
 
@@ -466,6 +481,68 @@ solution.sdl.yaml  # Contains only: sdlVersion, solution, architecture, data, im
 - **V1.1:** `sdl/backup-dr.sdl.yaml` — backupDr section with RTO/RPO, failover strategy (if primary database exists — generate with sensible defaults even if no explicit backup strategy)
 - **V1.1:** `sdl/design.sdl.yaml` — design section with token scales, themes (if design-tokens.json or tailwind config exists)
 - `sdl/advanced.sdl.yaml` — domain entities (names only), services, shared libraries (if microservices or complex)
+- **V2.0:** `sdl/complexity.sdl.yaml` — Architecture Complexity Index (ACI) and Delivery Burden Index (DBI) — always generate (see below)
+
+#### Generating `sdl/complexity.sdl.yaml`
+
+Calculate both indices from the evidence collected in Step 2.
+
+**Architecture Complexity Index (ACI)** — How hard is it to understand and reason about the system? Score 1–10 across 4 dimensions:
+- **Structural** (25%) — node count, interaction density, coupling density, critical path depth
+- **Dynamic** (25%) — async patterns, distributed state, consistency model
+- **Integration** (25%) — external dependency count, blast radius, failure isolation
+- **Technology** (25%) — language/framework/database diversity, version fragmentation
+
+**Delivery Burden Index (DBI)** — How hard is it to operate and scale safely? Score 1–10 across 2 dimensions:
+- **Operational** (60%) — CI/CD maturity, IaC coverage, observability completeness (logs/metrics/tracing), secrets management, health checks, backup/DR
+- **Organizational** (40%) — estimated team count (from service count), cross-team dependencies, coordination overhead
+
+**Confidence rule**: ACI confidence is typically `high` for Structural + Integration (evidenced from code), `medium` for Dynamic (inferred from patterns), `medium` for Technology. DBI confidence is `high` for Operational (evidenced from CI/CD + infra), `low` for Organizational (team count estimated from service count — always flag for human review).
+
+**Output file: `sdl/complexity.sdl.yaml`**
+```yaml
+complexity:
+  profile: startup | enterprise | platform   # auto-detected from solution.stage + component count
+  architecture_index: 0.0                    # weighted ACI score 1-10
+  delivery_index: 0.0                        # weighted DBI score 1-10
+  unified_score: 0.0                         # (ACI * 0.6 + DBI * 0.4) — executive summary
+
+  dimensions:
+    structural:
+      score: 0.0
+      confidence: high | medium | low
+      evidence:
+        - "{signal, e.g. 5 backend services detected}"
+    dynamic:
+      score: 0.0
+      confidence: medium
+      evidence:
+        - "{signal, e.g. async event patterns in 3 services}"
+    integration:
+      score: 0.0
+      confidence: high
+      evidence:
+        - "{signal, e.g. 4 external APIs: Stripe, SendGrid, Twilio, Auth0}"
+    technology:
+      score: 0.0
+      confidence: high
+      evidence:
+        - "{signal, e.g. 3 languages: TypeScript, Python, Go}"
+    operational:
+      score: 0.0
+      confidence: high
+      evidence:
+        - "{signal, e.g. GitHub Actions CI/CD, Terraform IaC, Prometheus metrics}"
+    organizational:
+      score: 0.0
+      confidence: low
+      evidence:
+        - "{signal, e.g. 5 services → estimated 2-3 teams — confirm with org chart}"
+
+  x-review-required: true | false   # true if any dimension has confidence: low
+```
+
+Add `sdl/complexity.sdl.yaml` to the `imports:` list in `solution.sdl.yaml`.
 
 **3. Report generated files:**
 ```
@@ -486,8 +563,9 @@ Generated SDL (v1.1):
   ✓ sdl/costs.sdl.yaml ($4700/month infrastructure + third-party)
   ✓ sdl/backup-dr.sdl.yaml (RTO 15m, RPO 5m, active-passive failover)
   ✓ sdl/design.sdl.yaml (design tokens with full color scale, typography)
+  ✓ sdl/complexity.sdl.yaml (ACI: X.X, DBI: X.X, unified: X.X)
   
-Total: 16 files | Imports: 15 | Entities: 8 | APIs: 3 | Features: 12 | Compliance: 2 frameworks
+Total: 17 files | Imports: 16 | Entities: 8 | APIs: 3 | Features: 12 | Compliance: 2 frameworks
 ```
 
 **Rules:**
@@ -496,6 +574,103 @@ Total: 16 files | Imports: 15 | Entities: 8 | APIs: 3 | Features: 12 | Complianc
 - No duplicate sections across files
 - sdlVersion only in main file, never in modules
 - Comments (YAML `#`) can explain purpose of each module
+
+#### 3.4 — Generate Confidence Report
+
+Write `architecture-output/confidence-report.json` with per-component confidence scores:
+
+```json
+{
+  "summary": {
+    "high_confidence_components": 0,
+    "medium_confidence_components": 0,
+    "low_confidence_components": 0,
+    "total_components": 0,
+    "overall_confidence": "high | medium | low",
+    "components_requiring_review": 0
+  },
+  "components": [
+    {
+      "id": "{sdl-name}",
+      "name": "{display name}",
+      "type": "frontend | backend | worker | library | mobile",
+      "confidence": "high | medium | low",
+      "evidence_count": 0,
+      "evidence_sources": ["{file paths}"],
+      "review_required": false,
+      "review_reason": "{only if review_required: true}"
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "{component name}",
+      "target": "{component or integration name}",
+      "type": "http | event | import | queue",
+      "confidence": "high | medium | low",
+      "evidence_count": 0
+    }
+  ],
+  "complexity": {
+    "architecture_index": 0.0,
+    "delivery_index": 0.0,
+    "profile": "startup | enterprise | platform"
+  }
+}
+```
+
+**Confidence assignment rules:**
+- `high` — asserted directly from Dockerfile, K8s manifest, package.json main, or explicit config
+- `medium` — inferred from 2+ corroborating signals (SDK import + env var + route reference)
+- `low` — single weak signal only (naming pattern, README mention, single import)
+
+#### 3.5 — Generate Unknowns & Review Checklist
+
+Write `architecture-output/unknowns-and-review-items.md` to surface ambiguities that require human validation before the SDL is committed as source of truth:
+
+```markdown
+# Unknowns & Review Items: {Project Name}
+Generated: {ISO-8601}
+Confidence: {overall — HIGH / MEDIUM / LOW}
+
+> **Action required before committing SDL:** Resolve items below, then remove this file or mark items as resolved.
+
+## Critical (confirm before using SDL in production tooling)
+
+- [ ] **{Item title}**
+  - Issue: {what is unclear}
+  - Evidence: {what was detected}
+  - Action: {what to confirm or provide}
+  - Owner: TBD
+
+## High Priority
+
+- [ ] **{Item title}**
+  - Issue: ...
+  - Evidence: ...
+  - Action: ...
+
+## Medium Priority
+
+- [ ] ...
+
+## Unknowns (not inferable from code)
+
+1. {Something the agent cannot determine from static analysis}
+2. ...
+```
+
+**Always include as unknowns** (if not evidenced):
+- True production traffic patterns (cannot infer from code)
+- Team/ownership structure (if no CODEOWNERS or org chart detected)
+- Whether any service is currently deployed vs. only in dev
+- Any feature flagged `x-confidence: low` in the SDL
+
+**Always include as High Priority review items** if detected:
+- Two repos with similar names that may represent the same service
+- A service with a deployment manifest but no clear code entrypoint
+- A database connection string referencing a different DB type than the detected ORM
+- Any `x-confidence: low` field in `architecture.projects[]` or `data.*`
+
     provider: twilio | vonage
   monitoring:
     provider: datadog | sentry | azure-monitor | newrelic
@@ -917,16 +1092,23 @@ After writing the file, print this block directly in the conversation (not insid
 ────────────────────────────────────────────────────
 Import complete: {Project Name}
 {N} component(s) · {style} architecture · hardening {x}/9
+Confidence: {overall — HIGH / MEDIUM / LOW} · ACI: {X.X} · DBI: {X.X}
 ────────────────────────────────────────────────────
 {IF any hardening gaps:}
 ⚠ Hardening gaps ({9 - x} missing)
   {one line per missing/partial pattern: emoji + name + one-sentence fix}
+
+{IF confidence is MEDIUM or LOW:}
+⚠ Review required ({N} items in unknowns-and-review-items.md)
+  {one line per Critical item: what needs human confirmation}
 
 {IF any lifecycle steps:}
 Recommended next steps
   {N}  {command}  {why — one phrase}
 
 Full recommendations → architecture-output/import-recommendations.md
+Review checklist    → architecture-output/unknowns-and-review-items.md
+Confidence report   → architecture-output/confidence-report.json
 ────────────────────────────────────────────────────
 ```
 
@@ -942,6 +1124,9 @@ Full recommendations → architecture-output/import-recommendations.md
 - Write SDL to `solution.sdl.yaml` in the project root (NOT inside architecture-output/)
 - Write analysis to `architecture-output/import-analysis.md`
 - Write intent to `intent.json` in the project root
+- Write `sdl/complexity.sdl.yaml` (ACI + DBI — always)
+- Write `architecture-output/confidence-report.json` (per-component confidence scores)
+- Write `architecture-output/unknowns-and-review-items.md` (human review checklist)
 - **Update `architecture-output/_state.json`** after writing all files: read existing (or start with `{}`), then merge `project`, `tech_stack`, `components`, and `design` fields derived from the SDL. Follow the write rules in CLAUDE.md.
   
   **Design authority check (MUST DO FIRST):** Before writing the `design` field, check if `_state.json.design` is already fully populated (has `primary`, `heading_font`, `body_font`, `personality`). If yes → **preserve it verbatim, do NOT overwrite** — it was set by `/architect:design-system` and is authoritative. Only write design fields when `_state.json.design` is absent or missing required fields.

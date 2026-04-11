@@ -18,6 +18,8 @@ Assess how hard a product is to build using a structured 10-factor methodology. 
 
 **First**, check `architecture-output/_state.json`. If it exists, read it in full — it provides instant access to `project`, `tech_stack`, `components`, `design`, `entities`, and `personas` without reading larger files. Use its values directly where available; fall back to SDL (check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files) only for detail not in `_state.json`.
 
+**Also check for `sdl/complexity.sdl.yaml`** — if it exists, it contains pre-calculated Architecture Complexity Index (ACI) and Delivery Burden Index (DBI) scores from an import or discovery run. Read it now and set a flag: `has_sdl_complexity = true`.
+
 If a description is provided, use it directly. If not, ask:
 
 > "What are you building? Describe the product and its key features so I can assess the build complexity."
@@ -45,11 +47,33 @@ Using the **complexity-factors** skill, score each factor 1-10:
 
 ### Step 4: Generate Output
 
-#### Overall Score
+#### SDL Complexity Scores (if `has_sdl_complexity = true`)
+
+If `sdl/complexity.sdl.yaml` exists, display the pre-calculated indices first, before the 10-factor table:
+
+> **Architecture Complexity Index (ACI): {X.X}/10**
+> *How hard it is to understand and reason about the system.*
+> {Structural / Dynamic / Integration / Technology dimensions}
+>
+> **Delivery Burden Index (DBI): {X.X}/10**
+> *How hard it is to operate and scale safely.*
+> {Operational / Organizational dimensions}
+>
+> **Unified Score: {X.X}/10 — {Simple | Moderate | Advanced | Very Advanced}**
+> *(ACI × 0.6 + DBI × 0.4 — based on evidence from codebase scan)*
+
+If any dimension has `confidence: low`, note it:
+> ⚠ {dimension} confidence is LOW — {review_reason from complexity.sdl.yaml}. Confirm with your team before using this score for planning.
+
+---
+
+#### Overall Score (10-Factor)
 
 > **Complexity: X/10 — [Label]**
 >
 > [One-sentence summary of why this product is at this complexity level]
+>
+> {IF has_sdl_complexity: Note any significant discrepancy (>2 points) between this score and the SDL unified score and explain why they differ.}
 
 #### Factor Breakdown
 
