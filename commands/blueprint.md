@@ -384,8 +384,7 @@ imports:
   # Always included:
   - sdl/product.sdl.yaml
   - sdl/deployment.sdl.yaml
-  
-  # Always included:
+  - sdl/environments.sdl.yaml
   - sdl/features.sdl.yaml           # always — feature phases (empty phases if not yet planned)
   - sdl/costs.sdl.yaml              # always — infrastructure costs (estimates if speculative)
 
@@ -403,33 +402,33 @@ imports:
 
 **Modular files in `sdl/` directory (v1.1 sections):**
 
-**Core sections carried into v1.1:**
-- `sdl/product.sdl.yaml` — product, personas, coreFlows (if product section exists)
-- `sdl/auth.sdl.yaml` — auth, roles, integrations (if auth exists)
-- `sdl/deployment.sdl.yaml` — deployment, ci-cd (if deployment data exists)
+**Always generated:**
+- `sdl/product.sdl.yaml` — product, personas, coreFlows
+- `sdl/deployment.sdl.yaml` — deployment, ci-cd, infrastructure targets
 - `sdl/environments.sdl.yaml` — dev/staging/production URLs, ports, instances, scaling per component
-- `sdl/nfr.sdl.yaml` — nonFunctional requirements (if performance/security/availability data exists)
-- `sdl/integrations.sdl.yaml` — third-party integrations (if 2+ integrations)
-- `sdl/advanced.sdl.yaml` — shared libraries, microservices patterns (if applicable)
+- `sdl/features.sdl.yaml` — feature phases, MVP scope, feature flags (empty phases if not yet planned)
+- `sdl/costs.sdl.yaml` — infrastructure and third-party costs (estimates if speculative)
 
-**Extended sections (v1.1 additions — conditional):**
+**Conditional sections (only if applicable):**
+- `sdl/auth.sdl.yaml` — auth, roles, integrations (if multi-user with auth)
+- `sdl/nfr.sdl.yaml` — nonFunctional requirements (if performance/security/availability targets defined)
+- `sdl/integrations.sdl.yaml` — third-party integrations (if 2+ integrations)
+- `sdl/advanced.sdl.yaml` — shared libraries, microservices patterns (if 3+ services or microservices style)
 - `sdl/contracts.sdl.yaml` — API contracts with OpenAPI specs, GraphQL, gRPC definitions (if backend services exist)
 - `sdl/domain.sdl.yaml` — domain entities with full field definitions, relationships, indexes (if ORM/database exists)
-- `sdl/features.sdl.yaml` — feature phases, MVP scope, feature flags (if MVP planning needed)
 - `sdl/compliance.sdl.yaml` — compliance frameworks (GDPR, HIPAA, SOC2, etc.), data retention policies (if signals detected)
 - `sdl/slos.sdl.yaml` — SLO targets per component, SLIs, performance metrics, alerting thresholds (if production or 2+ services)
-- `sdl/resilience.sdl.yaml` — resilience patterns: retry policies, circuit breakers, timeouts, fallbacks (if patterns detected in code)
-- `sdl/costs.sdl.yaml` — infrastructure costs by component, third-party service costs, scaling cost projections (always generate)
+- `sdl/resilience.sdl.yaml` — resilience patterns: retry policies, circuit breakers, timeouts, fallbacks (if resilience patterns needed)
 - `sdl/backup-dr.sdl.yaml` — backup strategy, RTO/RPO targets, disaster recovery plan, failover strategy (if database exists)
 - `sdl/design.sdl.yaml` — design system tokens, typography, colors, component library, theming (if design assets exist)
-- `sdl/navigation-patterns.sdl.yaml` — route guards, context switching, error handling, ephemeral states, data-driven navigation (ONLY if patterns detected in Step 2 questions)
+- `sdl/navigation-patterns.sdl.yaml` — route guards, context switching, error handling, ephemeral states, data-driven navigation (ONLY if patterns detected in Step 2)
 
 **Write files to disk (CONDITIONAL):**
 
 1. Create `sdl/` directory
 2. Write `solution.sdl.yaml` to project root with imports list (only list modules that have content)
 3. Write each module file to `sdl/` with only its section:
-   - **Always write:** `product.sdl.yaml`, `deployment.sdl.yaml`
+   - **Always write:** `product.sdl.yaml`, `deployment.sdl.yaml`, `environments.sdl.yaml`, `features.sdl.yaml`, `costs.sdl.yaml`
    - **Conditionally write:**
      - `auth.sdl.yaml` — IF multi-user with auth detected
      - `navigation-patterns.sdl.yaml` — IF ANY of these true:
