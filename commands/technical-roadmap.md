@@ -14,6 +14,21 @@ Create a realistic, dependency-aware technical roadmap that sequences work into 
 
 ## Workflow
 
+### Step 0: Prerequisites
+
+Before doing anything else, check whether sufficient architecture context exists:
+
+1. Check if `architecture-output/_state.json` exists and has a `tech_stack` object with at least one non-empty field
+2. OR check if `solution.sdl.yaml` (or `sdl/` directory) exists at the project root
+
+**If NEITHER condition is met:**
+
+> "I need an architecture blueprint to generate a technical roadmap — it defines the components, tech stack, and scope that the roadmap is built around. Run `/architect:blueprint` first, then come back here."
+
+**Stop immediately. Do NOT attempt to run blueprint yourself. Do NOT continue.**
+
+If at least one condition is met, proceed to Step 1.
+
 ### Step 1: Gather Context
 
 Read in this order:
