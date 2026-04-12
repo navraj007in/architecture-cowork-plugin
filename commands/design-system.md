@@ -1,5 +1,5 @@
 ---
-description: Generate a complete design system from the architecture blueprint
+description: Generate a complete design system from product context and wireframes — no blueprint required
 ---
 
 # /architect:design-system
@@ -10,7 +10,7 @@ description: Generate a complete design system from the architecture blueprint
 
 ## Purpose
 
-After generating a blueprint with `/architect:blueprint`, this command creates a complete, context-aware design system — palette, typography, motion language, component inventory, and design tokens — grounded in the product domain and architecture. Turns a technical blueprint into a visual identity that the scaffold phase consumes.
+Creates a complete, context-aware design system — palette, typography, motion language, component inventory, and design tokens — grounded in the product domain and target audience. Works at any stage: after wireframes (pre-blueprint), after blueprint, or as a standalone command. The scaffold phase consumes the output.
 
 ## Workflow
 
@@ -24,24 +24,28 @@ After generating a blueprint with `/architect:blueprint`, this command creates a
 | **Updates** | [Step 7](#step-7-update-sdl) · [Step 7.5](#step-75-update-_statejson) |
 | **Completion** | [Step 7.6](#step-76-log-activity) · [Step 8](#step-8-print-summary) · [Step 9](#step-9-figma-push-optional) · [Step 9.5](#step-95-application-type-specific-adjustments) |
 
-### Step 1: Read Context & Check for Blueprint
+### Step 1: Read Context
 
 **First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
 - `project.name` and `project.description` → product name and domain context
-- `tech_stack` → framework and component library choices already made
+- `tech_stack` → framework and component library choices already made (optional — may not exist yet)
 - `design` → if present and fully populated (personality + full palette + fonts), the design system was already set — use these values as the starting point rather than re-deriving from scratch
 - `personas` → target audience context; use instead of reading `user-personas.md`
+- `mvp_scope` → feature scope; informs which UI components are needed
 
-**Then**, check if the command argument contains a `[blueprint_dir:/path/to/dir]` tag. If it does:
-- Read the SDL: check `solution.sdl.yaml` first; if absent, read `sdl/README.md` then the relevant module files
-- Read `blueprint.json` for the full blueprint
-- Extract product domain, target audience, and frontend components
+**Then**, scan for wireframe output in `architecture-output/wireframes/`. If JSON wireframe files exist, read them to extract:
+- Screen inventory (all screen names and layouts)
+- Component patterns already decided (navbars, sidebars, modals, cards, forms)
+- Application type hint (sidebar navigation → likely dashboard web app; bottom tabs → mobile; etc.)
 
-**If no local directory tag**, check if an SDL or blueprint exists earlier in the conversation.
+**Then**, check if an SDL exists (optional):
+- Check `solution.sdl.yaml` — if it exists, read `architecture.projects[]` for application type and tech stack
+- If no SDL, check for a `[blueprint_dir:/path/to/dir]` tag in the command argument and read from that path
+- **SDL is optional at this stage** — if no SDL exists, proceed with `_state.json` + wireframes context
 
-If no blueprint exists:
+If none of `_state.json`, wireframes, or SDL exist, ask:
 
-> "I need an architecture to design for. Run `/architect:blueprint` first to generate your architecture, then come back here to create the design system."
+> "What are you building? Give me a one-sentence description so I can create a design system that fits your product."
 
 ### Step 1.5: Figma Pull (Optional)
 
@@ -62,31 +66,43 @@ Use the returned palette and typography values as the authoritative design input
 
 **If not connected**, skip silently.
 
-### Step 2: Analyze Architecture Context
+### Step 2: Analyze Context
 
-Extract from SDL and blueprint:
+Determine the following from all available sources (`_state.json`, wireframes, SDL — whichever exist):
+
 - **Product domain** — what category is this product? (fintech, healthcare, e-commerce, etc.)
+  - Source priority: `_state.json.project.description` → SDL `domain` → user description
 - **Target audience** — who uses this? (enterprise users, consumers, developers, children, etc.)
-- **Application type** — **CRITICAL**: from `architecture.projects[].type`:
-  - `type: "web"` → Design for web: web component library (shadcn/ui, Material, Chakra)
-  - `type: "mobile"` → Design for mobile: mobile component library (React Native Paper, NativeBase, Material Design)
-  - `type: "desktop"` → Design for desktop: desktop component library (Electron-specific, larger sizing)
-  - If multiple types: ask which to design for (primary design system), others can be derived later
-- **Frontend components** — list all frontends from the manifest with their types and frameworks
-- **Existing design section** — is `design` already partially filled in the SDL?
-- **Component library** — is a preset already chosen? (shadcn, material, etc.) Should match application type
-- **Accessibility requirements** — any WCAG level specified?
+  - Source priority: `_state.json.personas[0]` → SDL `targetAudience` → infer from domain
+- **Application type** — determines component library and spacing scale:
+  - **If SDL exists**: read from `architecture.projects[].type`
+  - **If wireframes exist but no SDL**: infer from screen layouts (sidebar/top-nav patterns → `web`; bottom tabs/stack screens → `mobile`; window chrome/menu bar → `desktop`)
+  - **If neither**: default to `web` — note this assumption in the output summary
+  - `web` → web component library (shadcn/ui, Material, Chakra)
+  - `mobile` → mobile component library (React Native Paper, NativeBase)
+  - `desktop` → desktop-adapted component library (shadcn/ui adapted, larger sizing)
+  - If multiple types: ask which to design for first
+- **Component inventory** — what UI components are needed:
+  - **If wireframes exist**: extract from wireframe JSON (screens, layouts, navigation patterns, form types)
+  - **If SDL exists**: cross-reference with `architecture.projects[].type` for platform-specific components
+  - **If neither**: derive from `_state.json.mvp_scope.must_have` feature list
+- **Tech stack** (affects token format output):
+  - **If SDL/`_state.json.tech_stack` exists**: use specified framework (Next.js → Tailwind config, React Native → StyleSheet tokens, etc.)
+  - **If not known yet**: default to CSS custom properties + Tailwind config — note in output: "Token format defaults to CSS variables + Tailwind. Confirm after blueprint."
+- **Existing design** — is `_state.json.design` or SDL `design` section partially populated?
+- **Accessibility requirements** — any WCAG level in SDL or inferred from domain (healthcare/fintech → WCAG AA minimum)
 
 Present the analysis:
 
 ```
-Architecture context for design system:
+Design system context:
 
 Product: [name] — [one-line description]
 Domain: [detected domain]
-Audience: [target audience]
-Frontends: [list of frontend components with types]
-Design preset: [if specified, else "not set — will recommend"]
+Audience: [target audience from personas or inference]
+Application type: [web | mobile | desktop] — [source: SDL | wireframes | default assumption]
+Screens/components: [N screens from wireframes, or derived from MVP scope]
+Tech stack known: [yes — Next.js/React Native/etc. | no — defaulting to CSS variables + Tailwind]
 Existing design: [complete | partial | empty]
 ```
 
@@ -457,10 +473,12 @@ This ensures the design-system phase is marked as complete in the project state.
 
 ## Error Handling
 
-### Missing Blueprint or Design Personality
+### Missing All Context
 
-If SDL is missing or personality is undefined in `_state.json.design`:
-> "I need a blueprint with design personality to generate tokens from. Run `/architect:blueprint` first, then come back here."
+If no `_state.json`, no wireframes, no SDL, and no user description is available:
+> "What are you building? Give me a one-sentence description of your product so I can create a design system for it."
+
+Do NOT require a blueprint — the design system can be generated from product description alone.
 
 ### Unable to Write Design Tokens File
 
