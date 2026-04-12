@@ -140,7 +140,28 @@ If a valid JSON intent is provided:
 - Map the intent fields to requirements: `description` → idea, `personas` → user roles, `features` → core actions and feature list, `stack` → tech stack preference, `budget` → budget, `timeline` → timeline
 - For any fields that are empty or missing, make reasonable assumptions and state them explicitly
 
-Also check if an `intent.json` file exists in the current working directory — if it does, read it and use it the same way as above.
+Also check if an `intent.json` file exists in the current working directory — if it does, read it. Archon wizard projects use a **nested format** — map fields explicitly:
+
+| `intent.json` field | Maps to |
+|---------------------|---------|
+| `intent.product_name` | project / solution name |
+| `intent.vision` | description / what it does and for whom |
+| `intent.target_users[].persona` | user personas |
+| `intent.target_users[].needs` | user needs per persona |
+| `intent.core_features[].feature` | feature list |
+| `intent.core_features[].priority` | P0 = must-have, P1 = nice-to-have |
+| `intent.non_functional_requirements.performance.concurrent_users` | expected scale |
+| `intent.non_functional_requirements.security.compliance` | compliance requirements |
+| `intent.technical_constraints.preferred_stack` | tech stack preference |
+| `intent.business_constraints.timeline.mvp` | timeline |
+| `intent.business_constraints.budget.initial_development` | budget |
+| `intent.risks_and_assumptions.assumptions` | known assumptions — include in executive summary |
+| `intent.scope_guidance` | tier-specific depth instruction — follow it exactly (ideation = executive summary + pitch-style; prototype = lightweight buildable; mvp = streamlined; product = comprehensive) |
+| `intent.attachments[].path` | reference files — read each `.storedPath` file relative to project root for additional context |
+
+When `intent.json` is present in Archon wizard format, treat it as headless mode: skip Steps 1 and 2 entirely and proceed to Step 3. Print: "Loading project context from intent.json — skipping interactive questions."
+
+For any fields that are empty strings (`""`) or `"TBD"`, make reasonable assumptions and state them explicitly in the executive summary.
 
 **Additionally, if SDL exists in the current working directory, read it now** — even if intent.json was already loaded. Check `solution.sdl.yaml` first; if absent, check for an `sdl/` directory and read `sdl/README.md` then the relevant module files. The SDL from a prior import or blueprint run contains confirmed technical details (exact frameworks, port numbers, auth strategy, databases, design tokens, observability state, environment URLs) that must be preserved in the new blueprint. When building the manifest in Step 3, treat the SDL as the authoritative source for all technical fields it contains — do not re-derive or overwrite them from intent.json or Step 2 answers. Only add or extend what the SDL is missing.
 
