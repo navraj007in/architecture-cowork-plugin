@@ -6,11 +6,11 @@ description: Developer onboarding package for first hire or agency handoff
 
 ## Trigger
 
-`/architect:onboarding-pack` — run after blueprint and scaffold are complete.
+`/architect:onboarding-pack` — run at any handoff point: agency kickoff after ideation, first hire, or post-scaffold developer onboarding.
 
 ## Purpose
 
-Generate a comprehensive developer onboarding document for the first engineer joining the project, or for handing off to a development agency. Assembles architecture context, codebase navigation, environment setup, key decisions, and coding conventions into a single "start here" document. Saves days of context-gathering for new team members.
+Generate a comprehensive developer onboarding document for handing off to a development agency, bringing on the first engineer, or onboarding new developers to a running codebase. Assembles architecture context, tech stack decisions, environment setup, and coding conventions into a single "start here" document. Adapts automatically to the project stage — pre-scaffold outputs a setup brief for agencies; post-scaffold outputs a full codebase guide.
 
 ## Workflow
 
@@ -76,8 +76,19 @@ For each component/service in the SDL:
 
 #### 4. Getting Started (Environment Setup)
 
-Step-by-step instructions:
+**Detect project stage first:**
+- Check if component directories with `package.json` or build files exist → **post-scaffold mode**
+- If only `architecture-output/` and SDL exist (no scaffolded code) → **pre-scaffold / agency handoff mode**
 
+**Pre-scaffold / agency handoff mode** — describe what needs to be built and set up:
+1. Prerequisites the agency needs to install (Node.js version, Docker, cloud CLIs — from SDL `deployment` section)
+2. Tech stack decisions already made (link to the SDL and architecture outputs)
+3. Environment variables that will be needed (from SDL `environments[]` or cost-estimate context)
+4. Expected repository structure (component names and ports from SDL `architecture.projects[]`)
+5. Key architecture constraints the agency must follow (from SDL, ADRs, coding rules)
+6. Where to find the full architecture: `architecture-output/executive-summary.md`
+
+**Post-scaffold mode** — actual setup instructions:
 1. Prerequisites (Node.js version, Docker, etc. — inferred from package.json engines or Dockerfile)
 2. Clone the repository
 3. Copy `.env.example` to `.env` and fill in values (list each variable with description)

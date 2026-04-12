@@ -22,7 +22,7 @@ After generating a blueprint with `/architect:blueprint`, this command takes the
 | **Generation** | [Step 3.5](#step-35-delegate-to-data-model-generator-agent) · [Step 3.6](#step-36-generate-database-creation-scripts) · [Step 3.7](#step-37-generate-migration-scripts) |
 | **Completion** | [Step 4](#step-4-print-summary) · [Step 5](#step-5-update-_statejson) · [Step 5.5](#step-55-docs-publish-optional) |
 
-### Step 1: Read Context & Check for Shared Types
+### Step 1: Read Context & Detect Mode
 
 **First**, check for `architecture-output/_state.json`. If it exists, read it in full and extract:
 - `project.name` → product name for display
@@ -31,6 +31,28 @@ After generating a blueprint with `/architect:blueprint`, this command takes the
 - `components` → component directory names for knowing where to place schema files
 
 **Then**, check if a blueprint with shared types (deliverable 4d) and database definitions exists earlier in the conversation.
+
+**Detect mode — CRITICAL:**
+
+Check for evidence of a scaffolded codebase:
+- Does `solution.sdl.yaml` exist with a populated `domain.entities[]` section?
+- Do component directories with `package.json` or equivalent build files exist?
+
+**If NO scaffold evidence (ideation/pre-blueprint mode):**
+→ Switch to **conceptual mode** — generate `architecture-output/data-model.md` only (entity table, relationships, ER diagram). Skip all ORM file generation entirely.
+→ Do NOT write `prisma/schema.prisma`, `db/schema.ts`, migration files, or seed scripts.
+→ Proceed directly to the conceptual output step below — skip Steps 2, 3, 3.5, 3.6, 3.7.
+
+**Conceptual mode output** (write to `architecture-output/data-model.md`):
+- Entity table: name, description, key fields, relationships
+- Mermaid ER diagram showing entity relationships
+- Data storage recommendations (what database type suits each entity group)
+- Note at top: "This is a conceptual data model. ORM schemas will be generated after `/architect:scaffold` sets up your project structure."
+- Write `entities` to `_state.json` with field names extracted from the conceptual model
+- Emit `[DATA_MODEL_DONE]`, log activity, and stop
+
+**If scaffold evidence exists (post-scaffold mode):**
+→ Continue with Steps 2 onward (full ORM generation).
 
 If no shared types exist and no `_state.json` with project context, respond:
 

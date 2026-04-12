@@ -6,7 +6,7 @@ description: Pre-launch readiness checklist generated from SDL and deployment co
 
 ## Trigger
 
-`/architect:launch-checklist` — run after blueprint and scaffold are complete, before go-live.
+`/architect:launch-checklist` — run at any stage to understand launch readiness. During ideation, the output serves as a planning target. Post-scaffold, it becomes an actionable pre-launch checklist.
 
 ## Purpose
 
@@ -111,6 +111,17 @@ Organize the checklist by category. For each item, include:
 
 ### Step 4: Tailor to Project
 
+**Detect project stage:**
+- Check if scaffolded component directories with `package.json` exist → post-scaffold mode
+- If only `architecture-output/` and SDL exist → pre-scaffold / ideation mode
+
+**If ideation / pre-scaffold mode:** Add a prominent note at the top of the checklist:
+```
+> ℹ️ **Planning mode** — No scaffolded project detected. This checklist shows what you'll need to complete before launch. Most items will be unchecked now; use this as a planning target and revisit after scaffold.
+```
+Mark all infrastructure, deployment, and monitoring items as `[Target]` rather than `[Required]` to clarify they are future goals.
+
+**Post-scaffold tailoring:**
 - If SDL has no `auth` section → skip authentication-related items
 - If SDL has no `deployment` section → mark all infrastructure items as `[Required]` with note "deployment not yet configured"
 - If SDL has `observability` section → mark monitoring items that are already configured as `[Configured]` instead of checkbox

@@ -212,6 +212,7 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `launch-checklist` | `launch_checklist` (`generated_at`, `item_count`) |
 | `pitch-deck` | `pitch_deck` (`generated_at`) |
 | `investor-update` | `investor_update` (`generated_at`) |
+| `stakeholder-doc` | `stakeholder_doc` (`generated_at`) |
 | `onboarding-pack` | `onboarding_pack` (`generated_at`) |
 | `hiring-brief` | `hiring_brief` (`generated_at`) |
 | `generate-tests` | `test_suite` (`generated_at`, `coverage_target`, `unit_framework`, `e2e_framework`, `suites[]`, `files_generated`) |
@@ -238,7 +239,7 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `check-env` | activity log only (no `_state.json` fields) |
 | `publish-api-docs` | activity log only (no `_state.json` fields) |
 | `sdl` (validate/diff/template) | no writes |
-| `cost-estimate` | activity log only (no `_state.json` fields) |
+| `cost-estimate` | `cost_estimate` (`generated_at`, `monthly_low`, `monthly_mid`, `monthly_high`, `annual_low`, `annual_high`) |
 | `security-scan` | activity log only (conditional — if `security-scan.md` written) |
 | `setup-cicd` | activity log only (no `_state.json` fields) |
 | `wireframes` | activity log only (no `_state.json` fields) |

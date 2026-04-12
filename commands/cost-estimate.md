@@ -138,6 +138,30 @@ These cost estimates are planning tools, not guarantees. They help you budget an
 **These estimates can drift 10-30% from actual costs.** Use for planning, not contracts.
 ```
 
+### Update _state.json
+
+After writing `architecture-output/cost-estimate.md`, merge the cost summary into `architecture-output/_state.json`:
+
+1. Read existing `_state.json` (or start with `{}`)
+2. Extract the monthly low/mid/high totals from the Monthly Summary table
+3. Merge only the `cost_estimate` key — do NOT overwrite other fields
+4. Write back to `architecture-output/_state.json`
+
+```json
+{
+  "cost_estimate": {
+    "generated_at": "<ISO-8601>",
+    "monthly_low": "$X",
+    "monthly_mid": "$X",
+    "monthly_high": "$X",
+    "annual_low": "$X",
+    "annual_high": "$X"
+  }
+}
+```
+
+This lets `investor-update`, `blueprint`, and other downstream commands access cost data without reading the full markdown file.
+
 ### Final Step: Log Activity
 
 After writing `architecture-output/cost-estimate.md`, append one line to `architecture-output/_activity.jsonl`:

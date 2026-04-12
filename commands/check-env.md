@@ -6,7 +6,7 @@ description: Check local environment readiness for the project — runtimes, dat
 
 ## Trigger
 
-`/architect:check-env` — run after blueprint or scaffold to verify local machine is ready for development.
+`/architect:check-env` — run at any time to verify your local machine has the tools and runtimes needed for this project.
 
 ## Purpose
 
