@@ -31,28 +31,67 @@ Load:
 - **diagram-patterns** skill — for Mermaid templates
 - **founder-communication** skill — for clear labels and descriptions
 
-### Step 3: Generate Visualisation Assets
+### Step 3: Generate the Canonical Diagram Set
 
-#### 3.1 — Solution Topology (Mermaid C4 Container)
-Enhanced C4 Container diagram with:
-- Colour-coded nodes by category (frontend=green, backend=blue, mobile=purple, AI=orange, infra=amber)
+**Output folder: `architecture-output/diagrams/`** — write every diagram as an individual `.mmd` file using the exact canonical filenames below. Follow the **diagram-patterns** skill for all templates, color conventions, and rules (max 12 nodes, short labels, no C4 Mermaid types, flat node declarations).
+
+Generate diagrams in this order:
+
+#### 3.1 — `solution-architecture.mmd` (always)
+
+Full system topology using `graph TB` with subgraphs following the Solution Architecture template in diagram-patterns:
+- Colour-coded nodes: frontend=blue (`#4a90d9`), backend=green (`#5cb85c`), database=orange (`#f0ad4e`), external=purple (`#9b59b6`), queue=teal (`#1abc9c`), AI=red (`#e74c3c`), gateway=light-blue (`#d4e6f1`)
 - Edge labels showing protocols (REST, WebSocket, gRPC, async/queue)
-- External system boundaries
-- Cloud provider grouping
+- External systems in their own subgraph
+- Cloud provider or hosting tier as subgraph labels
+- If the system has >12 components: produce `solution-architecture.mmd` for the core layer (frontend + backend + primary data) and `solution-architecture-infra.mmd` for the infra/external layer
 
-#### 3.2 — Data Flow Diagrams (per core flow)
-For each `product.coreFlow`:
-- Sequence diagram showing the request path through components
-- Data transformations at each step
-- Latency-critical paths marked
+#### 3.2 — `deployment.mmd` (always)
 
-#### 3.3 — Deployment Topology
-- Where each component runs (cloud provider, service, region)
-- Network boundaries (VPC, subnets if applicable)
-- CDN and edge locations
+Where each component runs using `graph TB` following the Deployment Diagram template:
+- Cloud provider subgraphs (e.g. "Vercel", "Railway", "AWS us-east-1") as the top-level groupings
+- Each component inside its hosting subgraph
+- Managed services (RDS, ElastiCache, S3) as nodes within their provider
+- External third-party services in a separate subgraph
+- Max 12 nodes — group minor infra together if needed
 
-#### 3.4 — Component Relationship Matrix
-Markdown table showing which components depend on which:
+#### 3.3 — `sequence-auth.mmd` (always)
+
+Authentication flow using `sequenceDiagram` following the Authentication Sequence template in diagram-patterns:
+- Shows login → token issuance → API call → refresh flow
+- If using OAuth/SSO: show the redirect + callback steps
+- Max 6 participants — collapse internal services where possible
+
+#### 3.4 — `er-diagram.mmd` (when system has a relational database)
+
+Entity relationship diagram using `erDiagram` following the ER Diagram template in diagram-patterns:
+- Core domain entities only (max 8) — omit audit logs, config tables, join tables without meaningful fields
+- Key fields per entity: PK, FKs, status/type enums, 1–2 key data fields — not every column
+- Relationship cardinality and foreign key name on each line
+
+#### 3.5 — `service-communication.mmd` (when 2+ backend services or modular-monolith with 3+ modules)
+
+Inter-service communication using `graph LR` following the Service Communication Diagram template:
+- Every service-to-service connection labelled with protocol + endpoint/event name
+- Sync vs async calls in separate subgraphs
+- Databases shown per service to indicate ownership boundaries
+
+#### 3.6 — `agent-flow.mmd` (when system has AI agents or LLM orchestration)
+
+Agent flow using `graph TD` following the Agent Flow Diagram template:
+- Input → router → agents → tools → guardrails → output
+- Label every tool call and decision path
+
+#### 3.7 — `sequence-payment.mmd` (when system has payment processing)
+
+Payment flow using `sequenceDiagram`:
+- User → frontend → API → payment provider → webhook → order fulfillment
+- Show both success and failure paths
+- Max 6 participants
+
+#### 3.8 — Component Relationship Matrix
+
+Write `architecture-output/component-matrix.md` — a markdown table showing which components depend on which:
 
 | Component | Depends On | Protocol | Direction |
 |-----------|-----------|----------|-----------|
@@ -61,20 +100,28 @@ Markdown table showing which components depend on which:
 
 ### Step 4: Output
 
-Write all visualisations to `architecture-output/`:
-- `architecture-output/topology.mmd` — C4 Container diagram
-- `architecture-output/data-flows/` — one `.mmd` per core flow
-- `architecture-output/deployment-topology.mmd` — deployment diagram
-- `architecture-output/component-matrix.md` — relationship table
+Write all diagram files to `architecture-output/diagrams/` using the canonical filenames defined in Step 3. Write the component matrix to `architecture-output/component-matrix.md`.
 
-Also render diagrams to PNG/SVG if Mermaid CLI is available.
+Summary of files written:
+```
+architecture-output/diagrams/
+├── solution-architecture.mmd         (always)
+├── deployment.mmd                    (always)
+├── sequence-auth.mmd                 (always)
+├── er-diagram.mmd                    (when relational DB exists)
+├── service-communication.mmd         (when 2+ backend services)
+├── agent-flow.mmd                    (when AI agents exist)
+├── sequence-payment.mmd              (when payments exist)
+└── solution-architecture-infra.mmd   (when >12 nodes in core diagram)
+architecture-output/component-matrix.md
+```
 
 ### Final Step: Log Activity
 
 After writing all output files, append one line to `architecture-output/_activity.jsonl`:
 
 ```json
-{"ts":"<ISO-8601>","phase":"visualise","outcome":"completed","files":["architecture-output/topology.mmd","architecture-output/deployment-topology.mmd","architecture-output/component-matrix.md"],"summary":"Visualisation generated: topology, deployment diagram, component matrix, and <N> data flow diagrams."}
+{"ts":"<ISO-8601>","phase":"visualise","outcome":"completed","files":["architecture-output/diagrams/solution-architecture.mmd","architecture-output/diagrams/deployment.mmd","architecture-output/diagrams/sequence-auth.mmd","architecture-output/component-matrix.md"],"summary":"Visualisation generated: <N> diagrams in architecture-output/diagrams/ — solution architecture, deployment, auth sequence, <and others as applicable>."}
 ```
 
 List all generated files in the `files` array.
@@ -110,7 +157,10 @@ If architecture has circular dependencies between services:
 
 ## Output Rules
 
-- Use **diagram-patterns** skill for consistent Mermaid syntax
-- Use **founder-communication** skill — labels should be understandable by non-engineers
-- Colour-code consistently: frontend=green, backend=blue, database=amber, cache=cyan
-- Do NOT ask questions — infer relationships from SDL dependencies
+- All `.mmd` files go to `architecture-output/diagrams/<canonical-filename>.mmd` — never embed diagrams inside markdown
+- Use **diagram-patterns** skill for all templates, color conventions, and rules
+- **NEVER use C4 Mermaid types** — use `graph TB/LR/TD`, `sequenceDiagram`, `erDiagram` only
+- **Max 12 nodes per diagram** — split into additional files rather than cramming more in
+- **Short labels**: ≤ 5 words per node, technology on a second line with `<br/><i>Tech</i>`
+- Use **founder-communication** skill — labels understandable by non-engineers
+- Do NOT ask questions — infer all relationships from SDL dependencies

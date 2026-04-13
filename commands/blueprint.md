@@ -516,20 +516,26 @@ One-page overview containing:
 
 #### 4b. Architecture Diagrams
 
-**Output file:** `architecture-output/architecture-diagrams.md`
+**Output folder:** `architecture-output/diagrams/`
 
-Using the **diagram-patterns** skill, generate the following diagrams:
+Write each diagram as an individual `.mmd` file using the canonical filenames from the **diagram-patterns** skill. Do NOT embed diagrams inside a markdown file.
 
-1. **Solution Architecture Diagram** (always) — Full system topology showing all layers: clients (web, mobile, admin), ingress (CDN, API gateway), application services, messaging (queues, event bus), data stores (databases, cache, search), object storage, and external integrations. This is the primary "big picture" diagram.
+Using the **diagram-patterns** skill, generate:
 
-2. **Service Communication Diagram** (when 2+ backend services or modular-monolith with 3+ modules) — Shows how backend services communicate with each other: sync calls (REST/gRPC with endpoints), async events (pub/sub with event names), and queue-based processing. Label arrows with protocols and specific endpoints/events.
+1. **`solution-architecture.mmd`** (always) — Full system topology using `graph TB` with subgraphs: clients (web, mobile, admin), ingress (CDN, API gateway), application services, messaging (queues, event bus), data stores (databases, cache, search), object storage, and external integrations. Max 12 nodes — if more exist, group related services into a single subgraph.
 
-3. **Agent Flow Diagram** (when AI agents exist) — Shows agent orchestration, tool usage, and guardrails.
+2. **`service-communication.mmd`** (when 2+ backend services or modular-monolith with 3+ modules) — Inter-service communication using `graph LR`: sync calls with REST/gRPC endpoints labelled, async events with event names labelled, queue-based processing shown.
 
-For all diagrams:
-- Use the standard color conventions (blue=frontend, green=service, orange=database, purple=external, red=AI/LLM, teal=queue, light-blue=gateway)
-- Label every connection with the communication pattern or protocol
-- Include technology names on every component
+3. **`agent-flow.mmd`** (when AI agents or LLM orchestration exists) — Agent flow using `graph TD`: orchestration, tool calls, guardrails, and output.
+
+For all diagrams in this step:
+- Use `graph TB`, `graph LR`, or `graph TD` only — never C4 Mermaid types
+- Use the standard color conventions from diagram-patterns (blue=frontend, green=service, orange=database, purple=external, red=AI/LLM, teal=queue)
+- Label every arrow with the communication pattern or protocol
+- Include technology names on every component node
+- Hard limit: max 12 nodes per diagram
+
+Also write `architecture-output/architecture-diagrams.md` containing the same diagrams embedded as fenced mermaid code blocks — this is for human-readable documentation only. The `.mmd` files are the canonical source.
 
 #### 4c. Application Architecture & Patterns
 

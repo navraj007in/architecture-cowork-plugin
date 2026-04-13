@@ -24,22 +24,25 @@ You will receive:
 
 ## Process
 
-### 1. Extract Diagrams
+### 1. Find Source Diagrams
 
-Parse the blueprint to find all Mermaid code blocks. Each diagram gets:
-- A filename derived from its title (e.g., `solution-architecture.png`, `service-communication.png`, `agent-flow.png`)
-- The raw Mermaid source saved as `.mmd` file
-
-### 2. Save Mermaid Source Files
+Read all `.mmd` files from `architecture-output/diagrams/`. These are the canonical source files — do not re-extract from markdown. The canonical filenames are:
 
 ```
-<output-dir>/diagrams/
+architecture-output/diagrams/
 ├── solution-architecture.mmd     (always — full system topology)
-├── service-communication.mmd     (if 2+ backend services)
-├── agent-flow.mmd                (if agents exist)
-├── data-flow.mmd                 (if complex data pipelines)
-└── ...
+├── deployment.mmd                (always — where components run)
+├── sequence-auth.mmd             (always — authentication flow)
+├── er-diagram.mmd                (when relational DB exists)
+├── service-communication.mmd     (when 2+ backend services)
+├── agent-flow.mmd                (when AI agents exist)
+├── sequence-payment.mmd          (when payments exist)
+└── solution-architecture-infra.mmd  (when system is large)
 ```
+
+Also check `architecture-output/` top level for any `.mmd` files from older runs.
+
+### 2. Verify and Stage
 
 ### 3. Render to Images
 

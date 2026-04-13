@@ -9,14 +9,47 @@ Guidelines and templates for generating consistent, readable architecture diagra
 
 ---
 
+## Canonical Diagram Set
+
+**All diagrams live in `architecture-output/diagrams/` with these exact filenames.**
+Every command that generates or exports diagrams reads from and writes to this single folder.
+
+### Always Generated (every project)
+
+| Filename | Purpose | Mermaid Type |
+|----------|---------|--------------|
+| `solution-architecture.mmd` | Full system topology — clients, ingress, services, queues, databases, external integrations | `graph TB` |
+| `deployment.mmd` | Where each component runs — cloud provider, service tier, region, network boundaries | `graph TB` |
+| `sequence-auth.mmd` | Authentication and session flow — login → token → API → refresh | `sequenceDiagram` |
+
+### Generated When Condition Is Met
+
+| Filename | Condition | Mermaid Type |
+|----------|-----------|--------------|
+| `er-diagram.mmd` | System has a relational database | `erDiagram` |
+| `service-communication.mmd` | 2+ backend services or modular-monolith with 3+ modules | `graph LR` |
+| `agent-flow.mmd` | System has AI agents or LLM orchestration | `graph TD` |
+| `sequence-payment.mmd` | System has payment processing | `sequenceDiagram` |
+| `data-flow.mmd` | Complex data pipeline or ETL (not just CRUD) | `graph LR` |
+
+### Rules for All Diagrams
+
+- **Output folder**: always `architecture-output/diagrams/<filename>.mmd`
+- **Hard limit**: max 12 nodes per diagram — split into additional files if needed, never cram more in
+- **Labels**: ≤ 5 words per node, technology on a second line with `<br/><i>Tech</i>`
+- **Arrows**: every arrow must have a label (protocol, event name, or purpose)
+- **Types**: use `graph TB/LR/TD`, `sequenceDiagram`, or `erDiagram` only — **never** `C4Context`, `C4Container`, `C4Component`, or any other C4 Mermaid type
+- **No nested blocks**: never write `keyword(...) {` — all node declarations are flat at diagram scope
+
+---
+
 ## Diagram Types
 
 | Diagram | When to Use | Mermaid Type |
 |---------|-------------|-------------|
 | Solution Architecture | Show the full system topology: clients, API gateway, services, queues, databases, storage, external APIs | `graph TB` |
 | Service Communication | Show how microservices/backend services connect to each other with protocols and patterns | `graph LR` |
-| C4 Context | Show the system in relation to users and external systems | `graph TB` |
-| C4 Container | Show internal containers (frontends, services, databases) | `graph TB` |
+| ER Diagram | Show database entities, their fields, and relationships | `erDiagram` |
 | Data Flow | Show how data moves through the system | `graph LR` |
 | Agent Flow | Show AI agent orchestration and tool usage | `graph TD` |
 | Deployment | Show where components run | `graph TB` |
@@ -430,12 +463,106 @@ sequenceDiagram
 
 ---
 
+## ER Diagram
+
+Shows the database schema: entities, their key fields, and relationships. Generated whenever the system has a relational database.
+
+Use `erDiagram` type. Include only the core domain entities (max 8) — omit lookup/config tables. Show the relationship cardinality and the foreign key name on each relationship line.
+
+```mermaid
+erDiagram
+    USERS {
+        uuid id PK
+        string email UK
+        string name
+        timestamp createdAt
+    }
+    PROJECTS {
+        uuid id PK
+        string name
+        uuid ownerId FK
+        enum status
+        timestamp createdAt
+    }
+    TASKS {
+        uuid id PK
+        string title
+        enum status
+        enum priority
+        uuid projectId FK
+        uuid assigneeId FK
+        date dueDate
+        timestamp createdAt
+    }
+    COMMENTS {
+        uuid id PK
+        uuid taskId FK
+        uuid userId FK
+        text content
+        timestamp createdAt
+    }
+
+    USERS ||--o{ PROJECTS : "owns"
+    USERS ||--o{ TASKS : "assigned to"
+    USERS ||--o{ COMMENTS : "writes"
+    PROJECTS ||--o{ TASKS : "contains"
+    TASKS ||--o{ COMMENTS : "has"
+```
+
+**Adaptation rules:**
+- Only show entities with direct relationships to core domain objects — omit audit logs, config tables, join tables unless they have their own meaningful fields
+- List only the most important fields per entity (PK, FKs, status/type enums, 1-2 key data fields) — not every column
+- Use standard cardinality notation: `||--o{` (one-to-many), `||--||` (one-to-one), `}o--o{` (many-to-many)
+
+---
+
+## Authentication Sequence
+
+Shows the full auth flow. Always generated — every system has authentication.
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Web as Web App
+    participant API as API Server
+    participant Auth as Auth Service
+    participant DB as Database
+    participant Cache as Redis
+
+    User->>Web: Submit credentials
+    Web->>API: POST /auth/login
+    API->>Auth: Verify credentials
+    Auth->>DB: Lookup user by email
+    DB-->>Auth: User record
+    Auth-->>API: User verified
+    API->>Cache: Store session / refresh token
+    API-->>Web: Access token + refresh token
+    Web-->>User: Redirect to dashboard
+
+    Note over Web,Cache: Token refresh flow
+    Web->>API: POST /auth/refresh (refresh token)
+    API->>Cache: Validate refresh token
+    Cache-->>API: Valid
+    API-->>Web: New access token
+```
+
+**Adaptation rules:**
+- If using OAuth/SSO (Clerk, Auth0, Google): replace `Auth Service` with the provider and show the redirect flow
+- If using JWT only (no session store): remove the Cache step and show token validation inline in API
+- Max 6 participants — collapse internal services if needed
+
+---
+
 ## Diagram Rules
 
-1. **Always include a legend** if the diagram has more than 5 nodes — use the color conventions above
-2. **Label every arrow** — connections without labels are meaningless
-3. **Use subgraphs** to group related components (Frontend, Backend, Data, External)
-4. **Keep it readable** — max 12-15 nodes per diagram. If more, split into multiple diagrams
-5. **Use icons** in node labels for visual scanning (🌐 web, ⚙️ service, 🗄️ database, 🤖 AI, 💳 payment, 📧 email)
-6. **Show direction** — top-to-bottom for hierarchy, left-to-right for data flow
-7. **Include technology names** — "Next.js" not just "Web App", "PostgreSQL" not just "Database"
+1. **Output location**: always write to `architecture-output/diagrams/<canonical-filename>.mmd` — never embed diagrams inside markdown files
+2. **Hard node limit**: max 12 nodes per diagram — split into a second file rather than cramming more in
+3. **Short labels**: ≤ 5 words per node label; technology on a second line with `<br/><i>Tech</i>`
+4. **Label every arrow**: every connection must have a label (protocol, event name, or purpose) — unlabelled arrows are meaningless
+5. **Use subgraphs** to group related components (Frontend, Backend, Data, External, Cloud regions)
+6. **Use icons** in node labels for visual scanning: 🌐 web · ⚙️ service · 🗄️ database · 🤖 AI · 💳 payment · 📧 email · ⚡ cache · 📬 queue
+7. **Show direction**: `graph TB` for hierarchy, `graph LR` for data/communication flows
+8. **Include technology names**: "Next.js" not just "Web App", "PostgreSQL" not just "Database"
+9. **NEVER use C4 Mermaid types**: no `C4Context`, `C4Container`, `C4Component`, `C4Dynamic`, `C4Deployment` — use `graph TB` with subgraphs instead
+10. **No nested block syntax**: never write `Container(...) {` or any `keyword(...) {` block — all node declarations are flat
+11. **Sequence diagrams**: max 6 participants, max 15 messages — show only the critical path
