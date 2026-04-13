@@ -244,6 +244,7 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `setup-cicd` | activity log only (no `_state.json` fields) |
 | `wireframes` | activity log only (no `_state.json` fields) |
 | `launch-check` | no writes (file-system scan only) |
+| `production-readiness` | activity log only — exception: writes `architecture-output/production-readiness.md` |
 | `quick-spec` | no writes (in-conversation response only) |
 | `sprint-status` | no writes (in-conversation report only) |
 
