@@ -6,16 +6,32 @@ description: Generate operational, architecture, and ADR documentation from proj
 
 ## Trigger
 
-`/architect:generate-docs [mode] [options]`
+`/architect:generate-docs` — generate all documentation modes (default).
 
-Modes:
-- `runbook` — Deployment & operational runbooks
-- `architecture` — C4 diagrams + narrative architecture guide
-- `adr` — Architecture Decision Records for major choices
-- `incident` — Incident response playbooks
-- `all` — All documentation (default)
+`/architect:generate-docs [mode:X]` — generate one mode only.
 
-Options:
+`/architect:generate-docs [modes:X,Y]` — generate a named subset.
+
+### Modes
+
+| Mode | What it generates |
+|------|------------------|
+| `runbook` | Deployment & operational runbooks |
+| `architecture` | Architecture guide with narrative + diagrams |
+| `adr` | Architecture Decision Records for major choices |
+| `incident` | Incident response playbooks |
+
+**Examples:**
+```
+/architect:generate-docs [mode:runbook]
+/architect:generate-docs [modes:adr,incident]
+/architect:generate-docs [mode:architecture] [audience:stakeholders]
+```
+
+When a `[mode:...]` or `[modes:...]` tag is present, generate **only** the named modes and skip all others. When absent, generate all modes.
+
+### Options
+
 - `[non_interactive:true]` — skip questions, derive from SDL and activity log
 - `[audience:engineers|operators|stakeholders]` — adjust technical depth
 

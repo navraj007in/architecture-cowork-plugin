@@ -6,7 +6,33 @@ description: Six-pillar well-architected review with scores and improvement road
 
 ## Trigger
 
-`/architect:well-architected [description of the architecture, or run after /architect:blueprint]`
+`/architect:well-architected` — full six-pillar review (default).
+
+`/architect:well-architected [pillar:X]` — review one pillar only.
+
+`/architect:well-architected [pillars:X,Y]` — review a named subset.
+
+You can also pass an architecture description directly: `/architect:well-architected [description of the architecture]`
+
+### Pillars
+
+| Pillar | What it evaluates |
+|--------|------------------|
+| `opex` | Operational Excellence — deployability, runbooks, observability, incident response |
+| `security` | Security — auth, encryption, least privilege, secrets management, dependency scanning |
+| `reliability` | Reliability — redundancy, failover, backup/restore, chaos engineering, SLOs |
+| `performance` | Performance Efficiency — caching, CDN, DB indexing, async patterns, load testing |
+| `cost` | Cost Optimization — right-sizing, reserved capacity, data transfer, idle resources |
+| `devex` | Developer Experience — CI/CD, local dev setup, documentation, onboarding time |
+
+**Examples:**
+```
+/architect:well-architected [pillar:security]
+/architect:well-architected [pillars:reliability,performance]
+/architect:well-architected [pillar:cost] [non_interactive:true]
+```
+
+When a `[pillar:...]` or `[pillars:...]` tag is present, score and produce recommendations **only** for the named pillars. Still produce the summary scorecard but mark unreviewed pillars as "skipped". When absent, review all six pillars.
 
 ## Purpose
 

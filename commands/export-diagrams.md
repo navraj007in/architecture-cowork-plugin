@@ -6,7 +6,34 @@ description: Render Mermaid architecture diagrams to PNG/SVG and export to docs 
 
 ## Trigger
 
-`/architect:export-diagrams`
+`/architect:export-diagrams` — render all diagrams found in `architecture-output/diagrams/` (default).
+
+`/architect:export-diagrams [diagram:X]` — render one diagram only.
+
+`/architect:export-diagrams [diagrams:X,Y]` — render a named subset.
+
+`/architect:export-diagrams [format:png|svg|both]` — override output format (default: both).
+
+### Diagram names (matching canonical filenames without extension)
+
+| Name | File |
+|------|------|
+| `solution-architecture` | `solution-architecture.mmd` |
+| `deployment` | `deployment.mmd` |
+| `sequence-auth` | `sequence-auth.mmd` |
+| `er-diagram` | `er-diagram.mmd` |
+| `service-communication` | `service-communication.mmd` |
+| `agent-flow` | `agent-flow.mmd` |
+| `sequence-payment` | `sequence-payment.mmd` |
+
+**Examples:**
+```
+/architect:export-diagrams [diagram:er-diagram]
+/architect:export-diagrams [diagrams:solution-architecture,deployment] [format:png]
+/architect:export-diagrams [format:svg]
+```
+
+When a `[diagram:...]` or `[diagrams:...]` tag is present, render **only** the named diagrams. When absent, render all `.mmd` files found.
 
 ## Purpose
 

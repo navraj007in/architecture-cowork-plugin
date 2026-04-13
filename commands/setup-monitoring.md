@@ -6,9 +6,34 @@ description: Configure observability stack with metrics, tracing, logging, alert
 
 ## Trigger
 
-`/architect:setup-monitoring [options]`
+`/architect:setup-monitoring` — generate the full observability stack (default).
 
-Options:
+`/architect:setup-monitoring [stack:X]` — generate one observability layer only.
+
+`/architect:setup-monitoring [stack:X,Y]` — generate a named subset.
+
+### Stack layers
+
+| Layer | What it generates |
+|-------|------------------|
+| `metrics` | Prometheus/Datadog config, RED + USE method instrumentation |
+| `tracing` | OpenTelemetry setup, trace exporters, span instrumentation |
+| `logging` | Structured logging config, log aggregation (Loki/CloudWatch) |
+| `alerts` | Alerting rules, notification channels, escalation policies |
+| `slos` | SLO definitions, error budgets, burn-rate alerts |
+| `dashboards` | Grafana dashboard JSON, golden signals panels |
+
+**Examples:**
+```
+/architect:setup-monitoring [stack:metrics,tracing]
+/architect:setup-monitoring [stack:alerts]
+/architect:setup-monitoring [stack:slos,dashboards] [non_interactive:true]
+```
+
+When a `[stack:...]` tag is present, generate **only** the named layers and skip all others. When absent, generate the full stack.
+
+### Options
+
 - `[non_interactive:true]` — skip all questions, derive from SDL and existing project
 - `[provider:<name>]` — override metrics provider (e.g., `[provider:datadog]`)
 

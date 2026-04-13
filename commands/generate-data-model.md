@@ -6,7 +6,31 @@ description: Generate ORM schemas (Prisma, SQLAlchemy, Mongoose, Drizzle) from b
 
 ## Trigger
 
-`/architect:generate-data-model`
+`/architect:generate-data-model` — generate schemas for all databases detected in the SDL (default).
+
+`/architect:generate-data-model [databases:X]` — generate schema for one database only.
+
+`/architect:generate-data-model [databases:X,Y]` — generate schemas for a named subset.
+
+### Database names
+
+Use the database type as the name:
+
+| Name | What it generates |
+|------|------------------|
+| `postgresql` / `mysql` / `sqlite` | Relational ORM schema (Prisma, Drizzle, SQLAlchemy, etc.) + migrations |
+| `mongodb` | Mongoose / Motor document schemas |
+| `redis` | Key schema definitions + TTL patterns |
+| `elasticsearch` / `typesense` | Index mappings and search schema |
+
+**Examples:**
+```
+/architect:generate-data-model [databases:postgresql]
+/architect:generate-data-model [databases:postgresql,redis]
+/architect:generate-data-model [databases:mongodb] [non_interactive:true]
+```
+
+When a `[databases:...]` tag is present, generate schemas **only** for the named databases and skip all others. When absent, generate for all databases found in the SDL.
 
 ## Purpose
 

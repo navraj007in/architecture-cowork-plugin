@@ -6,9 +6,31 @@ description: Generate unit, integration, and e2e test suites from scaffolded pro
 
 ## Trigger
 
-`/architect:generate-tests [options]`
+`/architect:generate-tests` — generate all test types (default).
 
-Options:
+`/architect:generate-tests [type:X]` — generate one test type only.
+
+`/architect:generate-tests [types:X,Y]` — generate a named subset.
+
+### Test types
+
+| Type | What it generates |
+|------|------------------|
+| `unit` | Unit tests per module (pure functions, services, utils) |
+| `integration` | Integration tests per service (DB, API, queue interactions) |
+| `e2e` | End-to-end tests per critical user flow |
+
+**Examples:**
+```
+/architect:generate-tests [type:unit]
+/architect:generate-tests [types:unit,integration]
+/architect:generate-tests [type:e2e] [non_interactive:true]
+```
+
+When a `[type:...]` or `[types:...]` tag is present, generate **only** the named test types and skip all others. When absent, generate all types.
+
+### Options
+
 - `[non_interactive:true]` — skip all questions, derive from SDL and existing project
 - `[coverage_target:NN]` — override coverage target (default: 80)
 
