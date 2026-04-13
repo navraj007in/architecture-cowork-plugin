@@ -6,11 +6,35 @@ description: Generate an interactive architecture visualisation with component t
 
 ## Trigger
 
-`/architect:visualise` — run after blueprint to generate visual architecture assets.
+`/architect:visualise` — generate the full canonical diagram set.
+
+`/architect:visualise [diagram:name]` — regenerate one specific diagram only.
+
+`/architect:visualise [diagrams:name1,name2,...]` — regenerate a specific subset.
+
+### Diagram names (for targeted generation)
+
+| Name | File generated |
+|------|---------------|
+| `solution-architecture` | `solution-architecture.mmd` |
+| `deployment` | `deployment.mmd` |
+| `sequence-auth` | `sequence-auth.mmd` |
+| `er-diagram` | `er-diagram.mmd` |
+| `service-communication` | `service-communication.mmd` |
+| `agent-flow` | `agent-flow.mmd` |
+| `sequence-payment` | `sequence-payment.mmd` |
+
+**Examples:**
+```
+/architect:visualise [diagram:er-diagram]
+/architect:visualise [diagrams:deployment,sequence-auth]
+```
+
+When a `[diagram:...]` or `[diagrams:...]` tag is present, generate **only** the named diagrams and skip all others. Still follow all the same rules (max 12 nodes, short labels, diagram-patterns templates). Still log activity and write only the generated files to `architecture-output/diagrams/`.
 
 ## Purpose
 
-Generate rich visual representations of the architecture that go beyond static diagrams. Creates interactive-ready data files, annotated topology diagrams, and data flow visualisations that can be explored in the Archon desktop app's Architecture Map view or exported for presentations.
+Generate rich visual representations of the architecture. Creates annotated topology diagrams, ER diagrams, sequence flows, and deployment maps that can be explored in the Archon desktop app's Diagrams tab or exported for presentations.
 
 ## Workflow
 
