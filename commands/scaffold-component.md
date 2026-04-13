@@ -94,7 +94,11 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
 - Complete package manifest with ALL dependencies (not just framework core — include middleware, validation, logging, testing libraries)
 - Working entry point that starts without errors
 - At least one meaningful test file with 3+ test cases
-- `.env.example` with every variable the component needs (derived from SDL `environments` section)
+- `.env.example` with every variable the component needs (derived from SDL `environments` section) — follow the format rules below:
+  - Add a descriptive comment line above every variable (e.g. `# PostgreSQL connection string — create a free database at supabase.com`)
+  - Required secrets (API keys, passwords, tokens) must have an **empty value** (`DATABASE_URL=`) so they show as required — never put placeholder text like `your-secret-here`
+  - Optional vars with safe defaults should include the default value (e.g. `PORT=3000`, `LOG_LEVEL=info`)
+  - Include account-creation hints in comments for third-party services (e.g. `# Get your key at stripe.com/dashboard → Developers → API keys`)
 - `.gitignore` appropriate for the runtime
 - `Dockerfile` with multi-stage build (dev + production stages)
 - `docker-compose.yml` wiring up the component + its data dependencies
@@ -257,6 +261,27 @@ The scaffold must produce **production-starter** code, not hello-world boilerpla
   - WCAG AA contrast: text must meet 4.5:1 against background. Verify colour palette choices against this threshold — if in doubt, darken text or lighten background.
 - **State management:** If SDL specifies (zustand, redux, etc.), set up stores for auth state and at least one domain store.
 - **CSP headers (Next.js only)** (`next.config.ts`): add security headers block per Pattern 9 in `skills/production-hardening/SKILL.md`. Include `ALLOWED_ORIGINS` in `.env.example`. For Vite-based frontends, document CSP headers to be set at the reverse proxy/CDN layer in the README.
+- **Smoke test — REQUIRED on all frontend scaffolds:** Create `tests/smoke.test.tsx` that renders the entry screen (Login or Dashboard) and asserts:
+  1. The component mounts without crashing
+  2. Key form inputs are actual `<input>` DOM elements (not `<div>`) — this catches missing `React.forwardRef()` on custom Input components, which silently breaks `react-hook-form` registration and prevents API calls
+  3. Typing into an input updates its value
+  4. Submitting the form calls the API function (mock `@/lib/api` or equivalent)
+
+  **Critical pattern — every custom Input/Textarea/Select component MUST use `React.forwardRef()`:**
+  ```tsx
+  // ✅ Correct — react-hook-form's register() passes a ref; forwardRef is required
+  export const Input = React.forwardRef<HTMLInputElement, InputProps>(
+    function Input({ label, error, ...props }, ref) {
+      return <input ref={ref} {...props} />;
+    }
+  );
+
+  // ❌ Wrong — ref is silently dropped; form never registers the field; no API calls fire
+  export function Input({ label, error, ...props }: InputProps) {
+    return <input {...props} />;
+  }
+  ```
+  The smoke test must pass before the scaffold is considered complete. If it fails due to missing `forwardRef`, fix the source component — do NOT skip or remove the test.
 
 ---
 
@@ -371,14 +396,17 @@ If the build fails (type errors, missing imports, syntax errors):
 - Re-run the build
 - **Repeat until the build passes with zero errors**
 
-#### 5c. Run tests (if test files were created)
+#### 5c. Run tests (REQUIRED for frontends — mandatory smoke test)
 ```bash
 npm test   # or pytest, go test ./..., etc.
 ```
+For frontend scaffolds, this MUST include the smoke test (`tests/smoke.test.tsx`). The scaffold is **not complete** until ALL tests pass, including the smoke test.
+
 If tests fail:
-- Read the failure output
-- Fix the test OR the source code (whichever is wrong)
-- Re-run tests until they pass
+- Read the full failure output carefully
+- Fix the **source code** — never delete tests, comment them out, or add `.skip` to make failures disappear
+- Common failure: smoke test reports input is not an `<input>` element → the custom Input/Textarea/Select component is missing `React.forwardRef()`. Fix the component, not the test.
+- Re-run tests until ALL pass with zero failures
 
 #### 5d. Lint check (if linter is configured)
 ```bash

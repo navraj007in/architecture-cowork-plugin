@@ -2,6 +2,41 @@
 
 These rules apply to ALL commands in this plugin.
 
+---
+
+## Plugin Development Rules — CRITICAL
+
+### Always edit the source repo, never the installed location
+
+The plugin exists in two places:
+- **Source repo (edit here):** `/Users/nexper/Code/architecture/backend/architecture-cowork-plugin/`
+- **Installed location (read-only):** `~/.archon/plugins/architecture-cowork/`
+
+**NEVER edit files under `~/.archon/plugins/architecture-cowork/`.** Archon pulls the plugin from GitHub on refresh, which overwrites any changes made there. All edits MUST be made in the source repo, then committed and pushed to GitHub.
+
+After pushing, Archon will pick up the changes on next refresh. If immediate effect is needed, copy the changed file to the installed location as well — but the source repo commit is the only durable change.
+
+### Keeping plugin, Archon, and SDL in sync
+
+Before making any plugin change that touches diagram output paths, file naming, or IPC-visible behaviour:
+
+1. **Check Archon's scanner** — `mvp/archon/src/renderer/components/VisualiseStageView.tsx` scans `architecture-output/` and `architecture-output/diagrams/` for `.mmd`/`.png`/`.svg`. Any new output folder the plugin writes to must be covered by Archon's scan, or diagrams won't appear.
+2. **Check SDL types** — `mvp/archon/src/shared/types.ts` and `backend/architecture/packages/sdl/` define the data contracts. Plugin commands must not reference SDL fields that don't exist in the schema.
+3. **Test impact** — if the change affects scaffold output (file names, folder structure, env var format), check whether the Archon Actions tab, env config dialog, and dev server components still work correctly with the new output.
+4. **Never break the `.mmd` → Diagrams tab pipeline** — the plugin writes `.mmd` files; Archon reads and renders them. Canonical filenames live in `diagram-patterns/SKILL.md`. Any rename there requires a matching update in Archon's display names if shown to the user.
+
+### Change workflow
+
+```
+1. Edit source repo:  /Users/nexper/Code/architecture/backend/architecture-cowork-plugin/
+2. git add + commit with descriptive message
+3. git push → GitHub
+4. Archon refreshes plugin from GitHub (automatic or manual)
+5. Test in Archon to verify the change works end-to-end
+```
+
+---
+
 ## Request Routing — When to Use Commands vs. Handle Directly
 
 **Only invoke a plugin command when the user explicitly uses `/architect:<command>` syntax.**
