@@ -29,7 +29,7 @@ Then add the plugin directory in Claude Code's plugin settings or upload it in C
 
 ## Commands
 
-The plugin currently ships **52 canonical commands**. Split implementation files such as `implement-1.md` / `implement-2.md` and `review-1.md` / `review-2.md` map to the single user-facing commands `/architect:implement` and `/architect:review`.
+The plugin currently ships **54 canonical commands**. Split implementation files such as `implement-1.md` / `implement-2.md` and `review-1.md` / `review-2.md` map to the single user-facing commands `/architect:implement` and `/architect:review`.
 
 | Command                            | Description                                                                       |
 | ---------------------------------- | --------------------------------------------------------------------------------- |
@@ -65,6 +65,7 @@ The plugin currently ships **52 canonical commands**. Split implementation files
 | `/architect:problem-validation`    | Validate the problem, assumptions, and evidence before building                   |
 | `/architect:prototype`             | Generate a clickable frontend prototype from the SDL and design system            |
 | `/architect:prototype-iterate`     | Apply focused iterations to an existing prototype                                 |
+| `/architect:production-readiness`  | Deep code analysis — scores go/no-go verdict before launch, detailed gap report    |
 | `/architect:publish-api-docs`      | Generate interactive API documentation (Swagger UI, Redoc, AsyncAPI)              |
 | `/architect:refactor-stack`        | Coordinated architecture refactor — database, framework, provider change with consistency |
 | `/architect:review`                | Review code changes against the project's own patterns, best practices, and security |
@@ -72,6 +73,7 @@ The plugin currently ships **52 canonical commands**. Split implementation files
 | `/architect:scaffold`              | Create project structure plan from a blueprint architecture                        |
 | `/architect:scaffold-component`    | Scaffold a single component from the SDL with full starter code                    |
 | `/architect:sdl`                   | Generate, validate, diff, or browse SDL architecture specifications               |
+| `/architect:sdl-drift`             | Detect architecture drift — compare codebase against SDL and surface topology changes |
 | `/architect:security-scan`         | Validate scaffolded code against the blueprint's security checklist               |
 | `/architect:seo`                   | Configure SEO metadata, structured data, sitemaps, robots.txt, Core Web Vitals    |
 | `/architect:setup-cicd`            | Configure real CI/CD pipelines in GitHub Actions, Azure Pipelines, or GitLab CI   |
