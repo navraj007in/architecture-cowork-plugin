@@ -119,6 +119,7 @@ Only derive design from domain when `_state.json.design` is absent AND no `desig
 
 ```json
 {
+  "_state_version": "1.1",
   "project": { "name": "...", "description": "...", "type": "app|agent|hybrid", "stage": "concept|mvp|growth" },
   "tech_stack": {
     "frontend": ["Next.js 14", "Tailwind CSS"],
@@ -177,6 +178,7 @@ These field names are canonical. Commands MUST use exactly these names — no al
 
 | Field path | Type | Notes |
 |------------|------|-------|
+| `_state_version` | string | Always `"1.1"` for compatibility tracking |
 | `project.name` | string | |
 | `project.description` | string | |
 | `project.type` | `"app"\|"agent"\|"hybrid"` | |
@@ -282,6 +284,26 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `production-readiness` | activity log only — exception: writes `architecture-output/production-readiness.md` |
 | `quick-spec` | no writes (in-conversation response only) |
 | `sprint-status` | no writes (in-conversation report only) |
+
+### State Versioning & Migration
+
+The `_state_version` field tracks schema compatibility. Current version: **1.1**.
+
+**Migration Policy:**
+- Commands MUST accept both v1.0 (legacy) and v1.1 (current) _state.json files
+- When reading v1.0: migrate in-memory to v1.1 schema (do NOT rewrite file)
+- When writing: always write v1.1 format
+- Migration script: `scripts/migrate-state.sh` handles batch migrations (run before major updates)
+
+**Backward compatibility:**
+- v1.0 files missing `_state_version` field are treated as v1.0
+- v1.0 → v1.1 migration adds `_state_version: "1.1"` + normalizes field names
+- No data loss: v1.0 fields are preserved; new fields added only for v1.1 features
+
+**When to update version:**
+- Major schema changes (e.g., renaming a top-level field, changing type)
+- Breaking change in how commands read/write state
+- Do NOT bump for new optional fields or nested additions
 
 ## Format Constraints by Command
 
