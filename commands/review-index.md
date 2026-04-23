@@ -52,16 +52,16 @@ Read `review-1.md` first, then `review-2.md`. For each component in scope, deleg
 
 ## Output Files
 
-Review reports are written to `.archon/reviews/` — not `architecture-output/`. This keeps operational dev-workflow artifacts separate from core architecture deliverables.
+Review reports are written to `architecture-output/` — following the pattern used by all other commands.
 
 | Mode | Output file |
 |------|------------|
-| `uncommitted` | `.archon/reviews/<component>-review.md` |
-| `file` | `.archon/reviews/<component>-review.md` |
-| `all` | `.archon/reviews/<component>-review.md` per component reviewed |
-| `pr` | `.archon/reviews/<component>-pr-<N>.md` |
+| `uncommitted` | `architecture-output/review-uncommitted.md` |
+| `file` | `architecture-output/review-file-<path>.md` |
+| `all` | `architecture-output/review-all.md` (consolidated) |
+| `pr` | `architecture-output/review-pr-<N>.md` (GitHub PR #N) |
 
-Create `.archon/reviews/` if it does not exist. Never write review output to `architecture-output/`.
+All review files go to `architecture-output/` for consistency with blueprint, design-system, and other command outputs. Archon's visualizer scans this directory.
 
 ## _state.json Write Behaviour
 
