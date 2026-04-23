@@ -168,7 +168,18 @@ Only derive design from domain when `_state.json.design` is absent AND no `desig
     "icon_library": "lucide-react",
     "component_library": "shadcn/ui",
     "tokens_file": "architecture-output/design-system/design-tokens.json"
-  }
+  },
+  "decisions": [
+    {
+      "id": "D-001",
+      "title": "PostgreSQL for primary database",
+      "rationale": "ACID compliance, complex queries, team familiarity with SQL",
+      "alternatives_rejected": ["MongoDB (weak transactions for orders)", "DynamoDB (cost scales poorly with queries)"],
+      "trade_offs": "Higher ops complexity than cloud DBs; more configuration needed; team must maintain",
+      "made_by_command": "blueprint",
+      "timestamp": "2026-04-24T14:32:10Z"
+    }
+  ]
 }
 ```
 
@@ -211,6 +222,14 @@ These field names are canonical. Commands MUST use exactly these names — no al
 | `design.component_library` | string | snake_case — NOT `componentLibrary` |
 | `design.tokens_file` | string | relative path |
 | `blueprint.deepen_passes` | number | starts at 0 |
+| `decisions[]` | array of objects | Architecture decisions log |
+| `decisions[].id` | string | Unique ID (e.g., `"D-001"`) |
+| `decisions[].title` | string | Decision title (e.g., `"PostgreSQL for primary database"`) |
+| `decisions[].rationale` | string | Why this choice (bullet points or prose) |
+| `decisions[].alternatives_rejected` | array of strings | Options NOT chosen and why |
+| `decisions[].trade_offs` | string | What you give up for this choice |
+| `decisions[].made_by_command` | string | Which command made this decision |
+| `decisions[].timestamp` | string | ISO-8601 when decision was made |
 
 Any command that reads a field must use the exact name above. Any command that writes a field must use the exact name above. There are no acceptable aliases.
 
@@ -232,8 +251,8 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | Command | Fields it writes |
 |---------|-----------------|
 | `import` | `project`, `tech_stack`, `components`, `design` (from reverse-engineered SDL); also writes `architecture-output/import-recommendations.md` |
-| `blueprint` | `project`, `tech_stack`, `components`, `design` (initial values from SDL), `blueprint.deepen_passes` |
-| `sdl` | `project`, `tech_stack` (Mode 1 generate only) |
+| `blueprint` | `project`, `tech_stack`, `components`, `design` (initial values from SDL), `blueprint.deepen_passes`; **appends to `decisions[]`** if tech choices made |
+| `sdl` | `project`, `tech_stack` (Mode 1 generate only); **appends to `decisions[]`** if tech choices made |
 | `design-system` | `design` (full palette, fonts, tokens — overwrites blueprint's initial values) |
 | `generate-data-model` | `entities` |
 | `user-personas` | `personas` |
