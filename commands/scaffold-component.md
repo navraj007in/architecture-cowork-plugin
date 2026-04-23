@@ -88,7 +88,18 @@ Create the directory and all starter files appropriate for the component's type 
 
 #### DEPTH REQUIREMENTS — ALL COMPONENT TYPES
 
-The scaffold must produce **production-starter** code, not hello-world boilerplate. Every generated file should contain real, working logic — not TODOs or placeholder comments. Specifically:
+The scaffold must produce **production-starter** code, not hello-world boilerplate. Every generated file should contain real, working logic — not TODOs or placeholder comments.
+
+**What "production-starter" means:**
+- ✅ All code is functional and runs without errors
+- ✅ No TODO comments, no empty function bodies, no placeholder stubs
+- ✅ Complex features (e.g., advanced auth, caching) include minimal working examples
+- ✅ Tests pass; CI workflows execute successfully
+- ✅ Developers can extend immediately without rewriting stubs
+- ❌ NOT "production-hardened" (that comes later with monitoring, optimization, advanced patterns)
+- ❌ NOT full feature-parity (uses MVP scope from SDL)
+
+Specifically:
 
 **Every component MUST include:**
 - Complete package manifest with ALL dependencies (not just framework core — include middleware, validation, logging, testing libraries)

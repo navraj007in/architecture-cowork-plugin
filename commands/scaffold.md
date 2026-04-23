@@ -85,6 +85,18 @@ New components will be scaffolded from scratch.
 Existing components will be augmented — missing files added, nothing overwritten.
 ```
 
+**Output Contract — Production-Starter Code**
+
+Scaffold generates **production-quality starter code** with MVP-scope functionality. This means:
+- ✅ All code is real, functional, and runs without errors
+- ✅ No TODO comments, no placeholder functions, no empty files
+- ✅ Complex features (caching, advanced auth) include minimal working examples, not stubs
+- ✅ Test files and CI workflows are complete and functional
+- ✅ Code follows SDL-declared patterns and conventions
+- ✅ Ready to extend: developers can add features, not rewrite stubs
+
+This is NOT "production-hardened" code (which requires monitoring, advanced caching, etc.). But it IS working code that developers can run immediately and extend with confidence.
+
 **Framework resolution — always follow this precedence:**
 1. SDL `framework` field on the component — authoritative, always use it if present
 2. ADRs in `architecture-output/adrs/` — if an ADR selects a technology for this component, follow it

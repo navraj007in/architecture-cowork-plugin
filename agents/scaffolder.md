@@ -243,7 +243,12 @@ src/features/payments/payments.routes.ts
 src/features/payments/payments.service.ts
 ```
 
-Each file should have a minimal but functional implementation. Use `// EXTEND:` comments only for optional future enhancements; do not leave TODO stubs or empty exported bodies.
+Each file should have a **complete, functional implementation**. This is MVP-scope code that runs immediately — not stubs:
+- Generate working code, not placeholders (no TODO comments in function bodies)
+- If a feature is complex (rate limiting, advanced caching), include a minimal but functional example
+- Always export complete functions with real logic, never empty bodies
+- Use `// EXTEND:` comments only to suggest optional optimizations or advanced variants
+- Code must be immediately testable and runnable
 
 ### 4. Add Security Config
 
@@ -267,7 +272,7 @@ For backend services, add security middleware based on the manifest's `security`
 - Create `app/middleware/auth.py` with a dependency stub matching `auth.serviceTokenModel`
 - Rate limiting: working implementation at all stages; at `growth`/`enterprise`, make it more configurable and durable
 
-Keep auth implementations minimal at MVP, but they must still run and enforce the declared access model. Use `// EXTEND:` comments for stronger provider-specific verification rather than placeholder TODOs.
+Auth implementations at MVP must be **complete and functional**. This means: generate working token validation, not stubs. If advanced verification is needed (e.g., provider-specific checks), include a minimal working version and suggest extensions via `// EXTEND:` comments, never placeholder TODOs.
 
 ### 5. Apply Frontend Configuration (for web frontends)
 
