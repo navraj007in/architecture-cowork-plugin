@@ -1,42 +1,85 @@
 # Architecture-Cowork Plugin Scope Review
 
-**Date:** 2026-04-06  
-**Status:** Current snapshot after audit remediation
+**Date:** 2026-04-24  
+**Status:** Current snapshot — Phase 0 (audit fixes) complete
 
 ## Repository Snapshot
 
 | Area | Count | Notes |
 |------|-------|-------|
-| Canonical commands | 52 | Split files like `implement-*` and `review-*` map to one user-facing command each |
-| Agent specs | 15 | Under `agents/` |
-| Skills | 31 | Under `skills/` |
-| SDL starter templates | 14 | Under `templates/` |
+| Canonical commands | 54 | Split files like `implement-1/2` and `review-1/2` + index files map to user-facing commands |
+| Agent specs | 18 | Under `agents/` — delegated execution for complex, multi-step tasks |
+| Skills/capabilities | 35 | Under `skills/` — reusable instruction modules shared across commands |
+| SDL starter templates | 16 | Under `templates/` — domain-specific baseline specifications |
 
 ## Coverage Summary
 
-The plugin covers the full architecture lifecycle across ideation, SDL generation, design, prototyping, scaffolding, implementation, review, testing, operations, stakeholder communication, and planning.
+The plugin covers the full architecture lifecycle from ideation through production, spanning discovery, design, code generation, quality assurance, operations, and stakeholder communication.
 
 ### Major Capability Areas
 
-- Discovery and validation: `problem-validation`, `quick-spec`, `deep-research`, `user-personas`
-- Architecture design: `blueprint`, `sdl`, `compare-stack`, `complexity-check`, `agent-spec`
-- Design and prototyping: `design-system`, `wireframes`, `prototype`, `prototype-iterate`
-- Code generation: `scaffold`, `scaffold-component`, `generate-data-model`, `implement`
-- Quality and assurance: `review`, `security-scan`, `well-architected`, `generate-tests`, `compliance`, `accessibility-audit`, `load-test`
-- Operations and delivery: `setup-env`, `check-env`, `setup-cicd`, `setup-monitoring`, `publish-api-docs`, `export-diagrams`, `launch-check`, `launch-checklist`
-- Planning and roadmap: `mvp-scope`, `risk-register`, `technical-roadmap`, `user-journeys`, `sprint-status`, `sync-backlog`
-- Stakeholder outputs: `pitch-deck`, `investor-update`, `hiring-brief`, `onboarding-pack`, `cost-estimate`
+**Ideation & Validation** (4 commands)
+- `problem-validation`, `quick-spec`, `deep-research`, `user-personas`
 
-## Current Reliability Notes
+**Architecture & Design** (9 commands)
+- `blueprint`, `sdl`, `sdl-drift`, `compare-stack`, `complexity-check`, `agent-spec`, `design-system`, `wireframes`, `visualise`
 
-- SDL documentation and examples are aligned on v1.1.
-- Review artifacts are routed to `.archon/reviews/`.
-- README command inventory matches the shipped command surface.
-- Marketplace and plugin metadata are version-aligned at `1.1.0`.
-- Legacy skill docs that referenced nonexistent slash commands have been redirected to existing commands or rewritten as non-command workflows.
+**Prototyping & Code Generation** (5 commands)
+- `prototype`, `prototype-iterate`, `scaffold`, `scaffold-component`, `implement`
+
+**Quality, Testing & Security** (8 commands)
+- `generate-tests`, `generate-data-model`, `review`, `security-scan`, `well-architected`, `compliance`, `accessibility-audit`, `load-test`
+
+**Operations & Infrastructure** (9 commands)
+- `setup-env`, `check-env`, `setup-cicd`, `setup-monitoring`, `publish-api-docs`, `export-diagrams`, `launch-check`, `launch-checklist`, `production-readiness`
+
+**Planning, Roadmap & Stakeholder** (10 commands)
+- `mvp-scope`, `risk-register`, `technical-roadmap`, `user-journeys`, `sprint-status`, `sync-backlog`, `pitch-deck`, `investor-update`, `hiring-brief`, `onboarding-pack`
+
+**Infrastructure & Growth** (9 commands)
+- `cost-estimate`, `database-scaling`, `disaster-recovery`, `seo`, `analytics-setup`, `i18n-setup`, `refactor-stack`, `import`, `grant-assistant` (future)
+
+## Audit Status (Phase 0 Complete)
+
+✅ **Resolved Issues:**
+- [x] Scaffold output contract unified — production-starter code, no stubs, MVP-scope
+- [x] Review output paths standardized to `architecture-output/review-pr-<N>.md`
+- [x] README command inventory complete (54 commands with descriptions)
+- [x] Marketplace and plugin metadata versions synced (v1.1.0)
+- [x] State validation script created + pre-commit hook installed
+- [x] SDL versioning unified on v1.1 across all references
+- [x] No references to nonexistent commands (`/architect:validate`, etc.)
+
+## Quality Assurance
+
+**Documentation:**
+- ✅ CLAUDE.md — 524 lines of global execution rules (authoritative)
+- ✅ README.md — 471 lines with all 54 commands documented
+- ✅ AGENTS.md — 485 lines with agent specifications
+- ✅ 17 reference modules covering schemas, patterns, design systems, pricing, compliance
+
+**Automation:**
+- ✅ `scripts/validate-state.sh` — validates `_state.json` schema compliance
+- ✅ `.git/hooks/pre-commit` — auto-validates state files before commits
+
+**Consistency:**
+- ✅ All commands follow request-routing rules (in CLAUDE.md §40-57)
+- ✅ All output files follow split-threshold rules (~15KB per file)
+- ✅ All agents documented with input/output contracts
+- ✅ Activity logging standardized (ISO-8601 timestamps, JSON format)
+
+## Known Limitations
+
+1. No automated testing of generated code scaffolds (recommended for Phase 1)
+2. No multi-option architecture generator yet (recommended for Phase 3)
+3. No continuous drift detection (recommended for Phase 4)
+4. No team approval workflows (recommended for Phase 4)
+
+See `ROADMAP_COMPREHENSIVE.md` for enhancement roadmap.
 
 ## Maintenance Rules
 
-- Update this file whenever commands are added, removed, or renamed.
-- Recompute the command count from the repo, not from historical notes.
-- Treat this file as a point-in-time summary, not a roadmap or changelog.
+- Update this file when commands are added, removed, or renamed
+- Recompute counts from repo, not historical notes (use bash commands above)
+- Treat as point-in-time snapshot, not a roadmap
+- Link to remediation issues in AUDIT_FINDINGS.md if unresolved
