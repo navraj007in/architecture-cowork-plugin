@@ -7,10 +7,10 @@
 
 | Area | Count | Notes |
 |------|-------|-------|
-| Canonical commands | 54 | Split files like `implement-1/2` and `review-1/2` + index files map to user-facing commands |
+| Canonical commands | 52 | User-facing commands (65 files including split implementations like `implement-1/2`, `review-1/2`, index files) |
 | Agent specs | 18 | Under `agents/` — delegated execution for complex, multi-step tasks |
-| Skills/capabilities | 35 | Under `skills/` — reusable instruction modules shared across commands |
-| SDL starter templates | 16 | Under `templates/` — domain-specific baseline specifications |
+| Skills/capabilities | 85 | Under `skills/` — reusable instruction modules (29 high-level skills, 85 total files) |
+| SDL starter templates | 15 | Under `templates/` — domain-specific baseline specifications |
 
 ## Coverage Summary
 
@@ -41,14 +41,14 @@ The plugin covers the full architecture lifecycle from ideation through producti
 
 ## Audit Status (Phase 0 Complete)
 
-✅ **Resolved Issues:**
+✅ **Resolved Issues (Phase 0 Complete):**
 - [x] Scaffold output contract unified — production-starter code, no stubs, MVP-scope
 - [x] Review output paths standardized to `architecture-output/review-pr-<N>.md`
-- [x] README command inventory complete (54 commands with descriptions)
-- [x] Marketplace and plugin metadata versions synced (v1.1.0)
+- [x] README command inventory complete (52 canonical commands with descriptions)
+- [x] Marketplace and plugin metadata versions synced (v2.0.0)
 - [x] State validation script created + pre-commit hook installed
-- [x] SDL versioning unified on v1.1 across all references
-- [x] No references to nonexistent commands (`/architect:validate`, etc.)
+- [x] SDL versioning unified on v1.1 across all references (templates, examples, CLAUDE.md, README)
+- [x] No references to nonexistent commands (grant-assistant marked as future)
 
 ## Quality Assurance
 
