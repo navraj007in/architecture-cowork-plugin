@@ -256,7 +256,7 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `design-system` | `design` (full palette, fonts, tokens — overwrites blueprint's initial values) |
 | `generate-data-model` | `entities` |
 | `user-personas` | `personas` |
-| `deep-research` | `market_research` |
+| `deep-research` | `market_research` (`competitors[]` with momentum_score/trend, `feature_parity`, `market_size` with range/confidence) |
 | `mvp-scope` | `mvp_scope` |
 | `risk-register` | `top_risks` |
 | `prototype` | `prototype` (`screens`, `personality`, `component_library`, `complete`) |
@@ -266,6 +266,7 @@ Commands that generate output MUST update `_state.json` after writing their mark
 | `problem-validation` | `problem_validation` (`generated_at`, `validated`) |
 | `user-journeys` | `user_journeys` (`generated_at`, `journey_count`) |
 | `launch-checklist` | `launch_checklist` (`generated_at`, `item_count`) |
+| `ideation-briefing` | `ideation_briefing` (`recommendation`, `confidence`, `timeline_realistic_weeks`, `kill_switch_assumptions[]`, `next_step`) |
 | `pitch-deck` | `pitch_deck` (`generated_at`) |
 | `investor-update` | `investor_update` (`generated_at`) |
 | `stakeholder-doc` | `stakeholder_doc` (`generated_at`) |

@@ -131,13 +131,63 @@ Relevant technology trends that impact this market:
 - AI/ML integration trends in this category
 - Regulatory trends (GDPR, HIPAA, SOC2 — if relevant)
 
-#### 7. Sources
+#### 7. Competitive Momentum Scoring
 
-Numbered list of all URLs cited in the report:
+Quantify competitor acceleration to identify real threats:
+
+| Competitor | Funding Trend | Hiring Velocity | Release Frequency | Momentum Score | Assessment |
+|---|---|---|---|---|---|
+| [CompA] | [Series growth] | [engineers/year] | [releases/month] | [0-100] | [accelerating/stalled/plateau] |
+
+**Momentum calculation** (0-100 scale):
+- Funding growth rate: +30% YoY (high acceleration) → 35 points
+- Hiring velocity: Adding 40 engineers/year on 20-person base → 30 points
+- Release frequency: Weekly releases (vs 1/month baseline) → 25 points
+- Momentum score: 90/100 = Aggressively expanding
+
+**Why it matters**: Momentum reveals threat level better than current size. A $50M company growing 5%/year is different from a $10M company growing 100%/year.
+
+#### 8. Feature Parity Scoring
+
+Show exactly where we stand versus competitors:
+
+| Feature Category | CompA | CompB | CompC | Our MVP | Avg Parity | Assessment |
+|---|---|---|---|---|---|---|
+| [Category 1] | [N features] | [N features] | [N features] | [N features] | [X%] | [behind/parity/exceed] |
+| [Category 2] | ... | ... | ... | ... | ... | ... |
+| **Overall** | — | — | — | — | [X%] | Table-stakes readiness |
+
+**Scoring**: (Our Features / Avg Competitor Features) × 100
+- <50%: Playing catch-up, must be faster to differentiate
+- 50-80%: Competitive, can win on execution/UX
+- 80%+: Feature parity, differentiate elsewhere
+
+**Output section title**: "Competitive Feature Parity Assessment"
+
+#### 9. Market Sizing Confidence & Sensitivity
+
+Replace simple TAM/SAM/SOM with confidence-weighted estimates:
+
+| Metric | Estimate | Range (80% confidence) | Sources Weighted | Confidence Level |
+|---|---|---|---|---|
+| TAM | $4.2B | $3.8B - $4.8B | Gartner (0.4) + Statista (0.35) + Extrapolation (0.25) | High |
+| SAM | $1.2B | $0.9B - $1.5B | Derived from TAM + segment sizing | Medium |
+| SOM | $50M | $30M - $80M | Realistic 3-year capture (2% of SAM) | Medium |
+
+**Sensitivity analysis** (how market changes affect us):
 ```
-[1] https://example.com/pricing — Competitor A pricing page (verified March 2025)
-[2] https://example.com/report — Market sizing report (published January 2025)
+If market grows at:
+  - 8% CAGR (pessimistic): TAM becomes $3.8B in 3 years → SOM $30M
+  - 12% CAGR (base case): TAM becomes $4.6B in 3 years → SOM $50M
+  - 18% CAGR (optimistic): TAM becomes $5.8B in 3 years → SOM $80M
+
+3-year revenue target: $20M
+  - Pessimistic: 0.7% of SAM (achievable)
+  - Base: 0.4% of SAM (realistic)
+  - Optimistic: 0.3% of SAM (comfortable)
 ```
+
+**Output section title**: "Market Sizing with Confidence Intervals"
 
 ### Step 6: Write Output
 
@@ -177,28 +227,56 @@ After writing `deep-research.md`, append one line to `architecture-output/_activ
 
 Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
 
-### Step 8: Update _state.json
+### Step 9: Update _state.json
 
 After writing `deep-research.md`, update `architecture-output/_state.json` with compact market intelligence:
 
 1. Read existing `_state.json` (or start with `{}`)
-2. Extract summary facts from the research
+2. Extract summary facts from the research including momentum and parity data
 3. Merge into the `market_research` key and write back:
 
 ```json
 {
   "market_research": {
     "competitors": [
-      { "name": "Competitor A", "pricing": "$49/mo", "weakness": "no mobile app" },
-      { "name": "Competitor B", "pricing": "$200/mo", "weakness": "steep learning curve" }
+      { 
+        "name": "Competitor A", 
+        "pricing": "$49/mo", 
+        "weakness": "no mobile app",
+        "momentum_score": 78,
+        "momentum_trend": "accelerating"
+      },
+      { 
+        "name": "Competitor B", 
+        "pricing": "$200/mo", 
+        "weakness": "steep learning curve",
+        "momentum_score": 22,
+        "momentum_trend": "stalled"
+      }
     ],
-    "market_size": "$2.5B TAM, 14% CAGR [Verified]",
+    "feature_parity": {
+      "overall_score": 58,
+      "assessment": "Playing catch-up — must differentiate on execution/UX"
+    },
+    "market_size": {
+      "tam": "$4.2B",
+      "tam_range": "$3.8B - $4.8B",
+      "tam_confidence": "High",
+      "cagr": "12-14%",
+      "sam": "$1.2B",
+      "som_3year": "$50M"
+    },
     "key_insight": "70% of SMBs still use spreadsheets — no affordable modern solution exists"
   }
 }
 ```
 
-Limit `competitors` to the top 5 direct competitors. `key_insight` is ONE sentence — the single most important finding for product positioning.
+Guidelines:
+- Limit `competitors` to the top 5 direct competitors with momentum scores
+- Include momentum_score (0-100) and momentum_trend for each
+- Add feature_parity with overall score and brief assessment
+- Market size should be range + confidence, not single point estimate
+- `key_insight` is ONE sentence — the single most important finding for product positioning
 
 ### Signal Completion
 

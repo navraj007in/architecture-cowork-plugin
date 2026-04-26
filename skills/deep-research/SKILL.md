@@ -96,6 +96,31 @@ Organize findings into a clear, actionable document:
    |-----------|---------|---------|-------------|----------|
    | {name}    | {tier}  | {$Xm}  | {feature}   | {gap}    |
 
+### Phase 4: Advanced Analysis
+
+Calculate quantified metrics beyond basic research:
+
+1. **Competitive Momentum Scoring** (0-100 scale)
+   - Funding growth trajectory: How much faster are they growing in capital? (+50% = high acceleration)
+   - Hiring velocity: Engineers added per year relative to current team
+   - Release frequency: How often do they ship? (Weekly = active, Monthly = maintenance mode)
+   - Formula: (Funding growth × 0.35) + (Hiring velocity × 0.35) + (Release frequency × 0.3)
+   - Result: Identifies threats by acceleration, not just current size
+
+2. **Feature Parity Scoring** (0-100 scale)
+   - Count features in each category vs competitors
+   - Calculate: (Our Features / Avg Competitor Features) × 100
+   - <50% = Playing catch-up
+   - 50-80% = Competitive, can win on execution
+   - 80%+ = Feature parity, differentiate elsewhere
+
+3. **Market Sizing with Confidence Intervals**
+   - Weight multiple sources by credibility: Gartner (0.4) > Statista (0.3) > Blog (0.15) > Extrapolation (0.15)
+   - Calculate weighted average, not just averaging estimates
+   - Provide range (80% confidence): If sources suggest $3.8B-$4.8B, report the range
+   - Sensitivity: "If market grows 8% vs 12% vs 18% CAGR, our 3-year opportunity is..."
+   - Output: "$4.2B TAM ($3.8B-$4.8B range)" not "$4.2B TAM"
+
 ---
 
 ## Research Quality Rules

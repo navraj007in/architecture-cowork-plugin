@@ -66,6 +66,13 @@ For EACH persona, produce ALL of the following sections:
 - **Triggers** — what events or moments would make them search for a solution
 - **Barriers to adoption** — what would stop them from trying/buying (price, switching cost, trust, learning curve)
 
+#### Psychographic Profile (NEW)
+- **Decision-making style** — data-driven vs intuition-based, fast vs deliberative (e.g., "Decides based on peer recommendations" vs "Analyzes 5 tools before choosing")
+- **Risk tolerance** — risk-averse vs risk-taking (e.g., "Won't adopt new tools without proof of ROI" vs "Tries new tools regularly")
+- **Learning preferences** — self-directed vs hands-on training, reads docs vs calls support (e.g., "Prefers video tutorials" vs "Reads 200-page manuals")
+- **Core values** — cost-saving vs quality, innovation vs stability, speed vs thoroughness (e.g., "Values cutting costs above all" vs "Quality matters more than budget")
+- **Social proof influence** — influenced by influencers, follows industry trends, cares about brand reputation (e.g., "Always researches G2 reviews before buying" vs "Doesn't care what competitors use")
+
 #### Product Relationship
 - **Features they'd use most** — map to specific product features from intent.json
 - **Features they'd ignore** — what's irrelevant to this persona
@@ -81,6 +88,34 @@ A 150-200 word narrative showing a day-in-the-life scenario where this persona d
 - One about their current pain ("I spend 3 hours every week just...")
 - One about what they'd want ("If only I could...")
 - One about their evaluation criteria ("I'd switch if...")
+
+### Step 3.5: Validate Personas Against Market Data (NEW)
+
+Cross-check generated personas against market research and segmentation:
+
+**If `deep-research.md` exists**, run validation checklist:
+
+For each persona:
+- [ ] **Market segment alignment** — Which segment does this persona belong to? (Enterprise / Mid-market / SMB / Individual)
+- [ ] **Segment size match** — Persona size estimate (S/M/L) aligns with market segment size from deep-research
+- [ ] **Pain point verification** — Top pain point mentioned in competitor reviews? (If yes, ✅ validated)
+- [ ] **Feature priority match** — Features persona wants align with competitive gaps from deep-research
+- [ ] **Willingness-to-pay validation** — Estimated WTP aligns with pricing data from deep-research (not out of market range)
+
+**Output validation summary** (add to personas.md):
+
+```markdown
+### Persona Validation Results
+
+| Persona | Segment | Size Match | Pain Validated | Feature Gaps | WTP Alignment |
+|---------|---------|-----------|---|---|---|
+| Sarah (Procurement Manager) | Mid-market | ✅ 100K+ professionals | ✅ 34% mention "manual reconciliation" | ✅ Import + filter requests common | ✅ $79-99 within SMB range |
+| James (Finance Director) | Enterprise | ⚠️ Small segment (10K) | ✅ 18% mention "month-end visibility" | ✅ Advanced reporting requested | ⚠️ Pricing $500-1000 untested |
+
+**Gaps found**: James persona untested in market (small segment, high price). Recommend validating with finance director interviews before building for this persona.
+```
+
+**Impact on personas**: If validation reveals misalignments, adjust persona descriptions or defer to lower priority.
 
 ### Step 4: Persona Prioritization Matrix
 
@@ -125,22 +160,47 @@ After writing `user-personas.md`, append one line to `architecture-output/_activ
 
 Rules: append only — never overwrite. Single JSON object per line, no pretty-printing.
 
-### Step 7: Update _state.json
+### Step 8: Update _state.json
 
 After writing `user-personas.md`, update `architecture-output/_state.json` with compact persona summaries:
 
 1. Read existing `_state.json` (or start with `{}`)
-2. For each persona, extract: name, role, priority (from prioritization matrix), top_pain (single most critical pain point, ≤15 words)
+2. For each persona, extract: name, role, priority (from prioritization matrix), top_pain, segment, validated (from validation step)
 3. Merge into the `personas` array and write back:
 
 ```json
 {
   "personas": [
-    { "name": "Sarah Chen", "role": "Procurement Manager", "priority": "P1", "top_pain": "3h/week reconciling vendor invoices manually" },
-    { "name": "James O.", "role": "Finance Director", "priority": "P2", "top_pain": "no visibility into committed spend until month-end" }
+    { 
+      "name": "Sarah Chen", 
+      "role": "Procurement Manager", 
+      "priority": "P1", 
+      "top_pain": "3h/week reconciling vendor invoices manually",
+      "segment": "Mid-market",
+      "validated": true,
+      "decision_style": "data-driven",
+      "risk_tolerance": "risk-averse"
+    },
+    { 
+      "name": "James O.", 
+      "role": "Finance Director", 
+      "priority": "P2", 
+      "top_pain": "no visibility into committed spend until month-end",
+      "segment": "Enterprise",
+      "validated": false,
+      "validation_note": "Pricing untested in market segment",
+      "decision_style": "deliberative",
+      "risk_tolerance": "risk-averse"
+    }
   ]
 }
 ```
+
+**Guidelines**:
+- `segment` — which market segment from deep-research (Enterprise / Mid-market / SMB / Individual)
+- `validated` — true/false based on Step 3.5 validation results
+- `validation_note` — if false, why (small segment, untested price, etc.)
+- `decision_style` and `risk_tolerance` — from psychographic profiling
 
 ### Signal Completion
 
