@@ -102,7 +102,18 @@ c) Ask the user ONE question with four numbered options:
 
 The architecture hasn't changed — the user wants richer, more detailed output on top of what was already generated. Multiple deepen passes are explicitly supported; each pass can expand different sections.
 
-- Ask: "Which sections would you like to go deeper on? For example:
+**Section selection (subprocess support):**
+
+Check if the command argument specifies sections after `deepen`:
+- `/architect:blueprint deepen` (no sections) → **default to "all" — deepen every section without asking**
+- `/architect:blueprint deepen api,security` → deepen only specified sections (comma-separated)
+- `/architect:blueprint deepen all` → explicit "deepen everything"
+
+**Only ask interactively if running in chat mode (not subprocess) and the user has not specified sections.** Default behavior when no sections specified is to deepen ALL sections — do NOT ask.
+
+The valid section keywords are: `api`, `sprint`, `security`, `data`, `architecture`, `cost`, `devops`, `all`.
+
+For reference (only show this list if the user explicitly asks what sections are available):
   - **API specs** — full OpenAPI with all error codes, edge cases, pagination
   - **Sprint backlog** — expand stories with more acceptance criteria, sub-tasks, effort breakdowns
   - **Security** — threat model per endpoint, OWASP mitigations with code examples
@@ -110,7 +121,7 @@ The architecture hasn't changed — the user wants richer, more detailed output 
   - **Architecture** — add sequence diagrams for each core flow, detailed error propagation paths
   - **Cost** — per-environment cost breakdown, scaling thresholds, cost-per-user projections
   - **DevOps** — full GitHub Actions YAML, Dockerfile examples, environment config tables
-  - **All of the above** — run a full depth pass on every section"
+  - **all** — run a full depth pass on every section
 
 - Read the existing deliverable file(s) for the selected sections **before** regenerating — use the existing content as a baseline, not a blank slate.
 - Produce an enriched version that:
