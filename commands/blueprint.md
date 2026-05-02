@@ -100,37 +100,53 @@ c) Ask the user ONE question with four numbered options:
 
 **Option 2 — Deepen mode:**
 
-The architecture hasn't changed — the user wants richer, more detailed output on top of what was already generated. Multiple deepen passes are explicitly supported; each pass can expand different sections.
+Deepen mode enriches the SDL itself by reading **all relevant files in the project directory** and adding their content as additional context to the existing SDL. This is fully autonomous — never ask the user any questions in deepen mode.
 
-**Section selection (subprocess support):**
+**Workflow:**
 
-Check if the command argument specifies sections after `deepen`:
-- `/architect:blueprint deepen` (no sections) → **default to "all" — deepen every section without asking**
-- `/architect:blueprint deepen api,security` → deepen only specified sections (comma-separated)
-- `/architect:blueprint deepen all` → explicit "deepen everything"
+1. **Scan the project directory** (recursively, excluding `node_modules`, `.git`, `dist`, `build`, `.archon`, `architecture-output/`):
+   - List every file with relevant extensions: `.md`, `.yaml`, `.yml`, `.json`, `.txt`, `.toml`, `.env.example`, `.config.*`, `README*`, `CHANGELOG*`, `LICENSE*`, `.dockerfile`, `Dockerfile*`, `docker-compose*`
+   - Also pick up source files that hint at architecture: `package.json`, `requirements.txt`, `Cargo.toml`, `go.mod`, `pom.xml`, `build.gradle`, `Gemfile`, `composer.json`, `pyproject.toml`
+   - Skip files larger than 200KB (use Grep on those if needed)
 
-**Only ask interactively if running in chat mode (not subprocess) and the user has not specified sections.** Default behavior when no sections specified is to deepen ALL sections — do NOT ask.
+2. **Read the discovered files** systematically:
+   - Read each file's content (or relevant Grep output for very large files)
+   - Build a mental model of: what dependencies are declared, what services/components exist, what configuration patterns are used, what documentation already exists
+   - Note specific facts: library versions, env variables, deployment platforms, integrations mentioned anywhere
 
-The valid section keywords are: `api`, `sprint`, `security`, `data`, `architecture`, `cost`, `devops`, `all`.
+3. **Read the existing SDL** (single-file `solution.sdl.yaml` or multi-file `sdl/`):
+   - Identify gaps where the SDL is vague, generic, or missing detail
+   - Identify places where the discovered files provide concrete information the SDL doesn't capture
 
-For reference (only show this list if the user explicitly asks what sections are available):
-  - **API specs** — full OpenAPI with all error codes, edge cases, pagination
-  - **Sprint backlog** — expand stories with more acceptance criteria, sub-tasks, effort breakdowns
-  - **Security** — threat model per endpoint, OWASP mitigations with code examples
-  - **Data model** — full entity relationships, indexes, constraints, migration scripts
-  - **Architecture** — add sequence diagrams for each core flow, detailed error propagation paths
-  - **Cost** — per-environment cost breakdown, scaling thresholds, cost-per-user projections
-  - **DevOps** — full GitHub Actions YAML, Dockerfile examples, environment config tables
-  - **all** — run a full depth pass on every section
+4. **Enrich the SDL** with details from the discovered files:
+   - Add specific library versions when found in `package.json`/`requirements.txt`/etc.
+   - Add concrete env variables to `solution.deployment.environments[].requiredSecrets` and similar fields
+   - Add discovered components/services that aren't yet in the SDL
+   - Add deployment platform details from Dockerfile, docker-compose, or CI configs
+   - Add architectural patterns inferred from the codebase structure
+   - Pull entities, fields, and relationships from any data model files discovered
+   - Pull personas, features, and constraints from any product docs discovered
+   - Annotate sources inline as YAML comments: `# from: package.json` or `# from: docs/architecture.md`
 
-- Read the existing deliverable file(s) for the selected sections **before** regenerating — use the existing content as a baseline, not a blank slate.
-- Produce an enriched version that:
-  - Retains everything from the previous version
-  - Adds the detail that was missing or summarised: concrete examples, edge cases, additional tables, code snippets, sequence diagrams, alternative approaches
-  - Explicitly marks new content with a `<!-- deepened: pass N -->` comment at the top of each expanded section (where N = how many deepen passes have been run, tracked in `_state.json` under `blueprint.deepen_passes`)
-- Write the enriched file back, overwriting the shallower version.
-- Update `_state.json`: increment `blueprint.deepen_passes` (start at 1 if not present).
-- Do **not** re-run Steps 1–3 in deepen mode — the SDL and manifest are unchanged.
+5. **Write the enriched SDL back**:
+   - Single-file mode: overwrite `solution.sdl.yaml` with enriched version
+   - Multi-file mode: update the relevant module file in `sdl/` (e.g., add backend deps to `sdl/architecture.yaml`, env vars to `sdl/deployment.yaml`, entities to `sdl/data.yaml`)
+   - Preserve everything that was already in the SDL — only ADD detail, never remove or replace existing content
+
+6. **Update `_state.json`**:
+   - Increment `blueprint.deepen_passes` (start at 1 if not present)
+   - Add `blueprint.deepen_history[]` entry: `{ pass: N, timestamp: ISO-8601, files_scanned: count, sdl_sections_enriched: [...] }`
+   - Update `tech_stack` with newly discovered dependencies/versions
+   - Update `components[]` with newly discovered components
+
+7. **Skip** the deliverables generation steps (Steps 4 onward) in deepen mode unless the user explicitly asked for deliverables to be regenerated. Deepen focuses on the SDL itself; downstream commands can regenerate deliverables from the enriched SDL when needed.
+
+**Do not ask any questions in deepen mode.** The user has triggered deepen because they want existing project files folded into the SDL automatically. If deepen finds nothing new to add (the SDL already captures everything), say so explicitly and stop — do not invent detail.
+
+**Optional: section-targeted deepen** (advanced):
+- `/architect:blueprint deepen architecture` → only scan and enrich SDL `architecture` section
+- `/architect:blueprint deepen data,deployment` → only enrich those SDL sections (comma-separated)
+- `/architect:blueprint deepen` (no arg) → enrich entire SDL from all discovered files (default)
 
 **Option 3 — Full regenerate:**
 - Confirm: "Understood — regenerating full blueprint and overwriting all existing files."
