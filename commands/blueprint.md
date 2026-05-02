@@ -6,7 +6,13 @@ description: Full architecture blueprint — diagrams, costs, complexity, specs,
 
 ## Trigger
 
-`/architect:blueprint [optional description of the idea]`
+`/architect:blueprint [optional description or mode]`
+
+**Supported modes** (when existing blueprint detected):
+- `/architect:blueprint deepen` — skip prompt, go straight to deepen mode
+- `/architect:blueprint update` — skip prompt, go straight to update mode
+- `/architect:blueprint regenerate` — skip prompt, go straight to full regenerate
+- `/architect:blueprint [description]` — fresh project or interactive prompt for existing blueprint
 
 ## Workflow
 
@@ -40,6 +46,16 @@ If the file does not exist or has no `intent` field, proceed with the interactiv
 ### Step 0.5: Detect Existing Blueprint
 
 ❓ **DECISION POINT:** Fresh vs. existing project (4 modes: Update / Deepen / Regenerate / Cancel)
+
+**Mode argument check (subprocess support):**
+
+Before detecting artifacts, check if the command argument is a mode keyword:
+- If argument is `deepen`, `update`, or `regenerate` → **skip Step 0.5's interactive prompt entirely** — proceed directly to Step 0.5's relevant sub-section (e.g., "Option 2 — Deepen mode")
+- If argument is something else → proceed normally with detection and interactive prompt
+
+This enables subprocess execution (e.g., from Archon Studio) to pass `deepen` and skip all prompts.
+
+---
 
 After Step 0, **before** gathering any requirements, check whether this project already has a blueprint or was previously imported:
 
